@@ -34,8 +34,7 @@ a specific EnsembleSpecification"""
     relative_humidity: np.array
     temperature: np.array
 
-def sample(spec: EnsembleSpecification,
-           n:    int) -> Ensemble:
+def sample(spec: EnsembleSpecification, n: int) -> Ensemble:
     """sample(spec, n) -> n-member ensemble sampled from spec"""
     modal_size = None
     if spec.modal_size:
