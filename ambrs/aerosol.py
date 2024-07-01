@@ -5,6 +5,7 @@ sampling. Because scipy provides an extensible framework for sampling, any
 type of sampling process (including sampling from ESMs like E3SM) is possible.
 """
 
+import numpy as np
 import scipy.stats
 
 from dataclasses import dataclass
@@ -27,8 +28,8 @@ specific parameters (no state information)"""
 
 @dataclass
 class AerosolModeDistribution:
-    """AerosolMode: the definition of a single internally-mixed, log-normal
-aerosol mode (configuration only--no state information)"""
+    """AerosolModeDistribution: the definition of a single internally-mixed,
+log-normal aerosol mode (configuration only--no state information)"""
     name: str
     species: tuple[AerosolSpecies]
     number: scipy.stats.rv_continuous                # modal number concentration distribution
@@ -36,9 +37,22 @@ aerosol mode (configuration only--no state information)"""
     mass_fractions: tuple[scipy.stats.rv_continuous] # species mass fraction distributions
 
 @dataclass
+class AerosolModePopulation:
+    """AerosolModePopulation: a particle population representing a single
+internally-mixed, log-normal aerosol mode, sampled from a specific mode
+distribution"""
+    number: np.array
+    geom_mean_diam: np.array
+    mass_fractions: np.array
+
+@dataclass
 class AerosolModalSizeDistribution:
-    """ModalSizeDistribution: an aerosol particle size distribution specified in
-terms of a fixed number of log-normal modes"""
+    """AerosolModalSizeDistribution: an aerosol particle size distribution
+specified in terms of a fixed number of log-normal modes"""
     modes: tuple[AerosolModeDistribution]
     
-
+@dataclass
+class AerosolModalSizePopulation:
+    """AerosolModalSizePopulation: an aerosol population sampled from a specific
+modal particle size distribution"""
+    modes: tuple[AerosolModePopulation]
