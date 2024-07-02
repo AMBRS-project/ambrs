@@ -127,6 +127,7 @@ class MAM4Input:
 /
 """
 
-def create_mam4_inputs(ensemble: Ensemble) -> list[MAM4Input]:
+def create_mam4_inputs(processes: AerosolProcesses,
+                       ensemble: Ensemble) -> list[MAM4Input]:
     """create_mam4_inputs(ensemble) -> list of MAM4Input objects"""
     pass
