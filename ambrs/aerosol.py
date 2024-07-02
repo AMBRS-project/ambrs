@@ -19,10 +19,10 @@ RVFrozenDistribution = TypeVar('RVFrozenDistribution')
 class AerosolProcesses:
     """AerosolProcesses: a definition of a set of aerosol processes under consideration"""
     # processes that can be enabled/disabled
-    aging: bool
-    coagulation: bool
-    mosaic: bool
-    nucleation: bool
+    aging: bool = False
+    coagulation: bool = False
+    mosaic: bool = False
+    nucleation: bool = False
 
 @dataclass(frozen=True)
 class AerosolSpecies:
