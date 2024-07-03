@@ -83,10 +83,10 @@ distribution from which ensemble members are sampled."""
         modal_size = AerosolModalSizePopulation(
             modes=tuple([
                 AerosolModePopulation(
-                    number=mode.number.pdf(lhd[:,(2+num_species)*m]),
-                    geom_mean_diam=mode.geom_mean_diam.pdf(lhd[:,(2+num_species+1)*m]),
+                    number=mode.number.ppf(lhd[:,(2+num_species)*m]),
+                    geom_mean_diam=mode.geom_mean_diam.ppf(lhd[:,(2+num_species+1)*m]),
                     mass_fractions=tuple(
-                        [mass_fraction.pdf(lhd[:,(2*num_species+2)*m+f])
+                        [mass_fraction.ppf(lhd[:,(2*num_species+2)*m+f])
                          for f,mass_fraction in enumerate(mode.mass_fractions)]),
                 ) for m, mode in enumerate(spec.size.modes)]),
         )
@@ -94,6 +94,6 @@ distribution from which ensemble members are sampled."""
         specification = spec,
         size = modal_size,
         flux = spec.flux.rvs(n),
-        relative_humidity = spec.relative_humidity.pdf(lhd[:,-2]),
-        temperature = spec.temperature.pdf(lhd[:,-1]),
+        relative_humidity = spec.relative_humidity.ppf(lhd[:,-2]),
+        temperature = spec.temperature.ppf(lhd[:,-1]),
     )
