@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 
+from .aerosol import AerosolProcesses
 from .ppe import Ensemble
 
 @dataclass
@@ -72,9 +73,10 @@ class MAM4Input:
     qh2so4: float
     qsoag: float
 
-    def __repr__(self):
-        """repr(self) -> emits a representation of a MAM4 box model input file"""
-        return f"""
+    def write_namelist(self, filename):
+        """input.write_namelist(filename) -> writes a MAM4 box model namelist
+file with the given name"""
+        content = f"""
 &time_input
   mam_dt         = {self.dt},
   mam_nstep      = {self.nstep},
@@ -126,6 +128,8 @@ class MAM4Input:
   qsoag          = {self.qsoag},
 /
 """
+        with open(filename, 'w') as f:
+            f.write(content)
 
 def create_mam4_inputs(processes: AerosolProcesses,
                        ensemble: Ensemble) -> list[MAM4Input]:
