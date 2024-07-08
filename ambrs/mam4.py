@@ -2,7 +2,8 @@
 
 from dataclasses import dataclass
 
-from .aerosol import AerosolProcesses
+from .aerosol import AerosolProcesses, AerosolModalSizePopulation
+from .scenario import Scenario
 from .ppe import Ensemble
 
 @dataclass
@@ -132,6 +133,71 @@ file with the given name"""
             f.write(content)
 
 def create_mam4_inputs(processes: AerosolProcesses,
-                       ensemble: Ensemble) -> list[MAM4Input]:
-    """create_mam4_inputs(ensemble) -> list of MAM4Input objects"""
-    pass
+                       ensemble: Ensemble,
+                       dt: float,
+                       nstep: int) -> list[MAM4Input]:
+    """create_mam4_inputs(processes, ensemble, dt, nstep) -> list of MAM4Input
+objects that can create namelist input files for MAM4 box model simulations
+
+Parameters:
+    * processes: an ambrs.AerosolProcesses object that defines the aerosol
+      processes under consideration
+    * ensemble: a ppe.Ensemble object created by sampling a modal particle size
+      distribution
+    * dt: a fixed time step size for simulations
+    * nsteps: the number of steps in each simulation"""
+    if not isinstance(ensemble.size, AerosolModalSizePopulation):
+        raise TypeError("ensemble must have a modal size distribution!")
+    if dt <= 0.0:
+        raise ValueError("dt must be positive")
+    if nstep <= 0:
+        raise ValueError("nstep must be positive")
+    inputs = []
+    for scenario in ensemble:
+        pressure = 10e5 # FIXME: obtain from temperature, relative humidity?
+        inputs.append(MAM4Input(
+            mam_dt = dt,
+            mam_nstep = nstep,
+
+            mdo_gaschem = False,
+            mdo_gasaerexch = False,
+            mdo_rename = False,
+            mdo_newnuc = processes.nucleation,
+            mdo_coag = processes.coagulation,
+
+            temp = scenario.temperature,
+            press = pressure,
+            RH_CLEA = scenario.relative_humidity,
+
+            numc1 = scenario.modes[0].number,
+            numc2 = scenario.modes[1].number,
+            numc3 = scenario.modes[2].number,
+            numc4 = scenario.modes[3].number,
+
+            mfso41 = scenario.modes[0].mass_fraction("so4"),
+            mfpom1 = scenario.modes[0].mass_fraction("pom"),
+            mfsoa1 = scenario.modes[0].mass_fraction("soa"),
+            mfbc1  = scenario.modes[0].mass_fraction("bc"),
+            mfdst1 = scenario.modes[0].mass_fraction("dst"),
+            mfncl1 = scenario.modes[0].mass_fraction("ncl"),
+
+            mfso42 = scenario.modes[1].mass_fraction("so4"),
+            mfsoa2 = scenario.modes[1].mass_fraction("soa"),
+            mfncl2 = scenario.modes[1].mass_fraction("ncl"),
+
+            mfdst3 = scenario.modes[2].mass_fraction("dst"),
+            mfncl3 = scenario.modes[2].mass_fraction("ncl"),
+            mfso43 = scenario.modes[2].mass_fraction("so4"),
+            mfbc3  = scenario.modes[2].mass_fraction("bc"),
+            mfpom3 = scenario.modes[2].mass_fraction("pom"),
+            mfsoa4 = scenario.modes[2].mass_fraction("soa"),
+
+            mfpom4 = scenario.modes[3].mass_fraction("pom"),
+            mfbc4  = scenario.modes[3].mass_fraction("bc"),
+
+            # FIXME: what to do about gases?
+            qso2 = 0,
+            qh2so4 = 0,
+            qsoag = 0,
+        ))
+    return inputs

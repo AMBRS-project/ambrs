@@ -38,7 +38,14 @@ a specific EnsembleSpecification"""
     relative_humidity: np.array
     temperature: np.array
 
-    def member(i: int) -> Scenario:
+    def __len__(self):
+        return len(ensemble.size)
+
+    def __iter__(self):
+        for i in range(len(self)):
+            yield self.member(i)
+
+    def member(self, i: int) -> Scenario:
         """ensemble.member(i) -> extracts Scenario from ith ensemble member"""
         return Scenario(
             size = self.size.member(i),
@@ -140,7 +147,7 @@ distribution from which ensemble members are sampled."""
                     geom_mean_diam=mode.geom_mean_diam.ppf(lhd[:,(2+num_species+1)*m]),
                     mass_fractions=tuple(
                         [mass_fraction.ppf(lhd[:,(2*num_species+2)*m+f])
-                         for f,mass_fraction in enumerate(mode.mass_fractions)]),
+                         for f, mass_fraction in enumerate(mode.mass_fractions)]),
                 ) for m, mode in enumerate(spec.size.modes)]),
         )
     return Ensemble(
@@ -163,10 +170,10 @@ parameter range [a, b]"""
     b: float
     n: int
 
-    def __len__(self): # returns number of values swept
+    def __len__(self): # `len(sweep)` returns number of values swept
         return self.n
 
-    def __iter__(self): # allows iteration over assumed values
+    def __iter__(self): # `for p in sweep` allows iteration over assumed values
         assert(self.b - self.a > 0)
         step = (self.b - self.a)/self.n
         for i in range(self.n):
