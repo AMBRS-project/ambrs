@@ -45,6 +45,12 @@ log-normal aerosol mode"""
     geom_mean_diam: float             # geometric mean diameter
     mass_fractions: tuple[float, ...] # species mass fractions
 
+    def mass_fraction(self, species_name: str):
+        """returns the mass fraction corresponding to the given species name,
+or throws a ValueError."""
+        index = [s.name for s in self.species].index(species_name)
+        return self.mass_fractions[index]
+
 @dataclass(frozen=True)
 class AerosolModeDistribution:
     """AerosolModeDistribution: the definition of a single internally-mixed,
@@ -66,7 +72,10 @@ distribution"""
     geom_mean_diam: np.array
     mass_fractions: tuple[np.array, ...] # species-specific mass fractions
 
-    def member(i: int) -> AerosolModeState:
+    def __len__(self):
+        return len(self.number)
+
+    def member(self, i: int) -> AerosolModeState:
         """population.member(i) -> extracts mode state information from ith
 population member"""
         return AerosolModeState(
@@ -94,7 +103,10 @@ class AerosolModalSizePopulation:
 modal particle size distribution"""
     modes: tuple[AerosolModePopulation, ...]
 
-    def member(i: int) -> AerosolModalSizeState:
+    def __len__(self):
+        return len(self.modes[0])
+
+    def member(self, i: int) -> AerosolModalSizeState:
         """population.member(i) -> extracts size state information from ith
 population member"""
         return AerosolModalSizeState(
