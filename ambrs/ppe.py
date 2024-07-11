@@ -16,7 +16,7 @@ from math import log10, pow
 from typing import Optional
 from .aerosol import \
     AerosolModalSizeState, AerosolModalSizeDistribution, AerosolModalSizePopulation,\
-    RVFrozenDistribution
+    AerosolSpecies, RVFrozenDistribution
 from .scenario import Scenario
 
 @dataclass(frozen=True)
@@ -256,7 +256,7 @@ Each sweep range is ultimately specified by one of the following:
 If no sweep is specified for a given parameter, that parameter assumes a
 value specified by the reference_state passed to the sweep function.
 """
-    size: Optional[AerosolModalSizeParameterSweep]
+    size: Optional[AerosolModalSizeParameterSweeps]
     flux: Optional[LinearParameterSweep | LogarithmicParameterSweep]
     relative_humidity: Optional[LinearParameterSweep | LogarithmicParameterSweep]
     temperature: Optional[LinearParameterSweep | LogarithmicParameterSweep]
@@ -286,6 +286,9 @@ parameter sweeps"""
         all_params = list(itertools.product(*factors))
         n = len(all_params) # number of ensemble members
 
+        # populate an ensemble with n copies of the reference state
+        members = [reference_state for i in range(n)]
+
         # to create ensemble members, interpret the given factors in terms of
         # the scenario's particle size distribution
         if isinstance(reference_state.size, AerosolModalSizeState): # modal
@@ -307,8 +310,29 @@ different particle size representations!""")
             num_species = sum([len(mode.species) for mode in reference_state.modes]) # all mode species
             if not sweeps.size.modes: # no mode parameters swept
                 assert(len(factors) == 4)
-            elif none([mode.mass_fractions for mode in sweeps.size.modes]): # no mass fractions swept
-            else: # we need to check factors mode by mode
+            else: # check factors mode by mode
+                f = 0
+                for m in range(num_modes):
+                    if sweeps.size.modes[m]: # this mode is swept
+                        members[:].size.modes[m].number = factors[f][:]
+                        members[:].size.modes[m].geom_mean_diam = factors[f+1][:]
+                        f += 2
+                        if sweeps.size.modes[m].mass_fractions: # (some) mass fractions swept
+                            num_species = len(reference_state.modes.species)
+                            for s in range(num_species):
+                                if factors[f+s]: # mass fraction for species s swept
+                                    members[:].size.modes[m].mass_fractions[s] = factors[f+s][:]
+                            f += num_species
+
+            # handle non-modal factors
+            if sweeps.size.flux:
+                members[:].size.flux = factors[-3][:]
+            if sweeps.size.relative_humidity:
+                members[:].size.relative_humidity = factors[-2][:]
+            if sweeps.size.temperature:
+                members[:].size.temperature = factors[-1][:]
+
+        return ensemble_from_scenarios(members)
     else:
         # there are no swept parameters, so return a single-member ensemble
         # with the reference state
