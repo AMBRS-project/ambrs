@@ -29,7 +29,7 @@ class AerosolSpecies:
     """AerosolSpecies: the definition of an aerosol species in terms of species-
 specific parameters (no state information)"""
     name: str          # name of the species
-    molar_mass: float  # etc
+    molar_mass: float  # [g/mol]
 
 #----------------------------
 # Modal aerosol descriptions
@@ -111,7 +111,7 @@ modal particle size distribution"""
         return len(self.modes[0])
 
     def __iter__(self) -> AerosolModalSizeState: # for modal size state in population
-        for i in range(len(modes[0].number)):
+        for i in range(len(self.modes[0].number)):
             yield AerosolModalSizeState(
                 modes = tuple([mode.member(i) for mode in self.modes]))
 
