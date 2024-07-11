@@ -168,7 +168,7 @@ distribution from which ensemble members are sampled."""
 # Swept-parameter ensembles
 #---------------------------
 
-@dataclass
+@dataclass(frozen=True)
 class LinearParameterSweep:
     """LinearParameterSweep(a, b, n) - an n-step, uniformly-spaced sweep in the
 parameter range [a, b]"""
@@ -185,7 +185,7 @@ parameter range [a, b]"""
         for i in range(self.n):
             yield self.a + i*step
 
-@dataclass
+@dataclass(frozen=True)
 class LogarithmicParameterSweep:
     """LogarithmicParameterSweep(a, b, n) - an n-step, log10-spaced sweep in the
 parameter range [a, b]"""
@@ -204,7 +204,7 @@ parameter range [a, b]"""
         for i in range(self.n):
             yield pow(10, log_a + i*step)
 
-@dataclass
+@dataclass(frozen=True)
 class AerosolModeParameterSweeps:
     """AerosolModeParameterSweep: a set of parameter sweep ranges for a single,
 internally-mixed aerosol mode"""
@@ -224,7 +224,7 @@ of parameters."""
                       for mf in self.mass_fractions] if self.mass_fractions else [None] * len(self.species)
         return [numbers, diameters, *mass_fracs]
 
-@dataclass
+@dataclass(frozen=True)
 class AerosolModalSizeParameterSweeps:
     """AerosolModalSizeParameterSweeps: a set of parameter sweep ranges for
 modal aerosol particle size"""
@@ -242,7 +242,7 @@ possible combinations of parameters."""
                 results.extend(mode.cartesian_factors())
         return results
 
-@dataclass
+@dataclass(frozen=True)
 class AerosolParameterSweeps:
     """AerosolParameterSweeps: a set of aerosol parameter "sweep" ranges used by
 the sweep function to construct an ensemble from a reference state.
