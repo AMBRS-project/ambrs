@@ -72,8 +72,17 @@ distribution"""
     geom_mean_diam: np.array
     mass_fractions: tuple[np.array, ...] # species-specific mass fractions
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.number)
+
+    def __iter__(self) -> AerosolModeState: # for modal state in mode population
+        for i in range(len(self.number)):
+            yield AerosolModeState(
+                name = self.name,
+                species = self.species,
+                number = self.number[i],
+                geom_mean_diam = self.geom_mean_diam[i],
+                mass_fractions = tuple([mass_frac[i] for mass_frac in self.mass_fractions]))
 
     def member(self, i: int) -> AerosolModeState:
         """population.member(i) -> extracts mode state information from ith
@@ -103,8 +112,13 @@ class AerosolModalSizePopulation:
 modal particle size distribution"""
     modes: tuple[AerosolModePopulation, ...]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.modes[0])
+
+    def __iter__(self) -> AerosolModalSizeState: # for modal size state in population
+        for i in range(len(modes[0].number)):
+            yield AerosolModalSizeState(
+                modes = tuple([mode for mode in self.modes]))
 
     def member(self, i: int) -> AerosolModalSizeState:
         """population.member(i) -> extracts size state information from ith
