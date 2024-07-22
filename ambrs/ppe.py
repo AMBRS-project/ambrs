@@ -15,8 +15,8 @@ from dataclasses import dataclass
 from math import log10, pow
 from typing import Optional
 from .aerosol import \
-    AerosolModalSizeState, AerosolModalSizeDistribution, AerosolModalSizePopulation,\
-    AerosolSpecies, RVFrozenDistribution
+    AerosolModalSizeState, AerosolModePopulation, AerosolModalSizeDistribution,\
+    AerosolModalSizePopulation, AerosolSpecies, RVFrozenDistribution
 from .scenario import Scenario
 
 @dataclass(frozen=True)
@@ -66,27 +66,28 @@ specified scenarios (which must all have the same particle size representation)"
         raise ValueError("No scenarios provided for ensemble!")
 
     # assemble size-independent data
-    flux = np.array(n)
-    flux[:] = [scenario.flux for scenario in scenarios]
-    relative_humidity = np.array(n)
-    relative_humidity[:] = [scenario.relative_humidity for scenario in scenarios]
-    temperature = np.array(n)
-    temperature[:] = [scenario.temperature for scenario in scenarios]
+    flux = np.array([scenario.flux for scenario in scenarios])
+    relative_humidity = np.array([scenario.relative_humidity for scenario in scenarios])
+    temperature = np.array([scenario.temperature for scenario in scenarios])
 
     # handle particle size data
-    if instance(scenarios[0].size, AerosolModalSizeState):
+    if isinstance(scenarios[0].size, AerosolModalSizeState):
         modes=[]
-        for mode in scenarios[0].size.modes:
+        for m, mode in enumerate(scenarios[0].size.modes):
+            num_species = len(mode.species)
             modes.append(AerosolModePopulation(
                 name = mode.name,
                 species = mode.species,
-                number = np.array(n),
-                geom_mean_diam = np.array(n),
-                mass_fractions = tuple([np.array(n) for mf in mode.mass_fractions])))
-        for m, mode in enumerate(modes):
-            mode.number[:] = [scenario.modes[m].number for scenario in scenarios]
-            mode.geom_mean_diam[:] = [scenario.modes[m].geom_mean_diam for scenario in scenarios]
-            mode.mass_fractions[:] = [mf for mf in scenario.modes[m].mass_fractions for scenario in scenarios]
+                number = np.array([scenario.size.modes[m].number \
+                                   for scenario in scenarios]),
+                geom_mean_diam = np.array([scenario.size.modes[m].geom_mean_diam \
+                                           for scenario in scenarios]),
+                mass_fractions = tuple(
+                    [np.array([scenario.size.modes[m].mass_fractions[s] \
+                               for scenario in scenarios]) \
+                               for s in range(num_species)]
+                ),
+            ))
         return Ensemble(
             size = AerosolModalSizePopulation(
                 modes = tuple(modes),
@@ -104,9 +105,9 @@ specified scenarios (which must all have the same particle size representation)"
 
 def sample(specification: EnsembleSpecification, n: int) -> Ensemble:
     """sample(spec, n) -> n-member ensemble sampled from a specification"""
-    modal_size = None
+    size = None
     if isinstance(specification.size, AerosolModalSizeDistribution):
-        modal_size = AerosolModalSizePopulation(
+        size = AerosolModalSizePopulation(
             modes=tuple([
                 AerosolModePopulation(
                     number=mode.number.rvs(n),
@@ -114,9 +115,14 @@ def sample(specification: EnsembleSpecification, n: int) -> Ensemble:
                     mass_fractions=tuple([f.rvs(n) for f in mode.mass_fractions]),
                 ) for mode in specification.size.modes]),
         )
+        # normalize mass fractions
+        for mode in size.modes:
+            factor = sum([mass_fraction for mass_fraction in mode.mass_fractions])
+            for s in range(len(mode.mass_fractions)):
+                mode.mass_fractions[s] /= factor
     return Ensemble(
         specification = specification,
-        size = modal_size,
+        size = size,
         flux = spec.flux.rvs(n),
         relative_humidity = spec.relative_humidity.rvs(n),
         temperature = spec.temperature.rvs(n),
