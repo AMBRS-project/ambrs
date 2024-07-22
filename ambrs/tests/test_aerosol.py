@@ -33,7 +33,7 @@ class TestAerosolModeState(unittest.TestCase):
         self.assertEqual(0.4, self.mode_state.mass_fraction('so4'))
         self.assertEqual(0.3, self.mode_state.mass_fraction('soa'))
         self.assertEqual(0.3, self.mode_state.mass_fraction('ncl'))
- 
+
 class TestAerosolModePopulation(unittest.TestCase):
     """Unit tests for ambr.aerosol.AerosolModePopulation"""
 
@@ -60,7 +60,7 @@ class TestAerosolModePopulation(unittest.TestCase):
 
     def test_len(self):
         self.assertEqual(self.n, len(self.mode_population))
- 
+
     def test_iteration(self):
         for state in self.mode_population:
             self.assertEqual(self.ref_state, state)
@@ -68,7 +68,7 @@ class TestAerosolModePopulation(unittest.TestCase):
     def test_member(self):
         for i in range(self.n):
             self.assertEqual(self.ref_state, self.mode_population.member(i))
- 
+
 class TestAerosolModalSizePopulation(unittest.TestCase):
     """Unit tests for ambr.aerosol.AerosolModalSizePopulation"""
 
@@ -103,7 +103,7 @@ class TestAerosolModalSizePopulation(unittest.TestCase):
 
     def test_len(self):
         self.assertEqual(self.n, len(self.size_population))
- 
+
     def test_iteration(self):
         for state in self.size_population:
             self.assertEqual(self.ref_state, state)
@@ -111,6 +111,6 @@ class TestAerosolModalSizePopulation(unittest.TestCase):
     def test_member(self):
         for i in range(self.n):
             self.assertEqual(self.ref_state, self.size_population.member(i))
- 
+
 if __name__ == '__main__':
     unittest.main()
