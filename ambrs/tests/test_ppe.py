@@ -72,5 +72,10 @@ class TestEnsemble(unittest.TestCase):
         for i in range(self.n):
             self.assertEqual(self.ref_scenario, self.ensemble.member(i))
 
+    def test_ensemble_from_scenarios(self):
+        ensemble = ppe.ensemble_from_scenarios([self.ref_scenario for i in range(self.n)])
+        for scenario in ensemble:
+            self.assertEqual(self.ref_scenario, scenario)
+
 if __name__ == '__main__':
     unittest.main()
