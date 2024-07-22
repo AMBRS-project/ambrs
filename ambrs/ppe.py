@@ -33,14 +33,14 @@ PPE are sampled"""
 class Ensemble:
     """Ensemble: an ensemble defined by values sampled from the distributions of
 a specific EnsembleSpecification"""
-    specification: Optional[EnsembleSpecification] # if used for creation
     size: AerosolModalSizePopulation
     flux: np.array
     relative_humidity: np.array
     temperature: np.array
+    specification: Optional[EnsembleSpecification] = None # if used for creation
 
     def __len__(self):
-        return len(ensemble.size)
+        return len(self.size)
 
     def __iter__(self):
         for i in range(len(self)):

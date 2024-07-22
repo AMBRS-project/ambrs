@@ -1,9 +1,23 @@
 # unit tests for the ambrs.ppe package
 
+import ambrs.aerosol as aerosol
 import ambrs.ppe as ppe
-import ambrs.scenario as scenario
+from ambrs.scenario import Scenario
 import numpy as np
 import unittest
+
+so4 = aerosol.AerosolSpecies(
+    name = 'so4',
+    molar_mass = 97.071,
+)
+soa = aerosol.AerosolSpecies(
+    name = 'soa',
+    molar_mass = 12.01,
+)
+ncl = aerosol.AerosolSpecies(
+    name='ncl',
+    molar_mass = 58.44,
+)
 
 class TestEnsemble(unittest.TestCase):
     """Unit tests for ambr.ppe.Ensemble"""
@@ -26,7 +40,7 @@ class TestEnsemble(unittest.TestCase):
             relative_humidity = 0.5,
             temperature = 298.0,
         )
-        self.ensemble = Ensemble(
+        self.ensemble = ppe.Ensemble(
             size = aerosol.AerosolModalSizePopulation(
                 modes = (
                     aerosol.AerosolModePopulation(
@@ -41,7 +55,7 @@ class TestEnsemble(unittest.TestCase):
                         ),
                     ),
                 ),
-    `       ),
+            ),
             flux = np.full(self.n, self.ref_scenario.flux),
             relative_humidity = np.full(self.n, self.ref_scenario.relative_humidity),
             temperature = np.full(self.n, self.ref_scenario.temperature),
