@@ -110,22 +110,23 @@ def sample(specification: EnsembleSpecification, n: int) -> Ensemble:
         size = AerosolModalSizePopulation(
             modes=tuple([
                 AerosolModePopulation(
-                    number=mode.number.rvs(n),
-                    geom_mean_diam=mode.geom_mean_diam.rvs(n),
-                    mass_fractions=tuple([f.rvs(n) for f in mode.mass_fractions]),
+                    name = mode.name,
+                    species = mode.species,
+                    number = mode.number.rvs(n),
+                    geom_mean_diam = mode.geom_mean_diam.rvs(n),
+                    mass_fractions = tuple([f.rvs(n) for f in mode.mass_fractions]),
                 ) for mode in specification.size.modes]),
         )
         # normalize mass fractions
         for mode in size.modes:
             factor = sum([mass_fraction for mass_fraction in mode.mass_fractions])
-            for s in range(len(mode.mass_fractions)):
-                mode.mass_fractions[s] /= factor
+            mode.mass_fractions = tuple([mf/factor for mf in mode.mass_fractions])
     return Ensemble(
         specification = specification,
         size = size,
-        flux = spec.flux.rvs(n),
-        relative_humidity = spec.relative_humidity.rvs(n),
-        temperature = spec.temperature.rvs(n),
+        flux = specification.flux.rvs(n),
+        relative_humidity = specification.relative_humidity.rvs(n),
+        temperature = specification.temperature.rvs(n),
     )
 
 def lhs(specification: EnsembleSpecification,
@@ -140,34 +141,35 @@ distribution from which ensemble members are sampled."""
     lhd = None # latin hypercube distribution (created depending on particle
                # size representation)
     size = None
-    if isinstance(spec.size, AerosolModalSizeDistribution):
+    if isinstance(specification.size, AerosolModalSizeDistribution):
         # count up mode-related factors
-        for mode in spec.size.modes:
+        for mode in specification.size.modes:
             n_factors += 2 + len(mode.mass_fractions)
         # lhd is a 2D array with indices (sample index, factor index)
         lhd = pyDOE.lhs(n_factors, n, criterion, iterations)
-        num_species = len(spec.size.species)
+        num_species = [len(mode.mass_fractions) for mode in specification.size.modes]
         size = AerosolModalSizePopulation(
             modes=tuple([
                 AerosolModePopulation(
-                    number=mode.number.ppf(lhd[:,(2+num_species)*m]),
-                    geom_mean_diam=mode.geom_mean_diam.ppf(lhd[:,(2+num_species+1)*m]),
+                    name = mode.name,
+                    species = mode.species,
+                    number=mode.number.ppf(lhd[:,(2+num_species[m])*m]),
+                    geom_mean_diam=mode.geom_mean_diam.ppf(lhd[:,(2+num_species[m])*m+1]),
                     mass_fractions=tuple(
-                        [mass_fraction.ppf(lhd[:,(2*num_species+2)*m+f])
+                        [mass_fraction.ppf(lhd[:,(2+num_species[m])*m+f])
                          for f, mass_fraction in enumerate(mode.mass_fractions)]),
-                ) for m, mode in enumerate(spec.size.modes)]),
+                ) for m, mode in enumerate(specification.size.modes)]),
         )
         # normalize mass fractions
         for mode in size.modes:
             factor = sum([mass_fraction for mass_fraction in mode.mass_fractions])
-            for s in range(len(mode.mass_fractions)):
-                mode.mass_fractions[s] /= factor
+            mode.mass_fractions = tuple([mf/factor for mf in mode.mass_fractions])
     return Ensemble(
-        specification = spec,
+        specification = specification,
         size = size,
-        flux = spec.flux.rvs(n),
-        relative_humidity = spec.relative_humidity.ppf(lhd[:,-2]),
-        temperature = spec.temperature.ppf(lhd[:,-1]),
+        flux = specification.flux.ppf(lhd[:,-3]),
+        relative_humidity = specification.relative_humidity.ppf(lhd[:,-2]),
+        temperature = specification.temperature.ppf(lhd[:,-1]),
     )
 
 #---------------------------
