@@ -4,6 +4,7 @@ import ambrs.aerosol as aerosol
 import ambrs.gas as gas
 import ambrs.ppe as ppe
 from ambrs.scenario import Scenario
+import math
 import numpy as np
 import scipy.stats
 import unittest
@@ -146,10 +147,63 @@ class TestSampling(unittest.TestCase):
     def test_sample(self):
         ensemble = ppe.sample(self.ensemble_spec, self.n)
         self.assertEqual(self.n, len(ensemble))
+        self.assertIsNotNone(ensemble.specification)
+        for member in ensemble:
+            self.assertIsInstance(member.size, aerosol.AerosolModalSizeState)
+            self.assertEqual(4, len(member.size.modes))
+            for mode in member.size.modes:
+                self.assertTrue(mode.number >= 3e7)
+                self.assertTrue(mode.number <= 2e12)
+                self.assertTrue(mode.geom_mean_diam >= 0.5e-8)
+                self.assertTrue(mode.geom_mean_diam <= 2e-6)
+                self.assertTrue(sum(mode.mass_fractions) - 1.0 < 1e-12)
 
     def test_lhs(self):
         ensemble = ppe.lhs(self.ensemble_spec, self.n)
         self.assertEqual(self.n, len(ensemble))
+        self.assertIsNotNone(ensemble.specification)
+        for member in ensemble:
+            self.assertIsInstance(member.size, aerosol.AerosolModalSizeState)
+            self.assertEqual(4, len(member.size.modes))
+            for mode in member.size.modes:
+                self.assertTrue(mode.number >= 3e7)
+                self.assertTrue(mode.number <= 2e12)
+                self.assertTrue(mode.geom_mean_diam >= 0.5e-8)
+                self.assertTrue(mode.geom_mean_diam <= 2e-6)
+                self.assertTrue(sum(mode.mass_fractions) - 1.0 < 1e-12)
+
+    def test_temperature_sweep(self):
+        ref_state = ppe.sample(self.ensemble_spec, 1).member(0)
+        sweeps = ppe.AerosolParameterSweeps(
+            temperature = ppe.LinearParameterSweep(273.0, 373.0, 100),
+        )
+        ensemble = ppe.sweep(ref_state, sweeps)
+        self.assertEqual(100, len(ensemble))
+        for i, member in enumerate(ensemble):
+            Ti = 273.0 + 1.0*i
+            print(i, Ti, member.temperature)
+            self.assertTrue(abs(Ti - member.temperature) < 1e-12)
+
+    """
+    def test_aitken_mode_number_conc_sweep(self):
+        ref_state = ppe.sample(self.ensemble_spec, 1).member(0)
+        sweeps = ppe.AerosolParameterSweeps(
+            size = ppe.AerosolModalSizeParameterSweeps(
+                modes = (None, # we sweep the number concentration in the aitken mode
+                         AerosolModeParameterSweeps(
+                            species = self.ensemble_spec.size.modes[1].species,
+                            number = ppe.LogarithmicParameterSweep(3e7, 2e12, 100),
+                         ),
+                         None,
+                         None),
+            ),
+        )
+        ensemble = ppe.sweep(ref_state, sweeps)
+        self.assertEqual(100, len(ensemble))
+        for i, member in enumerate(ensemble):
+            log_ni = math.log10(3e7) + (2e12 - 3e7) / 100
+            self.assertTrue(abs(log_ni - log10(member.size.modes[1].number) < 1e-12)
+     """
 
 if __name__ == '__main__':
     unittest.main()
