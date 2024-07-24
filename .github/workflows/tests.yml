@@ -28,7 +28,7 @@ jobs:
           submodules: recursive
 
       - name: Setting up Python 3.10 (${{ matrix.os }})
-        uses: actions/setup-python@v4.7.0
+        uses: actions/setup-python@v5.1.1
         with:
           python-version: "3.10"
 
