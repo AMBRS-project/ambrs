@@ -200,8 +200,7 @@ class TestSampling(unittest.TestCase):
         self.assertEqual(100, len(ensemble))
         for i, member in enumerate(ensemble):
             step = (math.log10(2e12) - math.log10(3e7)) / 100
-            log_ni = math.log10(3e7) + step
-            print(log_ni, math.log10(member.size.modes[1].number), abs(log_ni - math.log10(member.size.modes[1].number)))
+            log_ni = math.log10(3e7) + i * step
             self.assertTrue(abs(log_ni - math.log10(member.size.modes[1].number)) < 1e-12)
 
 if __name__ == '__main__':
