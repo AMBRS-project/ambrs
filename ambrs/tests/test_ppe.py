@@ -181,16 +181,14 @@ class TestSampling(unittest.TestCase):
         self.assertEqual(100, len(ensemble))
         for i, member in enumerate(ensemble):
             Ti = 273.0 + 1.0*i
-            print(i, Ti, member.temperature)
             self.assertTrue(abs(Ti - member.temperature) < 1e-12)
 
-    """
     def test_aitken_mode_number_conc_sweep(self):
         ref_state = ppe.sample(self.ensemble_spec, 1).member(0)
         sweeps = ppe.AerosolParameterSweeps(
             size = ppe.AerosolModalSizeParameterSweeps(
                 modes = (None, # we sweep the number concentration in the aitken mode
-                         AerosolModeParameterSweeps(
+                         ppe.AerosolModeParameterSweeps(
                             species = self.ensemble_spec.size.modes[1].species,
                             number = ppe.LogarithmicParameterSweep(3e7, 2e12, 100),
                          ),
@@ -201,9 +199,10 @@ class TestSampling(unittest.TestCase):
         ensemble = ppe.sweep(ref_state, sweeps)
         self.assertEqual(100, len(ensemble))
         for i, member in enumerate(ensemble):
-            log_ni = math.log10(3e7) + (2e12 - 3e7) / 100
-            self.assertTrue(abs(log_ni - log10(member.size.modes[1].number) < 1e-12)
-     """
+            step = (math.log10(2e12) - math.log10(3e7)) / 100
+            log_ni = math.log10(3e7) + step
+            print(log_ni, math.log10(member.size.modes[1].number), abs(log_ni - math.log10(member.size.modes[1].number)))
+            self.assertTrue(abs(log_ni - math.log10(member.size.modes[1].number)) < 1e-12)
 
 if __name__ == '__main__':
     unittest.main()
