@@ -15,8 +15,9 @@ from dataclasses import dataclass
 from math import log10, pow
 from typing import Optional
 from .aerosol import \
-    AerosolModalSizeState, AerosolModePopulation, AerosolModalSizeDistribution,\
-    AerosolModalSizePopulation, AerosolSpecies, RVFrozenDistribution
+    AerosolModalSizeState, AerosolModeState, AerosolModePopulation, \
+    AerosolModalSizeDistribution, AerosolModalSizePopulation, AerosolSpecies, \
+    RVFrozenDistribution
 from .scenario import Scenario
 
 @dataclass(frozen=True)
@@ -208,7 +209,7 @@ parameter range [a, b]"""
         assert(self.b - self.a > 0)
         log_a = log10(self.a)
         log_b = log10(self.b)
-        step = (log_b - log_a)/step.n
+        step = (log_b - log_a)/self.n
         for i in range(self.n):
             yield pow(10, log_a + i*step)
 
@@ -221,34 +222,11 @@ internally-mixed aerosol mode"""
     geom_mean_diam: Optional[LinearParameterSweep | LogarithmicParameterSweep] = None
     mass_fractions: Optional[tuple[LinearParameterSweep | LogarithmicParameterSweep, ...]] = None
 
-    def cartesian_factors(self) -> list[Optional[np.array]]:
-        """Returns a list of numpy arrays containing all values assumed by
-modal parameter sweeps (with None standing in for any unswept parameters). These
-arrays represent "factors" in a cartesian product of all possible combinations
-of parameters."""
-        numbers    = np.array([n for n in self.number]) if self.number else None
-        diameters  = np.array([d for d in self.geom_mean_diam]) if self.geom_mean_diam else None
-        mass_fracs = [np.array([f for f in mf]) if mf else None
-                      for mf in self.mass_fractions] if self.mass_fractions else [None] * len(self.species)
-        return [numbers, diameters, *mass_fracs]
-
 @dataclass(frozen=True)
 class AerosolModalSizeParameterSweeps:
     """AerosolModalSizeParameterSweeps: a set of parameter sweep ranges for
 modal aerosol particle size"""
     modes: Optional[tuple[Optional[AerosolModeParameterSweeps], ...]] = None
-
-    def cartesian_factors(self) -> list[Optional[np.array]]:
-        """Returns a list of numpy arrays containing all values assumed by
-modal parameter sweeps for every mode (with None standing in for any unswept
-parameters). These arrays represent "factors" in a cartesian product of all
-possible combinations of parameters."""
-        results = None
-        if self.modes:
-            results = []
-            for mode in self.modes:
-                results.extend(mode.cartesian_factors())
-        return results
 
 @dataclass(frozen=True)
 class AerosolParameterSweeps:
@@ -269,32 +247,32 @@ value specified by the reference_state passed to the sweep function.
     relative_humidity: Optional[LinearParameterSweep | LogarithmicParameterSweep] = None
     temperature: Optional[LinearParameterSweep | LogarithmicParameterSweep] = None
 
-    def cartesian_factors(self) -> list[Optional[np.array]]:
-        """Returns a list of numpy arrays containing all values assumed by
-modal parameter sweeps for every mode (with None standing in for any unswept
-parameters). These arrays represent "factors" in a cartesian product of all
+def modal_size_factors(ref_size: AerosolModalSizeState,
+                       sweeps: AerosolModalSizeParameterSweeps) -> list:
+    """Returns a list of numpy arrays containing all values assumed by
+modal parameter sweeps for every mode in a modal particle size description.
+These arrays represent "factors" in the cartesian product representing all
 possible combinations of parameters."""
-        sizeFactors = self.size.cartesian_factors() if sweeps.size else None
-
-        if self.modes:
-            results = []
-            for mode in self.modes:
-                results.extend(mode.cartesian_factors())
-        return results
-
-def reference_state_size_factors(reference_state: Scenario) -> list:
-    """This internal helper produces cartesian factors for an aerosol size
-distribution that correspond to its reference state."""
     factors = []
-    if isinstance(reference_state.size, AerosolModalSizeState): # modal
-        for mode in reference_state.size.modes:
-            factors.extend([np.array([mode.number]),
-                            np.array([mode.geom_mean_diam]),
-                            np.array(mode.mass_fractions)])
-    else:
-        raise TypeError(f'Unsupported particle size distribution: {reference_state.size.__class__}')
+    for m, mode in enumerate(ref_size.modes):
+        if sweeps and sweeps.modes and sweeps.modes[m] and sweeps.modes[m].number:
+            numbers = [n for n in sweeps.modes[m].number]
+        else:
+            numbers = [ref_size.modes[m].number]
+        factors.append(numbers)
+        if sweeps and sweeps.modes and sweeps.modes[m] and sweeps.modes[m].geom_mean_diam:
+            diameters = [d for d in sweeps.modes[m].geom_mean_diam]
+        else:
+            diameters = [ref_size.modes[m].geom_mean_diam]
+        factors.append(diameters)
+        if sweeps and sweeps.modes and sweeps.modes[m] and sweeps.modes[m].mass_fractions:
+            for mf in sweeps.modes[m].mass_fractions:
+                mass_fracs = [f for f in mf]
+                factors.append(mass_fracs)
+        else:
+            for mf in ref_size.modes[m].mass_fractions:
+                factors.append([mf])
     return factors
-
 
 def sweep(reference_state: Scenario, sweeps: AerosolParameterSweeps) -> Ensemble:
     """sweep(reference_state, sweeps) -> ensemble generated by initializing a
@@ -303,79 +281,58 @@ given ParameterSweep. The size of the ensemble is determined by the specified
 parameter sweeps"""
     # We form a cartesian product of all parameter sweeps ("factors") to obtain
     # the set of all possible parameter combinations.
-    if sweeps.size:
-        factors = sweeps.size.cartesian_factors()
+    if isinstance(reference_state.size, AerosolModalSizeState): # modal
+        if sweeps and sweeps.size and not isinstance(sweeps.size, AerosolModalSizeParameterSweeps):
+            raise TypeError('sweep: Reference state and sweeps have mismatched particle size representations!')
+        else:
+            factors = modal_size_factors(reference_state.size, sweeps.size)
     else:
-        factors = reference_state_size_factors(reference_state)
-    if sweeps.flux:
-        factors.append(np.array([F for F in sweeps.flux]))
-    else:
-        factors.append(np.array([reference_state.flux]))
-    if sweeps.relative_humidity:
-        factors.append(np.array([rh for rh in sweeps.relative_humidity]))
-    else:
-        factors.append(np.array([reference_state.relative_humidity]))
-    if sweeps.temperature:
-        factors.append(np.array([T for T in sweeps.temperature]))
-    else:
-        factors.append(np.array([reference_state.temperature]))
+        raise TypeError(f'sweep: Unsupported particle size representation: {reference_state.size.__class__}')
 
-    # form all parameter combinations
+    if sweeps.flux:
+        factors.append([F for F in sweeps.flux])
+    else:
+        factors.append([reference_state.flux])
+    if sweeps.relative_humidity:
+        factors.append([rh for rh in sweeps.relative_humidity])
+    else:
+        factors.append([reference_state.relative_humidity])
+    if sweeps.temperature:
+        factors.append([T for T in sweeps.temperature])
+    else:
+        factors.append([reference_state.temperature])
+
+    # form all parameter combinations to populate an ensemble
     all_params = list(itertools.product(*factors))
-    n = len(all_params) # number of ensemble members
-    print("number of members: ", n)
-
-    # populate an ensemble with n copies of the reference state
-    members = [reference_state for i in range(n)]
-
-    # to create ensemble members, interpret the given factors in terms of
-    # the scenario's particle size distribution
-    if sweeps.size is not None:
-        if isinstance(reference_state.size, AerosolModalSizeState): # modal
-            if not isinstance(sweeps.size, AerosolModalSizeParameterSweeps):
-                raise TypeError("""Reference state and parameter sweeps have
-different particle size representations!""")
-            # Factors for a modal size representation are interpreted as a
-            # single sequence of numpy arrays consisting of:
-            # * for each mode:
-            #   * number concentration
-            #   * geometric mean diameter
-            #   * for each mode species:
-            #       * mass fraction.
-            # Recall that any of these factors may be None if the corresponding
-            # parameter is not swept. All factors equal to None are excluded
-            # from the cartesian product, and their corresponding parameters are
-            # assigned to their reference state values.
-            num_modes   = len(reference_state.size.modes)
-            num_species = sum([len(mode.species) for mode in reference_state.size.modes]) # all mode species
-            if not sweeps.size.modes: # no mode parameters swept
-                assert(len(factors) <= 3)
-            else: # check factors mode by mode
-                f = 0
-                for m in range(num_modes):
-                    if sweeps.size.modes[m]: # this mode is swept
-                        for i, member in enumerate(members):
-                            member.size.modes[m].number = factors[f][i]
-                            member.size.modes[m].geom_mean_diam = factors[f+1][i]
-                        f += 2
-                        if sweeps.size.modes[m].mass_fractions: # (some) mass fractions swept
-                            num_species = len(reference_state.modes.species)
-                            for s in range(num_species):
-                                if factors[f+s]: # mass fraction for species s swept
-                                    for i, member in enumerate(members):
-                                        member.size.modes[m].mass_fractions[s] = factors[f+s][i]
-                            f += num_species
-
-    # handle non-size-related factors
-    print(len(members))
-    if sweeps.flux:
-        for i, member in enumerate(members):
-            member.flux = factors[-3][i]
-    if sweeps.relative_humidity:
-        for i, member in enumerate(members):
-            member.relative_humidity = factors[-2][i]
-    if sweeps.temperature:
-        for i, member in enumerate(members):
-            member.temperature = factors[-1][i]
+    members = []
+    if isinstance(reference_state.size, AerosolModalSizeState):
+        for params in all_params:
+            mode_states = []
+            index = 0
+            for mode in reference_state.size.modes:
+                num_species = len(mode.species)
+                mass_fractions = [params[index+2+s] for s in range(num_species)]
+                mode_states.append(
+                    AerosolModeState(
+                        name = mode.name,
+                        species = mode.species,
+                        number = params[index],
+                        geom_mean_diam = params[index+1],
+                        mass_fractions = tuple(mass_fractions),
+                    ),
+                )
+                index += 2 + num_species
+            member = Scenario(
+                size = AerosolModalSizeState(
+                    modes = mode_states,
+                ),
+                flux = params[index],
+                relative_humidity = params[index + 1],
+                temperature = params[index + 2],
+            )
+            index += 3
+            members.append(member)
+    else:
+        raise TypeError(f'Unsupported particle size state: {reference_state.size.__class__}')
 
     return ensemble_from_scenarios(members)
