@@ -13,4 +13,6 @@ in terms of state information"""
     flux: float
     relative_humidity: float
     temperature: float
+    pressure: float
+    height: float
 
