@@ -29,6 +29,8 @@ PPE are sampled"""
     flux: RVFrozenDistribution
     relative_humidity: RVFrozenDistribution
     temperature: RVFrozenDistribution
+    pressure: float # <-- these are fixed per ensemble
+    height: float   # <--
 
 @dataclass(frozen=True)
 class Ensemble:
@@ -38,6 +40,8 @@ a specific EnsembleSpecification"""
     flux: np.array
     relative_humidity: np.array
     temperature: np.array
+    pressure: float
+    height: float
     specification: Optional[EnsembleSpecification] = None # if used for creation
 
     def __len__(self):
@@ -53,7 +57,10 @@ a specific EnsembleSpecification"""
             size = self.size.member(i),
             flux = self.flux[i],
             relative_humidity = self.relative_humidity[i],
-            temperature = self.temperature[i])
+            temperature = self.temperature[i],
+            pressure = self.pressure,
+            height = self.height,
+        )
 
 #------------------------------------------------
 # Ensembles constructed by aggregating scenarios
@@ -72,6 +79,7 @@ specified scenarios (which must all have the same particle size representation)"
     temperature = np.array([scenario.temperature for scenario in scenarios])
 
     # handle particle size data
+    size = None
     if isinstance(scenarios[0].size, AerosolModalSizeState):
         modes=[]
         for m, mode in enumerate(scenarios[0].size.modes):
@@ -89,16 +97,19 @@ specified scenarios (which must all have the same particle size representation)"
                                for s in range(num_species)]
                 ),
             ))
-        return Ensemble(
-            size = AerosolModalSizePopulation(
-                modes = tuple(modes),
-            ),
-            flux = flux,
-            relative_humidity = relative_humidity,
-            temperature = temperature,
+        size = AerosolModalSizePopulation(
+            modes = tuple(modes),
         )
-    else:
+    if not size:
         raise TypeError("Invalid particle size information in scenarios!")
+    return Ensemble(
+        size = size,
+        flux = flux,
+        relative_humidity = relative_humidity,
+        temperature = temperature,
+        pressure = scenarios[0].pressure,
+        height = scenarios[0].height,
+    )
 
 #-------------------------------------------------
 # Ensembles constructed by sampling distributions
@@ -128,6 +139,8 @@ def sample(specification: EnsembleSpecification, n: int) -> Ensemble:
         flux = specification.flux.rvs(n),
         relative_humidity = specification.relative_humidity.rvs(n),
         temperature = specification.temperature.rvs(n),
+        pressure = specification.pressure,
+        height = specification.height,
     )
 
 def lhs(specification: EnsembleSpecification,
@@ -171,6 +184,8 @@ distribution from which ensemble members are sampled."""
         flux = specification.flux.ppf(lhd[:,-3]),
         relative_humidity = specification.relative_humidity.ppf(lhd[:,-2]),
         temperature = specification.temperature.ppf(lhd[:,-1]),
+        pressure = specification.pressure,
+        height = specification.height,
     )
 
 #---------------------------
@@ -329,6 +344,8 @@ parameter sweeps"""
                 flux = params[index],
                 relative_humidity = params[index + 1],
                 temperature = params[index + 2],
+                pressure = reference_state.pressure,
+                height = reference_state.height,
             )
             index += 3
             members.append(member)

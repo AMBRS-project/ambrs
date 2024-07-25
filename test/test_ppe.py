@@ -21,6 +21,10 @@ so2   = gas.GasSpecies(name='so2', molar_mass = 64.07)
 h2so4 = gas.GasSpecies(name='h2so4', molar_mass = 98.079)
 soag  = gas.GasSpecies(name='soag', molar_mass = 12.01)
 
+# reference pressure and height
+p0 = 101325 # [Pa]
+h0 = 500    # [m]
+
 class TestEnsemble(unittest.TestCase):
     """Unit tests for ambr.ppe.Ensemble"""
 
@@ -41,6 +45,8 @@ class TestEnsemble(unittest.TestCase):
             flux = 0.0,
             relative_humidity = 0.5,
             temperature = 298.0,
+            pressure = p0,
+            height = h0,
         )
         self.ensemble = ppe.Ensemble(
             size = aerosol.AerosolModalSizePopulation(
@@ -61,6 +67,8 @@ class TestEnsemble(unittest.TestCase):
             flux = np.full(self.n, self.ref_scenario.flux),
             relative_humidity = np.full(self.n, self.ref_scenario.relative_humidity),
             temperature = np.full(self.n, self.ref_scenario.temperature),
+            pressure = p0,
+            height = h0,
         )
 
     def test_len(self):
@@ -142,6 +150,8 @@ class TestSampling(unittest.TestCase):
             flux = scipy.stats.loguniform(1e-2*1e-9, 1e1*1e-9),
             relative_humidity = scipy.stats.loguniform(1e-5, 0.99),
             temperature = scipy.stats.uniform(240, 310),
+            pressure = p0,
+            height = h0,
         )
 
     def test_sample(self):
