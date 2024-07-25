@@ -2,7 +2,8 @@
 
 from dataclasses import dataclass
 
-from .aerosol import AerosolProcesses, AerosolModalSizePopulation
+from .aerosol import AerosolProcesses, AerosolModalSizePopulation, \
+                     AerosolModalSizeState
 from .scenario import Scenario
 from .ppe import Ensemble
 
@@ -60,7 +61,7 @@ class MAM4Input:
     mfso43: float
     mfbc3: float
     mfpom3: float
-    mfsoa4: float
+    mfsoa3: float
 
     # mode 4 (primary carbon mode)
     mfpom4: float
@@ -79,8 +80,8 @@ class MAM4Input:
 file with the given name"""
         content = f"""
 &time_input
-  mam_dt         = {self.dt},
-  mam_nstep      = {self.nstep},
+  mam_dt         = {self.mam_dt},
+  mam_nstep      = {self.mam_nstep},
 /
 &cntl_input
   mdo_gaschem    = {self.mdo_gaschem},
@@ -132,6 +133,80 @@ file with the given name"""
         with open(filename, 'w') as f:
             f.write(content)
 
+def mam4_input_(processes: AerosolProcesses,
+                scenario: Scenario,
+                dt: float,
+                nstep: int) -> MAM4Input:
+    if not isinstance(scenario.size, AerosolModalSizeState):
+        raise TypeError('Non-modal aerosol particle size state cannot be used to create MAM4 input!')
+    if len(scenario.size.modes) != 4:
+        raise TypeError(f'{len(scenario.size.mode)}-mode aerosol particle size state cannot be used to create MAM4 input!')
+    return MAM4Input(
+        mam_dt = dt,
+        mam_nstep = nstep,
+
+        mdo_gaschem = False,
+        mdo_gasaerexch = False,
+        mdo_rename = False,
+        mdo_newnuc = processes.nucleation,
+        mdo_coag = processes.coagulation,
+
+        temp = scenario.temperature,
+        press = scenario.pressure,
+        RH_CLEA = scenario.relative_humidity,
+
+        numc1 = scenario.size.modes[0].number,
+        numc2 = scenario.size.modes[1].number,
+        numc3 = scenario.size.modes[2].number,
+        numc4 = scenario.size.modes[3].number,
+
+        mfso41 = scenario.size.modes[0].mass_fraction("so4"),
+        mfpom1 = scenario.size.modes[0].mass_fraction("pom"),
+        mfsoa1 = scenario.size.modes[0].mass_fraction("soa"),
+        mfbc1  = scenario.size.modes[0].mass_fraction("bc"),
+        mfdst1 = scenario.size.modes[0].mass_fraction("dst"),
+        mfncl1 = scenario.size.modes[0].mass_fraction("ncl"),
+
+        mfso42 = scenario.size.modes[1].mass_fraction("so4"),
+        mfsoa2 = scenario.size.modes[1].mass_fraction("soa"),
+        mfncl2 = scenario.size.modes[1].mass_fraction("ncl"),
+
+        mfdst3 = scenario.size.modes[2].mass_fraction("dst"),
+        mfncl3 = scenario.size.modes[2].mass_fraction("ncl"),
+        mfso43 = scenario.size.modes[2].mass_fraction("so4"),
+        mfbc3  = scenario.size.modes[2].mass_fraction("bc"),
+        mfpom3 = scenario.size.modes[2].mass_fraction("pom"),
+        mfsoa3 = scenario.size.modes[2].mass_fraction("soa"),
+
+        mfpom4 = scenario.size.modes[3].mass_fraction("pom"),
+        mfbc4  = scenario.size.modes[3].mass_fraction("bc"),
+
+        # FIXME: what to do about gases?
+        qso2 = 0,
+        qh2so4 = 0,
+        qsoag = 0,
+     )
+
+def create_mam4_input(processes: AerosolProcesses,
+                      scenario: Scenario,
+                      dt: float,
+                      nstep: int) -> MAM4Input:
+    """create_mam4_input(processes, scenario, dt, nstep) -> MAM4Input object
+that can create a namelist input file for a MAM4 box model simulation
+
+Parameters:
+    * processes: an ambrs.AerosolProcesses object that defines the aerosol
+      processes under consideration
+    * scenario: an ambrs.Scenario object created by sampling a modal particle
+      size distribution
+    * dt: a fixed time step size for simulations
+    * nsteps: the number of steps in each simulation"""
+    if dt <= 0.0:
+        raise ValueError("dt must be positive")
+    if nstep <= 0:
+        raise ValueError("nstep must be positive")
+    return mam4_input_(processes, scenario, dt, nstep)
+
 def create_mam4_inputs(processes: AerosolProcesses,
                        ensemble: Ensemble,
                        dt: float,
@@ -154,50 +229,5 @@ Parameters:
         raise ValueError("nstep must be positive")
     inputs = []
     for scenario in ensemble:
-        pressure = 10e5 # FIXME: obtain from temperature, relative humidity?
-        inputs.append(MAM4Input(
-            mam_dt = dt,
-            mam_nstep = nstep,
-
-            mdo_gaschem = False,
-            mdo_gasaerexch = False,
-            mdo_rename = False,
-            mdo_newnuc = processes.nucleation,
-            mdo_coag = processes.coagulation,
-
-            temp = scenario.temperature,
-            press = pressure,
-            RH_CLEA = scenario.relative_humidity,
-
-            numc1 = scenario.modes[0].number,
-            numc2 = scenario.modes[1].number,
-            numc3 = scenario.modes[2].number,
-            numc4 = scenario.modes[3].number,
-
-            mfso41 = scenario.modes[0].mass_fraction("so4"),
-            mfpom1 = scenario.modes[0].mass_fraction("pom"),
-            mfsoa1 = scenario.modes[0].mass_fraction("soa"),
-            mfbc1  = scenario.modes[0].mass_fraction("bc"),
-            mfdst1 = scenario.modes[0].mass_fraction("dst"),
-            mfncl1 = scenario.modes[0].mass_fraction("ncl"),
-
-            mfso42 = scenario.modes[1].mass_fraction("so4"),
-            mfsoa2 = scenario.modes[1].mass_fraction("soa"),
-            mfncl2 = scenario.modes[1].mass_fraction("ncl"),
-
-            mfdst3 = scenario.modes[2].mass_fraction("dst"),
-            mfncl3 = scenario.modes[2].mass_fraction("ncl"),
-            mfso43 = scenario.modes[2].mass_fraction("so4"),
-            mfbc3  = scenario.modes[2].mass_fraction("bc"),
-            mfpom3 = scenario.modes[2].mass_fraction("pom"),
-            mfsoa4 = scenario.modes[2].mass_fraction("soa"),
-
-            mfpom4 = scenario.modes[3].mass_fraction("pom"),
-            mfbc4  = scenario.modes[3].mass_fraction("bc"),
-
-            # FIXME: what to do about gases?
-            qso2 = 0,
-            qh2so4 = 0,
-            qsoag = 0,
-        ))
+        inputs.append(mam4_input_(processes, scenario, dt, nstep))
     return inputs
