@@ -31,9 +31,9 @@ class PartMCAeroMode:
     log10_geom_std_dev: Optional[float] = None # log_10 of geometric std dev of diameter
 
 # time series data types
-type ScalarTimeSeries = tuple[tuple[float, float], ...] # tuple of (t, value) pairs
-type DictTimeSeries = tuple[tuple[float, dict], ...] # tuple of (t, dict) pairs
-type AerosolModeTimeSeries = tuple[tuple[float, PartMCAeroMode], ...] # tuple of (t, mode) pairs
+type ScalarTimeSeries = list[tuple[float, float], ...] # list of (t, value) pairs
+type DictTimeSeries = list[tuple[float, dict], ...] # list of (t, dict) pairs
+type AerosolModeTimeSeries = list[tuple[float, PartMCAeroMode], ...] # list of (t, mode) pairs
 
 @dataclass
 class PartMCInput:
