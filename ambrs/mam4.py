@@ -133,7 +133,7 @@ file with the given name"""
         with open(filename, 'w') as f:
             f.write(content)
 
-def mam4_input_(processes: AerosolProcesses,
+def _mam4_input(processes: AerosolProcesses,
                 scenario: Scenario,
                 dt: float,
                 nstep: int) -> MAM4Input:
@@ -205,7 +205,7 @@ Parameters:
         raise ValueError("dt must be positive")
     if nstep <= 0:
         raise ValueError("nstep must be positive")
-    return mam4_input_(processes, scenario, dt, nstep)
+    return _mam4_input(processes, scenario, dt, nstep)
 
 def create_mam4_inputs(processes: AerosolProcesses,
                        ensemble: Ensemble,
@@ -229,5 +229,5 @@ Parameters:
         raise ValueError("nstep must be positive")
     inputs = []
     for scenario in ensemble:
-        inputs.append(mam4_input_(processes, scenario, dt, nstep))
+        inputs.append(_mam4_input(processes, scenario, dt, nstep))
     return inputs
