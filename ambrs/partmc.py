@@ -102,7 +102,7 @@ class PartMCInput:
     # process-specific fields`
     coag_kernel: Optional[str] = None # coagulation kernel name
 
-    def write_aero_modes_(self, prefix, modes):
+    def _write_aero_modes(self, prefix, modes):
         dist_file = f'{prefix}_dist.dat'
         with open(os.path.join(dir, dist_file)) as f:
             for i, mode in enumerate(modes):
@@ -242,7 +242,7 @@ files, with a main input <prefix>.spec file"""
             f.write('#\tdens (kg/m^3)\tions in soln (1)\tmolec wght (kg/mole)\tkappa (1)\n')
             for aero in self.aerosol_data:
                 f.write(f'{aero.species}\t{aero.density}\t{aero.ions_in_soln}\t{aero.molecular_weight}\t{aero.kappa}\n')
-        self.write_aero_modes_(f, 'aero_init', self.aerosol_init)
+        self._write_aero_modes(f, 'aero_init', self.aerosol_init)
 
         # temp.dat, pres.dat, height.dat
         with open(os.path.join(dir, 'temp.dat')) as f:
@@ -285,7 +285,7 @@ files, with a main input <prefix>.spec file"""
             f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in self.aero_emissions]))
             f.write('\t'.join(['dist'] + [f'aero_emit_dist_{i+1}.dat' for i in range(len(self.aero_emissions))]))
         for i, time_series in enumerate(self.aero_emissions):
-            self.write_aero_modes_(f'aero_emit_dist_{i+1}', self.aero_emissions)
+            self._write_aero_modes(f'aero_emit_dist_{i+1}', self.aero_emissions)
 
         # aero_back.dat, aero_back_dist.dat, aero_back_comp.dat
         with open(os.path.join(dir, 'aero_back.dat')) as f:
@@ -294,9 +294,9 @@ files, with a main input <prefix>.spec file"""
             f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in self.aero_background]))
             f.write('\t'.join(['dist'] + [f'aero_emit_dist_{i+1}.dat' for i in range(len(self.aero_background))]))
         for i, time_series in enumerate(self.aero_background):
-            self.write_aero_modes_(f'aero_back_dist_{i+1}', self.aero_background)
+            self._write_aero_modes(f'aero_back_dist_{i+1}', self.aero_background)
 
-def partmc_input_(processes: AerosolProcesses,
+def _partmc_input(processes: AerosolProcesses,
                   scenario: Scenario,
                   dt: float,
                   nstep: int) -> PartMCInput:
@@ -322,7 +322,7 @@ Parameters:
         raise ValueError("dt must be positive")
     if nstep <= 0:
         raise ValueError("nstep must be positive")
-    return partmc_input_(processes, scenario, dt, nstep)
+    return _partmc_input(processes, scenario, dt, nstep)
 
 def create_partmc_inputs(processes: AerosolProcesses,
                          ensemble: Ensemble,
@@ -346,5 +346,5 @@ Parameters:
         raise ValueError("nstep must be positive")
     inputs = []
     for scenario in ensemble:
-        inputs.append(partmc_input_(processes, scenario, dt, nstep))
+        inputs.append(_partmc_input(processes, scenario, dt, nstep))
     return inputs
