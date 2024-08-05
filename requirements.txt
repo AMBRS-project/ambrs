@@ -1,6 +1,7 @@
 certifi==2024.7.4
 cftime==1.6.4
 contourpy==1.2.1
+coverage==7.6.0
 cycler==0.12.1
 fonttools==4.53.0
 kiwisolver==1.4.5
