@@ -108,58 +108,19 @@ class TestPartMCInput(unittest.TestCase):
         scenario = self.ensemble.member(0)
         dt = 4.0
         nstep = 100
-        input = partmc.create_partmc_input(processes, scenario, dt, nstep)
+        input = partmc.create_partmc_input('particle', processes, scenario, dt, nstep)
 
         # timestepping parameters
-        self.assertTrue(abs(dt - input.mam_dt) < 1e-12)
-        self.assertTrue(nstep, input.mam_nstep)
+        self.assertTrue(abs(dt - input.del_t) < 1e-12)
+        self.assertTrue(abs(nstep * dt - input.t_max) < 1e-12)
 
         # aerosol processes
-        self.assertFalse(input.mdo_gaschem)
-        self.assertFalse(input.mdo_gasaerexch)
-        self.assertFalse(input.mdo_rename)
-        self.assertFalse(input.mdo_newnuc)
-        self.assertTrue(input.mdo_coag)
+        self.assertFalse(input.do_mosaic)
+        self.assertFalse(input.do_nucleation)
+        self.assertFalse(input.do_condensation)
+        self.assertTrue(input.do_coagulation)
 
-        # atmospheric conditions
-        self.assertTrue(abs(scenario.temperature - input.temp) < 1e-12)
-        self.assertTrue(abs(scenario.pressure - input.press) < 1e-12)
-        self.assertTrue(abs(scenario.relative_humidity - input.RH_CLEA) < 1e-12)
-
-        # modal number concentrations
-        self.assertTrue(abs(scenario.size.modes[0].number - input.numc1) < 1e-12)
-        self.assertTrue(abs(scenario.size.modes[1].number - input.numc2) < 1e-12)
-        self.assertTrue(abs(scenario.size.modes[2].number - input.numc3) < 1e-12)
-        self.assertTrue(abs(scenario.size.modes[3].number - input.numc4) < 1e-12)
-
-        # accumulation mode species mass fractions
-        self.assertEqual('accumulation', scenario.size.modes[0].name)
-        self.assertTrue(abs(scenario.size.modes[0].mass_fractions[0] - input.mfso41) < 1e-12)
-        self.assertTrue(abs(scenario.size.modes[0].mass_fractions[1] - input.mfpom1) < 1e-12)
-        self.assertTrue(abs(scenario.size.modes[0].mass_fractions[2] - input.mfsoa1) < 1e-12)
-        self.assertTrue(abs(scenario.size.modes[0].mass_fractions[3] - input.mfbc1)  < 1e-12)
-        self.assertTrue(abs(scenario.size.modes[0].mass_fractions[4] - input.mfdst1) < 1e-12)
-        self.assertTrue(abs(scenario.size.modes[0].mass_fractions[5] - input.mfncl1) < 1e-12)
-
-        # aitken mode species mass fractions
-        self.assertEqual('aitken', scenario.size.modes[1].name)
-        self.assertTrue(abs(scenario.size.modes[1].mass_fractions[0] - input.mfso42) < 1e-12)
-        self.assertTrue(abs(scenario.size.modes[1].mass_fractions[1] - input.mfsoa2) < 1e-12)
-        self.assertTrue(abs(scenario.size.modes[1].mass_fractions[2] - input.mfncl2) < 1e-12)
-
-        # coarse mode species mass fractions
-        self.assertEqual('coarse', scenario.size.modes[2].name)
-        self.assertTrue(abs(scenario.size.modes[2].mass_fractions[0] - input.mfdst3) < 1e-12)
-        self.assertTrue(abs(scenario.size.modes[2].mass_fractions[1] - input.mfncl3) < 1e-12)
-        self.assertTrue(abs(scenario.size.modes[2].mass_fractions[2] - input.mfso43) < 1e-12)
-        self.assertTrue(abs(scenario.size.modes[2].mass_fractions[3] - input.mfbc3)  < 1e-12)
-        self.assertTrue(abs(scenario.size.modes[2].mass_fractions[4] - input.mfpom3) < 1e-12)
-        self.assertTrue(abs(scenario.size.modes[2].mass_fractions[5] - input.mfsoa3) < 1e-12)
-
-        # primary carbon species mass fractions
-        self.assertEqual('primary carbon', scenario.size.modes[3].name)
-        self.assertTrue(abs(scenario.size.modes[3].mass_fractions[0] - input.mfpom4) < 1e-12)
-        self.assertTrue(abs(scenario.size.modes[3].mass_fractions[1] - input.mfbc4)  < 1e-12)
+        # FIXME: more stuff vvv
 
     def test_create_partmc_inputs(self):
         processes = aerosol.AerosolProcesses(
@@ -169,60 +130,21 @@ class TestPartMCInput(unittest.TestCase):
         dt = 4.0
         nstep = 100
 
-        inputs = partmc.create_partmc_inputs(processes, self.ensemble, dt, nstep)
+        inputs = partmc.create_partmc_inputs('particle', processes, self.ensemble, dt, nstep)
         for i, input in enumerate(inputs):
             scenario = self.ensemble.member(i)
 
             # timestepping parameters
-            self.assertTrue(abs(dt - input.mam_dt) < 1e-12)
-            self.assertTrue(nstep, input.mam_nstep)
+            self.assertTrue(abs(dt - input.del_t) < 1e-12)
+            self.assertTrue(abs(nstep * dt - input.t_max) < 1e-12)
 
             # aerosol processes
-            self.assertFalse(input.mdo_gaschem)
-            self.assertFalse(input.mdo_gasaerexch)
-            self.assertFalse(input.mdo_rename)
-            self.assertFalse(input.mdo_newnuc)
-            self.assertTrue(True, input.mdo_coag)
+            self.assertFalse(input.do_mosaic)
+            self.assertFalse(input.do_nucleation)
+            self.assertFalse(input.do_condensation)
+            self.assertTrue(input.do_coagulation)
 
-            # atmospheric conditions
-            self.assertTrue(abs(scenario.temperature - input.temp) < 1e-12)
-            self.assertTrue(abs(scenario.pressure - input.press) < 1e-12)
-            self.assertTrue(abs(scenario.relative_humidity - input.RH_CLEA) < 1e-12)
-
-            # modal number concentrations
-            self.assertTrue(abs(scenario.size.modes[0].number - input.numc1) < 1e-12)
-            self.assertTrue(abs(scenario.size.modes[1].number - input.numc2) < 1e-12)
-            self.assertTrue(abs(scenario.size.modes[2].number - input.numc3) < 1e-12)
-            self.assertTrue(abs(scenario.size.modes[3].number - input.numc4) < 1e-12)
-
-            # accumulation mode species mass fractions
-            self.assertEqual('accumulation', scenario.size.modes[0].name)
-            self.assertTrue(abs(scenario.size.modes[0].mass_fractions[0] - input.mfso41) < 1e-12)
-            self.assertTrue(abs(scenario.size.modes[0].mass_fractions[1] - input.mfpom1) < 1e-12)
-            self.assertTrue(abs(scenario.size.modes[0].mass_fractions[2] - input.mfsoa1) < 1e-12)
-            self.assertTrue(abs(scenario.size.modes[0].mass_fractions[3] - input.mfbc1)  < 1e-12)
-            self.assertTrue(abs(scenario.size.modes[0].mass_fractions[4] - input.mfdst1) < 1e-12)
-            self.assertTrue(abs(scenario.size.modes[0].mass_fractions[5] - input.mfncl1) < 1e-12)
-
-            # aitken mode species mass fractions
-            self.assertEqual('aitken', scenario.size.modes[1].name)
-            self.assertTrue(abs(scenario.size.modes[1].mass_fractions[0] - input.mfso42) < 1e-12)
-            self.assertTrue(abs(scenario.size.modes[1].mass_fractions[1] - input.mfsoa2) < 1e-12)
-            self.assertTrue(abs(scenario.size.modes[1].mass_fractions[2] - input.mfncl2) < 1e-12)
-
-            # coarse mode species mass fractions
-            self.assertEqual('coarse', scenario.size.modes[2].name)
-            self.assertTrue(abs(scenario.size.modes[2].mass_fractions[0] - input.mfdst3) < 1e-12)
-            self.assertTrue(abs(scenario.size.modes[2].mass_fractions[1] - input.mfncl3) < 1e-12)
-            self.assertTrue(abs(scenario.size.modes[2].mass_fractions[2] - input.mfso43) < 1e-12)
-            self.assertTrue(abs(scenario.size.modes[2].mass_fractions[3] - input.mfbc3)  < 1e-12)
-            self.assertTrue(abs(scenario.size.modes[2].mass_fractions[4] - input.mfpom3) < 1e-12)
-            self.assertTrue(abs(scenario.size.modes[2].mass_fractions[5] - input.mfsoa3) < 1e-12)
-
-            # primary carbon species mass fractions
-            self.assertEqual('primary carbon', scenario.size.modes[3].name)
-            self.assertTrue(abs(scenario.size.modes[3].mass_fractions[0] - input.mfpom4) < 1e-12)
-            self.assertTrue(abs(scenario.size.modes[3].mass_fractions[1] - input.mfbc4)  < 1e-12)
+            # FIXME: more stuff vvv
 
     def test_write_files(self):
         processes = aerosol.AerosolProcesses(
@@ -232,11 +154,12 @@ class TestPartMCInput(unittest.TestCase):
         scenario = self.ensemble.member(0)
         dt = 4.0
         nstep = 100
-        input = partmc.create_partmc_input(processes, scenario, dt, nstep)
+        input = partmc.create_partmc_input('particle', processes, scenario, dt, nstep)
         prefix = 'partmc'
-        self.temp_dir = tempfile.TemporaryDirectory()
-        input.write_files(temp_dir.name, input_file)
+        temp_dir = tempfile.TemporaryDirectory()
+        input.write_files(temp_dir.name)
         self.assertTrue(os.path.exists(os.path.join(temp_dir.name, 'partmc.spec')))
+        temp_dir.close()
 
 if __name__ == '__main__':
     unittest.main()
