@@ -159,7 +159,7 @@ class TestPartMCInput(unittest.TestCase):
         temp_dir = tempfile.TemporaryDirectory()
         input.write_files(temp_dir.name)
         self.assertTrue(os.path.exists(os.path.join(temp_dir.name, 'partmc.spec')))
-        temp_dir.close()
+        temp_dir.cleanup()
 
 if __name__ == '__main__':
     unittest.main()
