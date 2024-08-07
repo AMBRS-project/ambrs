@@ -133,9 +133,9 @@ class PartMCInput:
     aero_emissions: Optional[AerosolModeTimeSeries] = None  # aerosol emissions time series
     aero_background: Optional[AerosolModeTimeSeries] = None # aerosol background time series
 
-    def _write_aero_modes(self, prefix, modes):
+    def _write_aero_modes(self, dir, prefix, modes):
         dist_file = f'{prefix}_dist.dat'
-        with open(os.path.join(dir, dist_file)) as f:
+        with open(os.path.join(dir, dist_file), 'w') as f:
             for i, mode in enumerate(modes):
                 f.write(f'mode_name {mode.mode_name}\n')
                 f.write(f'mass_frac {prefix}_comp_{i+1}.dat\n')
@@ -273,59 +273,63 @@ files to the given directory"""
             f.write('#\tdens (kg/m^3)\tions in soln (1)\tmolec wght (kg/mole)\tkappa (1)\n')
             for aero in self.aerosol_data:
                 f.write(f'{aero.species}\t{aero.density}\t{aero.ions_in_soln}\t{aero.molecular_weight}\t{aero.kappa}\n')
-        self._write_aero_modes(f, 'aero_init', self.aerosol_init)
+        self._write_aero_modes(dir, 'aero_init', self.aerosol_init)
 
         # temp.dat, pres.dat, height.dat
         with open(os.path.join(dir, 'temp.dat'), 'w') as f:
             f.write('# time (s)\n# temp (K)\n')
-            f.write('\t'.join(['time'] + [time_series[0] for time_series in self.temp_profile]))
-            f.write('\t'.join(['temp'] + [time_series[1] for time_series in self.temp_profile]))
+            f.write('\t'.join(['time'] + [str(time_series[0]) for time_series in self.temp_profile]))
+            f.write('\t'.join(['temp'] + [str(time_series[1]) for time_series in self.temp_profile]))
         with open(os.path.join(dir, 'pres.dat'), 'w') as f:
             f.write('# time (s)\n# pressure (Pa)\n')
-            f.write('\t'.join(['time'] + [time_series[0] for time_series in self.pressure_profile]))
-            f.write('\t'.join(['pressure'] + [time_series[1] for time_series in self.pressure_profile]))
+            f.write('\t'.join(['time'] + [str(time_series[0]) for time_series in self.pressure_profile]))
+            f.write('\t'.join(['pressure'] + [str(time_series[1]) for time_series in self.pressure_profile]))
         with open(os.path.join(dir, 'height.dat'), 'w') as f:
             f.write('# time (s)\n# height (m)\n')
-            f.write('\t'.join(['time'] + [time_series[0] for time_series in self.height_profile]))
-            f.write('\t'.join(['height'] + [time_series[1] for time_series in self.height_profile]))
+            f.write('\t'.join(['time'] + [str(time_series[0]) for time_series in self.height_profile]))
+            f.write('\t'.join(['height'] + [str(time_series[1]) for time_series in self.height_profile]))
 
         # gas_emit.dat, gas_back.dat
-        gas_emission_species = [self.emissions[0].time_series[1].keys()]
-        gas_emission_species.remove('rate')
-        with open(os.path.join(dir, 'gas_emit.dat'), 'w') as f:
-            f.write('# time (s)\n# rate = scaling parameter\n# emissions (mol m^{-2} s^{-1})\n')
-            f.write('\t'.join(['time'] + [time_series[0] for time_series in self.emissions]))
-            f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in self.emissions]))
-            f.write('\t'.join([species_name] + [time_series[1][species_name] \
-                              for species_name in gas_emission_species \
-                              for time_series in self.emissions]))
-        gas_background_species = [self.gas_background[0].time_series[1].keys()]
-        gas_emission_species.remove('rate')
-        with open(os.path.join(dir, 'gas_back.dat'), 'w') as f:
-            f.write('# time (s)\n# rate (s^{-1})\n# concentrations (ppb)\n')
-            f.write('\t'.join(['time'] + [time_series[0] for time_series in self.gas_background]))
-            f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in self.gas_background]))
-            f.write('\t'.join([species_name] + [time_series[1][species_name] \
-                              for species_name in gas_background_species \
-                              for time_series in self.gas_background]))
+        if self.gas_emissions:
+            gas_emission_species = [self.gas_emissions[0].time_series[1].keys()]
+            gas_emission_species.remove('rate')
+            with open(os.path.join(dir, 'gas_emit.dat'), 'w') as f:
+                f.write('# time (s)\n# rate = scaling parameter\n# emissions (mol m^{-2} s^{-1})\n')
+                f.write('\t'.join(['time'] + [time_series[0] for time_series in self.emissions]))
+                f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in self.emissions]))
+                f.write('\t'.join([species_name] + [time_series[1][species_name] \
+                                  for species_name in gas_emission_species \
+                                  for time_series in self.emissions]))
+        if self.gas_background:
+            gas_background_species = [self.gas_background[0].time_series[1].keys()]
+            gas_background_species.remove('rate')
+            with open(os.path.join(dir, 'gas_back.dat'), 'w') as f:
+                f.write('# time (s)\n# rate (s^{-1})\n# concentrations (ppb)\n')
+                f.write('\t'.join(['time'] + [time_series[0] for time_series in self.gas_background]))
+                f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in self.gas_background]))
+                f.write('\t'.join([species_name] + [time_series[1][species_name] \
+                                  for species_name in gas_background_species \
+                                  for time_series in self.gas_background]))
 
         # aero_emit.dat, aero_emit_dist_*.dat, aero_emit_comp_*.dat
-        with open(os.path.join(dir, 'aero_emit.dat'), 'w') as f:
-            f.write('# time (s)\n# rate (s^{-1})\n# aerosol distribution filename\n')
-            f.write('\t'.join(['time'] + [time_series[0] for time_series in self.aero_emissions]))
-            f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in self.aero_emissions]))
-            f.write('\t'.join(['dist'] + [f'aero_emit_dist_{i+1}.dat' for i in range(len(self.aero_emissions))]))
-        for i, time_series in enumerate(self.aero_emissions):
-            self._write_aero_modes(f'aero_emit_dist_{i+1}', self.aero_emissions)
+        if self.aero_emissions:
+            with open(os.path.join(dir, 'aero_emit.dat'), 'w') as f:
+                f.write('# time (s)\n# rate (s^{-1})\n# aerosol distribution filename\n')
+                f.write('\t'.join(['time'] + [time_series[0] for time_series in self.aero_emissions]))
+                f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in self.aero_emissions]))
+                f.write('\t'.join(['dist'] + [f'aero_emit_dist_{i+1}.dat' for i in range(len(self.aero_emissions))]))
+            for i, time_series in enumerate(self.aero_emissions):
+                self._write_aero_modes(dir, f'aero_emit_dist_{i+1}', self.aero_emissions)
 
         # aero_back.dat, aero_back_dist.dat, aero_back_comp.dat
-        with open(os.path.join(dir, 'aero_back.dat'), 'w') as f:
-            f.write('# time (s)\n# rate (s^{-1})\n# aerosol distribution filename\n')
-            f.write('\t'.join(['time'] + [time_series[0] for time_series in self.aero_background]))
-            f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in self.aero_background]))
-            f.write('\t'.join(['dist'] + [f'aero_emit_dist_{i+1}.dat' for i in range(len(self.aero_background))]))
-        for i, time_series in enumerate(self.aero_background):
-            self._write_aero_modes(f'aero_back_dist_{i+1}', self.aero_background)
+        if self.aero_background:
+            with open(os.path.join(dir, 'aero_back.dat'), 'w') as f:
+                f.write('# time (s)\n# rate (s^{-1})\n# aerosol distribution filename\n')
+                f.write('\t'.join(['time'] + [time_series[0] for time_series in self.aero_background]))
+                f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in self.aero_background]))
+                f.write('\t'.join(['dist'] + [f'aero_emit_dist_{i+1}.dat' for i in range(len(self.aero_background))]))
+            for i, time_series in enumerate(self.aero_background):
+                self._write_aero_modes(dir, f'aero_back_dist_{i+1}', self.aero_background)
 
 def _partmc_input(run_type: str,
                   processes: AerosolProcesses,
@@ -334,8 +338,8 @@ def _partmc_input(run_type: str,
                   nstep: int) -> PartMCInput:
     if not isinstance(scenario.size, AerosolModalSizeState):
         raise TypeError('Non-modal aerosol particle size state cannot be used to create MAM4 input!')
-    aero_data = ('a','b', 'c') # FIXME:
-    aero_init = (1,2,3) # FIXME:
+    aero_data = []
+    aero_init = []
     return PartMCInput(
         run_type = run_type,
         output_prefix = 'partmc', # FIXME: we need something better here
@@ -353,9 +357,9 @@ def _partmc_input(run_type: str,
         gas_data = tuple([gas.name for gas in scenario.gases]),
         gas_init = tuple([gas_conc for gas_conc in scenario.gas_concs]),
 
-        aerosol_data = aero_data,
+        aerosol_data = tuple(aero_data),
         do_fractal = False,
-        aerosol_init = aero_init,
+        aerosol_init = tuple(aero_init),
 
         temp_profile = [(0, scenario.temperature)],
         pressure_profile = [(0, scenario.pressure)],
