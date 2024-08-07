@@ -331,10 +331,9 @@ parameter sweeps"""
     else:
         raise TypeError(f'sweep: Unsupported particle size representation: {reference_state.size.__class__}')
     if sweeps.gas_concs:
-        for i in range(len(sweeps.gas_concs[0])):
-            factors.append([c[i] for c in sweeps.gas_concs])
+        for gas_conc in sweeps.gas_concs:
+            factors.append([c for c in gas_conc])
     else:
-        print(reference_state.gas_concs)
         for c in range(len(reference_state.gas_concs)):
             factors.append([reference_state.gas_concs[c]])
     if sweeps.flux:
