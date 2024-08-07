@@ -21,7 +21,9 @@ class AerosolProcesses:
     # processes that can be enabled/disabled
     aging: bool = False
     coagulation: bool = False
+    condensation: bool = False
     mosaic: bool = False
+    optical: bool = False
     nucleation: bool = False
 
 @dataclass(frozen=True)

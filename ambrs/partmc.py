@@ -88,16 +88,12 @@ class PartMCInput:
     gas_init: tuple[float, ...] # initial gas concentrations (ordered like gas_data)
 
     aerosol_data: tuple[PartMCAeroData, ...] # tuple of aerosol data
-    do_fractal: bool                         # whether to do fractal treatment
+    do_fractal: bool                         # whether todo fractal treatment
     aerosol_init: tuple[PartMCAeroMode, ...] # aerosol modal initial condition file
 
     temp_profile: ScalarTimeSeries       # temperature time series ((t1, T1), (t2, T2), ...)
     pressure_profile: ScalarTimeSeries   # pressure time series
     height_profile: ScalarTimeSeries     # height profile file
-    gas_emissions: DictTimeSeries   # gas emissions time series
-    gas_background: DictTimeSeries  # background gas concentration time series
-    aero_emissions: AerosolModeTimeSeries  # aerosol emissions file
-    aero_background: AerosolModeTimeSeries # aerosol background file
 
     rel_humidity: float         # initial relative humidity [-]
     latitude: float             # latitude [degrees, -90 to 90]
@@ -131,6 +127,12 @@ class PartMCInput:
     # process-specific fields`
     coag_kernel: Optional[str] = None # coagulation kernel name
 
+    # emissions fields
+    gas_emissions: Optional[DictTimeSeries] = None # gas emissions time series
+    gas_background: Optional[DictTimeSeries] = None  # background gas concentration time series
+    aero_emissions: Optional[AerosolModeTimeSeries] = None  # aerosol emissions time series
+    aero_background: Optional[AerosolModeTimeSeries] = None # aerosol background time series
+
     def _write_aero_modes(self, prefix, modes):
         dist_file = f'{prefix}_dist.dat'
         with open(os.path.join(dir, dist_file)) as f:
@@ -152,9 +154,9 @@ class PartMCInput:
                 for species, mass_frac in mode.mass_frac.items():
                     f.write(f'{species}\t{mass_frac}\n')
 
-    def write_files(self, dir, prefix):
-        """input.write_files(prefix) -> writes a set of PartMC box model input
-files, with a main input <prefix>.spec file"""
+    def write_files(self, dir):
+        """input.write_files(dir) -> writes a set of PartMC box model input
+files to the given directory"""
         if not os.path.exists(dir):
             raise OSError(f'Directory not found: {dir}')
 
@@ -251,38 +253,38 @@ files, with a main input <prefix>.spec file"""
         else:
             spec_content += 'do_parallel no\n'
 
-        with open(os.path.join(dir, prefix + '.spec'), 'w') as f:
+        with open(os.path.join(dir, self.output_prefix + '.spec'), 'w') as f:
             f.write(spec_content)
 
         # write auxiliary data files
 
         # gas_data.dat, gas_init.dat
-        with open(os.path.join(dir, 'gas_data.dat')) as f:
+        with open(os.path.join(dir, 'gas_data.dat'), 'w') as f:
             f.write('# list of gas species\n')
             for gas in self.gas_data:
                 f.write(f'{gas}\n')
-        with open(os.path.join(dir, 'gas_init.dat')) as f:
+        with open(os.path.join(dir, 'gas_init.dat'), 'w') as f:
             f.write('# species\tinitial concentration (ppb)\n')
             for g in range(len(self.gas_data)):
                 f.write(f'{self.gas_init[g]}\t{self.gas_data[g]}\n')
 
         # aero_data.dat, aero_init_dist.dat, aero_init_comp.dat
-        with open(os.path.join(dir, 'aero_data.dat')) as f:
+        with open(os.path.join(dir, 'aero_data.dat'), 'w') as f:
             f.write('#\tdens (kg/m^3)\tions in soln (1)\tmolec wght (kg/mole)\tkappa (1)\n')
             for aero in self.aerosol_data:
                 f.write(f'{aero.species}\t{aero.density}\t{aero.ions_in_soln}\t{aero.molecular_weight}\t{aero.kappa}\n')
         self._write_aero_modes(f, 'aero_init', self.aerosol_init)
 
         # temp.dat, pres.dat, height.dat
-        with open(os.path.join(dir, 'temp.dat')) as f:
+        with open(os.path.join(dir, 'temp.dat'), 'w') as f:
             f.write('# time (s)\n# temp (K)\n')
             f.write('\t'.join(['time'] + [time_series[0] for time_series in self.temp_profile]))
             f.write('\t'.join(['temp'] + [time_series[1] for time_series in self.temp_profile]))
-        with open(os.path.join(dir, 'pres.dat')) as f:
+        with open(os.path.join(dir, 'pres.dat'), 'w') as f:
             f.write('# time (s)\n# pressure (Pa)\n')
             f.write('\t'.join(['time'] + [time_series[0] for time_series in self.pressure_profile]))
             f.write('\t'.join(['pressure'] + [time_series[1] for time_series in self.pressure_profile]))
-        with open(os.path.join(dir, 'height.dat')) as f:
+        with open(os.path.join(dir, 'height.dat'), 'w') as f:
             f.write('# time (s)\n# height (m)\n')
             f.write('\t'.join(['time'] + [time_series[0] for time_series in self.height_profile]))
             f.write('\t'.join(['height'] + [time_series[1] for time_series in self.height_profile]))
@@ -290,7 +292,7 @@ files, with a main input <prefix>.spec file"""
         # gas_emit.dat, gas_back.dat
         gas_emission_species = [self.emissions[0].time_series[1].keys()]
         gas_emission_species.remove('rate')
-        with open(os.path.join(dir, 'gas_emit.dat')) as f:
+        with open(os.path.join(dir, 'gas_emit.dat'), 'w') as f:
             f.write('# time (s)\n# rate = scaling parameter\n# emissions (mol m^{-2} s^{-1})\n')
             f.write('\t'.join(['time'] + [time_series[0] for time_series in self.emissions]))
             f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in self.emissions]))
@@ -299,7 +301,7 @@ files, with a main input <prefix>.spec file"""
                               for time_series in self.emissions]))
         gas_background_species = [self.gas_background[0].time_series[1].keys()]
         gas_emission_species.remove('rate')
-        with open(os.path.join(dir, 'gas_back.dat')) as f:
+        with open(os.path.join(dir, 'gas_back.dat'), 'w') as f:
             f.write('# time (s)\n# rate (s^{-1})\n# concentrations (ppb)\n')
             f.write('\t'.join(['time'] + [time_series[0] for time_series in self.gas_background]))
             f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in self.gas_background]))
@@ -308,7 +310,7 @@ files, with a main input <prefix>.spec file"""
                               for time_series in self.gas_background]))
 
         # aero_emit.dat, aero_emit_dist_*.dat, aero_emit_comp_*.dat
-        with open(os.path.join(dir, 'aero_emit.dat')) as f:
+        with open(os.path.join(dir, 'aero_emit.dat'), 'w') as f:
             f.write('# time (s)\n# rate (s^{-1})\n# aerosol distribution filename\n')
             f.write('\t'.join(['time'] + [time_series[0] for time_series in self.aero_emissions]))
             f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in self.aero_emissions]))
@@ -317,7 +319,7 @@ files, with a main input <prefix>.spec file"""
             self._write_aero_modes(f'aero_emit_dist_{i+1}', self.aero_emissions)
 
         # aero_back.dat, aero_back_dist.dat, aero_back_comp.dat
-        with open(os.path.join(dir, 'aero_back.dat')) as f:
+        with open(os.path.join(dir, 'aero_back.dat'), 'w') as f:
             f.write('# time (s)\n# rate (s^{-1})\n# aerosol distribution filename\n')
             f.write('\t'.join(['time'] + [time_series[0] for time_series in self.aero_background]))
             f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in self.aero_background]))
@@ -325,28 +327,62 @@ files, with a main input <prefix>.spec file"""
         for i, time_series in enumerate(self.aero_background):
             self._write_aero_modes(f'aero_back_dist_{i+1}', self.aero_background)
 
-def _partmc_input(processes: AerosolProcesses,
+def _partmc_input(run_type: str,
+                  processes: AerosolProcesses,
                   scenario: Scenario,
                   dt: float,
                   nstep: int) -> PartMCInput:
     if not isinstance(scenario.size, AerosolModalSizeState):
         raise TypeError('Non-modal aerosol particle size state cannot be used to create MAM4 input!')
+    aero_data = ('a','b', 'c') # FIXME:
+    aero_init = (1,2,3) # FIXME:
     return PartMCInput(
-        run_type = 'particle',
+        run_type = run_type,
         output_prefix = 'partmc', # FIXME: we need something better here
+
         restart = False,
         do_select_weighting = False,
+
         t_max = nstep * dt,
         del_t = dt,
         t_output = 0,
         t_progress = 0,
+
         do_camp_chem = False,
+
         gas_data = tuple([gas.name for gas in scenario.gases]),
         gas_init = tuple([gas_conc for gas_conc in scenario.gas_concs]),
-    )
-    # FIXME: do this
 
-def create_partmc_input(processes: AerosolProcesses,
+        aerosol_data = aero_data,
+        do_fractal = False,
+        aerosol_init = aero_init,
+
+        temp_profile = [(0, scenario.temperature)],
+        pressure_profile = [(0, scenario.pressure)],
+        height_profile = [(0, scenario.height)],
+
+        rel_humidity = scenario.relative_humidity,
+        latitude = 0.0,   # FIXME:
+        longitude = 0.0,  # FIXME:
+        altitude = 10000, # FIXME:
+        start_time = 0,   # FIXME:
+        start_day = 0,   # FIXME:
+
+        do_coagulation = processes.coagulation,
+        do_condensation = processes.condensation,
+        do_mosaic = processes.mosaic,
+        do_optical = processes.optical,
+        do_nucleation = processes.nucleation,
+
+        rand_init = 0, # FIXME: uses time to initialize random seed
+        allow_doubling = False,
+        allow_halving = False,
+        record_removals = False,
+        do_parallel = False,
+    )
+
+def create_partmc_input(run_type: str,
+                        processes: AerosolProcesses,
                         scenario: Scenario,
                         dt: float,
                         nstep: int) -> PartMCInput:
@@ -354,19 +390,23 @@ def create_partmc_input(processes: AerosolProcesses,
 that can create a namelist input file for a PartMC box model simulation
 
 Parameters:
+    * run_type: the type of particle size distribution ('particle', 'analytic', 'sectional')
     * processes: an ambrs.AerosolProcesses object that defines the aerosol
       processes under consideration
     * scenario: an ambrs.Scenario object created by sampling a modal particle
       size distribution
     * dt: a fixed time step size for simulations
     * nsteps: the number of steps in each simulation"""
+    if run_type != 'particle':
+        raise ValueError(f"Unsupported run_type: {run_type} (only 'particle' is supported)")
     if dt <= 0.0:
         raise ValueError("dt must be positive")
     if nstep <= 0:
         raise ValueError("nstep must be positive")
-    return _partmc_input(processes, scenario, dt, nstep)
+    return _partmc_input(run_type, processes, scenario, dt, nstep)
 
-def create_partmc_inputs(processes: AerosolProcesses,
+def create_partmc_inputs(run_type: str,
+                         processes: AerosolProcesses,
                          ensemble: Ensemble,
                          dt: float,
                          nstep: int) -> list[PartMCInput]:
@@ -374,12 +414,15 @@ def create_partmc_inputs(processes: AerosolProcesses,
 objects that can create namelist input files for PartMC box model simulations
 
 Parameters:
+    * run_type: the type of particle size distribution ('particle', 'analytic', 'sectional')
     * processes: an ambrs.AerosolProcesses object that defines the aerosol
       processes under consideration
     * ensemble: a ppe.Ensemble object created by sampling a modal particle size
       distribution
     * dt: a fixed time step size for simulations
     * nsteps: the number of steps in each simulation"""
+    if run_type != 'particle':
+        raise ValueError(f"Unsupported run_type: {run_type} (only 'particle' is supported)")
     if not isinstance(ensemble.size, AerosolModalSizePopulation):
         raise TypeError("ensemble must have a modal size distribution!")
     if dt <= 0.0:
@@ -388,5 +431,5 @@ Parameters:
         raise ValueError("nstep must be positive")
     inputs = []
     for scenario in ensemble:
-        inputs.append(_partmc_input(processes, scenario, dt, nstep))
+        inputs.append(_partmc_input(run_type, processes, scenario, dt, nstep))
     return inputs
