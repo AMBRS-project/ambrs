@@ -31,6 +31,8 @@ class TestEnsemble(unittest.TestCase):
     def setUp(self):
         self.n = 100
         self.ref_scenario = Scenario(
+            aerosols = (so4, soa, ncl),
+            gases = (so2, h2so4, soag),
             size = aerosol.AerosolModalSizeState(
                 modes = (
                     aerosol.AerosolModeState(
@@ -42,6 +44,7 @@ class TestEnsemble(unittest.TestCase):
                     ),
                 ),
             ),
+            gas_concs = (1e4, 1e5, 1e6),
             flux = 0.0,
             relative_humidity = 0.5,
             temperature = 298.0,
@@ -49,6 +52,8 @@ class TestEnsemble(unittest.TestCase):
             height = h0,
         )
         self.ensemble = ppe.Ensemble(
+            aerosols = (so4, soa, ncl),
+            gases = (so2, h2so4, soag),
             size = aerosol.AerosolModalSizePopulation(
                 modes = (
                     aerosol.AerosolModePopulation(
@@ -64,6 +69,7 @@ class TestEnsemble(unittest.TestCase):
                     ),
                 ),
             ),
+            gas_concs = tuple([np.full(self.n, gas_conc) for gas_conc in self.ref_scenario.gas_concs]),
             flux = np.full(self.n, self.ref_scenario.flux),
             relative_humidity = np.full(self.n, self.ref_scenario.relative_humidity),
             temperature = np.full(self.n, self.ref_scenario.temperature),
@@ -94,6 +100,8 @@ class TestSampling(unittest.TestCase):
         self.n = 100
         self.ensemble_spec = ppe.EnsembleSpecification(
             name = 'mam4_ensemble',
+            aerosols = (so4, pom, soa, bc, dst, ncl),
+            gases = (so2, h2so4, soag),
             size = aerosol.AerosolModalSizeDistribution(
                 modes = [
                     aerosol.AerosolModeDistribution(
@@ -147,6 +155,7 @@ class TestSampling(unittest.TestCase):
                     ),
                 ],
             ),
+            gas_concs = tuple([scipy.stats.uniform(1e5, 1e6) for g in range(3)]),
             flux = scipy.stats.loguniform(1e-2*1e-9, 1e1*1e-9),
             relative_humidity = scipy.stats.loguniform(1e-5, 0.99),
             temperature = scipy.stats.uniform(240, 310),
