@@ -18,17 +18,47 @@ class PartMCAeroData:
     molecular_weight: float # molecular weight [kg/mol]
     kappa: float            # "kappa" [-]
 
+@dataclass 
+class PartMCAeroSizeDistribution:
+    diam: tuple[float, ...] # diameters of bin edges [m]
+    num_conc: tuple[float, ...] # total number concentrations of particles in bins [m^{-3}]
+
 @dataclass
 class PartMCAeroMode:
-    mode_name: str              # name of aerosol mode
-    mass_frac: Dict[str, float] # mapping of modal species names to mass fractions
-    diam_type: str              # type of diameter specified (e.g. 'geometric')
-    mode_type: str              # type of distribution (e.g. 'log_normal')
-    num_conc: float             # modal number concentration [#/m^-3]
+    mode_name: str  # name of aerosol mode
+    mass_frac: Dict[str, float | tuple[float, float]]
+                    # mapping of modal species names to mass fractions (and possibly also std deviations)
+    diam_type: str  # type of diameter specified ('geometric', 'mobility')
+    mode_type: str  # type of distribution ('log_normal', 'exp', 'mono', 'sampled')
 
-    # geometric diameter parameters
+    #----------------------
+    # diam_type parameters
+    #----------------------
+
+    # mobility
+    temp: Optional[float] = None # temperature at which mobility diameters were measured [K]
+    pressure: Optional[float] = None # pressure at which mobility diameters were measured [Pa]
+
+    #----------------------
+    # mode_type parameters
+    #----------------------
+
+    # log_normal, exp, mono
+    num_conc: float = None                     # modal number concentration [#/m^-3]
+
+    # log_normal
     geom_mean_diam: Optional[float] = None     # modal geometric mean diameter
     log10_geom_std_dev: Optional[float] = None # log_10 of geometric std dev of diameter
+
+    # exp
+    diam_at_mean_vol: Optional[float] = None   # the diameter corresponding to the mean volume [m]
+
+    # mono
+    radius: Optional[float] = None             # the radius R0 for which 2*R0 = D0 [m]
+
+    # sampled
+    size_dist: Optional[PartMCAeroSizeDistribution] = None # aerosol size distribution
+
 
 # time series data types
 type ScalarTimeSeries = list[tuple[float, float], ...] # list of (t, value) pairs
@@ -55,8 +85,7 @@ class PartMCInput:
     do_camp_chem: bool          # whether to use CAMP for chemistry
 
     gas_data: tuple[str, ...]   # tuple of gas species names
-    gas_init: dict[str, float]  # dict of initial gas concentrations (keys are
-                                # gas species names)
+    gas_init: tuple[float, ...] # initial gas concentrations (ordered like gas_data)
 
     aerosol_data: tuple[PartMCAeroData, ...] # tuple of aerosol data
     do_fractal: bool                         # whether to do fractal treatment
@@ -234,8 +263,8 @@ files, with a main input <prefix>.spec file"""
                 f.write(f'{gas}\n')
         with open(os.path.join(dir, 'gas_init.dat')) as f:
             f.write('# species\tinitial concentration (ppb)\n')
-            for species, conc in self.gas_init.items():
-                f.write(f'{species}\t{conc}\n')
+            for g in range(len(self.gas_data)):
+                f.write(f'{self.gas_init[g]}\t{self.gas_data[g]}\n')
 
         # aero_data.dat, aero_init_dist.dat, aero_init_comp.dat
         with open(os.path.join(dir, 'aero_data.dat')) as f:
@@ -302,6 +331,19 @@ def _partmc_input(processes: AerosolProcesses,
                   nstep: int) -> PartMCInput:
     if not isinstance(scenario.size, AerosolModalSizeState):
         raise TypeError('Non-modal aerosol particle size state cannot be used to create MAM4 input!')
+    return PartMCInput(
+        run_type = 'particle',
+        output_prefix = 'partmc', # FIXME: we need something better here
+        restart = False,
+        do_select_weighting = False,
+        t_max = nstep * dt,
+        del_t = dt,
+        t_output = 0,
+        t_progress = 0,
+        do_camp_chem = False,
+        gas_data = tuple([gas.name for gas in scenario.gases]),
+        gas_init = tuple([gas_conc for gas_conc in scenario.gas_concs]),
+    )
     # FIXME: do this
 
 def create_partmc_input(processes: AerosolProcesses,

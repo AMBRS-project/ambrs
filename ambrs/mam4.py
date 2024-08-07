@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from .aerosol import AerosolProcesses, AerosolModalSizePopulation, \
                      AerosolModalSizeState
+from .gas import GasSpecies
 from .scenario import Scenario
 from .ppe import Ensemble
 
@@ -141,6 +142,15 @@ def _mam4_input(processes: AerosolProcesses,
         raise TypeError('Non-modal aerosol particle size state cannot be used to create MAM4 input!')
     if len(scenario.size.modes) != 4:
         raise TypeError(f'{len(scenario.size.mode)}-mode aerosol particle size state cannot be used to create MAM4 input!')
+    iso2 = GasSpecies.find(scenario.gases, 'so2')
+    if iso2 == -1:
+        raise ValueError("SO2 gas ('so2') not found in gas species")
+    ih2so4 = GasSpecies.find(scenario.gases, 'h2so4')
+    if ih2so4 == -1:
+        raise ValueError("H2SO4 gas ('h2so4') not found in gas species")
+    isoag = GasSpecies.find(scenario.gases, 'soag')
+    if isoag == -1:
+        raise ValueError("SOAG gas ('soag') not found in gas species")
     return MAM4Input(
         mam_dt = dt,
         mam_nstep = nstep,
@@ -181,10 +191,9 @@ def _mam4_input(processes: AerosolProcesses,
         mfpom4 = scenario.size.modes[3].mass_fraction("pom"),
         mfbc4  = scenario.size.modes[3].mass_fraction("bc"),
 
-        # FIXME: what to do about gases?
-        qso2 = 0,
-        qh2so4 = 0,
-        qsoag = 0,
+        qso2 = scenario.gas_concs[iso2],
+        qh2so4 = scenario.gas_concs[ih2so4],
+        qsoag = scenario.gas_concs[isoag],
      )
 
 def create_mam4_input(processes: AerosolProcesses,

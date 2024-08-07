@@ -35,6 +35,8 @@ class TestMAM4Input(unittest.TestCase):
         self.n = 100
         self.ensemble_spec = ppe.EnsembleSpecification(
             name = 'mam4_ensemble',
+            aerosols = (so4, pom, soa, bc, dst, ncl),
+            gases = (so2, h2so4, soag),
             size = aerosol.AerosolModalSizeDistribution(
                 modes = [
                     aerosol.AerosolModeDistribution(
@@ -88,6 +90,7 @@ class TestMAM4Input(unittest.TestCase):
                     ),
                 ],
             ),
+            gas_concs = (scipy.stats.loguniform(1e5, 1e6) for g in range(3)),
             flux = scipy.stats.loguniform(1e-2*1e-9, 1e1*1e-9),
             relative_humidity = scipy.stats.loguniform(1e-5, 0.99),
             temperature = scipy.stats.uniform(240, 310),

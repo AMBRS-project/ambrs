@@ -18,6 +18,7 @@ from .aerosol import \
     AerosolModalSizeState, AerosolModeState, AerosolModePopulation, \
     AerosolModalSizeDistribution, AerosolModalSizePopulation, AerosolSpecies, \
     RVFrozenDistribution
+from .gas import GasSpecies
 from .scenario import Scenario
 
 @dataclass(frozen=True)
@@ -25,7 +26,10 @@ class EnsembleSpecification:
     """EnsembleSpecification: a set of distributions from which members of a
 PPE are sampled"""
     name: str
+    aerosols: tuple[AerosolSpecies, ...]
+    gases: tuple[GasSpecies, ...]
     size: AerosolModalSizeDistribution
+    gas_concs: tuple[RVFrozenDistribution, ...] # ordered like gases
     flux: RVFrozenDistribution
     relative_humidity: RVFrozenDistribution
     temperature: RVFrozenDistribution
@@ -36,7 +40,10 @@ PPE are sampled"""
 class Ensemble:
     """Ensemble: an ensemble defined by values sampled from the distributions of
 a specific EnsembleSpecification"""
+    aerosols: tuple[AerosolSpecies, ...]
+    gases: tuple[GasSpecies, ...]
     size: AerosolModalSizePopulation
+    gas_concs: tuple[np.array, ...] # ordered like gases
     flux: np.array
     relative_humidity: np.array
     temperature: np.array
@@ -54,7 +61,10 @@ a specific EnsembleSpecification"""
     def member(self, i: int) -> Scenario:
         """ensemble.member(i) -> extracts Scenario from ith ensemble member"""
         return Scenario(
+            aerosols = self.aerosols,
+            gases = self.gases,
             size = self.size.member(i),
+            gas_concs = tuple([conc[i] for conc in self.gas_concs]),
             flux = self.flux[i],
             relative_humidity = self.relative_humidity[i],
             temperature = self.temperature[i],
@@ -100,10 +110,16 @@ specified scenarios (which must all have the same particle size representation)"
         size = AerosolModalSizePopulation(
             modes = tuple(modes),
         )
-    if not size:
+    else:
         raise TypeError("Invalid particle size information in scenarios!")
+    gas_concs = []
+    for g in range(len(scenarios[0].gas_concs)):
+        gas_concs.append(np.array([scenario.gas_concs[g] for scenario in scenarios]))
     return Ensemble(
+        aerosols = scenarios[0].aerosols,
+        gases = scenarios[0].gases,
         size = size,
+        gas_concs = tuple(gas_concs),
         flux = flux,
         relative_humidity = relative_humidity,
         temperature = temperature,
@@ -134,8 +150,11 @@ def sample(specification: EnsembleSpecification, n: int) -> Ensemble:
             factor = sum([mass_fraction for mass_fraction in mode.mass_fractions])
             mode.mass_fractions = tuple([mf/factor for mf in mode.mass_fractions])
     return Ensemble(
+        aerosols = specification.aerosols,
+        gases = specification.gases,
         specification = specification,
         size = size,
+        gas_concs = tuple([gas_conc.rvs(n) for gas_conc in specification.gas_concs]),
         flux = specification.flux.rvs(n),
         relative_humidity = specification.relative_humidity.rvs(n),
         temperature = specification.temperature.rvs(n),
@@ -151,7 +170,8 @@ def lhs(specification: EnsembleSpecification,
 generated from latin hypercube sampling applied to the given specification. The
 optional arguments are passed along to pyDOE's lhs function, which creates the
 distribution from which ensemble members are sampled."""
-    n_factors = 3 # size-independent factors: flux + relative_humidity + temperature
+    num_gases = len(specification.gases)
+    n_factors = num_gases + 3 # size-independent factors: num_gases + flux + relative_humidity + temperature
     lhd = None # latin hypercube distribution (created depending on particle
                # size representation)
     size = None
@@ -178,9 +198,15 @@ distribution from which ensemble members are sampled."""
         for mode in size.modes:
             factor = sum([mass_fraction for mass_fraction in mode.mass_fractions])
             mode.mass_fractions = tuple([mf/factor for mf in mode.mass_fractions])
+    gas_concs = []
+    for g, gas_conc in enumerate(specification.gas_concs):
+        gas_concs.append(gas_conc.ppf(lhd[:,-3-(num_gases-g)]))
     return Ensemble(
+        aerosols = specification.aerosols,
+        gases = specification.gases,
         specification = specification,
         size = size,
+        gas_concs = tuple(gas_concs),
         flux = specification.flux.ppf(lhd[:,-3]),
         relative_humidity = specification.relative_humidity.ppf(lhd[:,-2]),
         temperature = specification.temperature.ppf(lhd[:,-1]),
@@ -258,6 +284,7 @@ If no sweep is specified for a given parameter, that parameter assumes a
 value specified by the reference_state passed to the sweep function.
 """
     size: Optional[AerosolModalSizeParameterSweeps] = None
+    gas_concs: Optional[tuple[LinearParameterSweep | LogarithmicParameterSweep, ...]] = None
     flux: Optional[LinearParameterSweep | LogarithmicParameterSweep] = None
     relative_humidity: Optional[LinearParameterSweep | LogarithmicParameterSweep] = None
     temperature: Optional[LinearParameterSweep | LogarithmicParameterSweep] = None
@@ -303,7 +330,13 @@ parameter sweeps"""
             factors = modal_size_factors(reference_state.size, sweeps.size)
     else:
         raise TypeError(f'sweep: Unsupported particle size representation: {reference_state.size.__class__}')
-
+    if sweeps.gas_concs:
+        for i in range(len(sweeps.gas_concs[0])):
+            factors.append([c[i] for c in sweeps.gas_concs])
+    else:
+        print(reference_state.gas_concs)
+        for c in range(len(reference_state.gas_concs)):
+            factors.append([reference_state.gas_concs[c]])
     if sweeps.flux:
         factors.append([F for F in sweeps.flux])
     else:
@@ -320,10 +353,11 @@ parameter sweeps"""
     # form all parameter combinations to populate an ensemble
     all_params = list(itertools.product(*factors))
     members = []
-    if isinstance(reference_state.size, AerosolModalSizeState):
-        for params in all_params:
+    for params in all_params:
+        index = 0
+        size = None
+        if isinstance(reference_state.size, AerosolModalSizeState):
             mode_states = []
-            index = 0
             for mode in reference_state.size.modes:
                 num_species = len(mode.species)
                 mass_fractions = [params[index+2+s] for s in range(num_species)]
@@ -337,19 +371,27 @@ parameter sweeps"""
                     ),
                 )
                 index += 2 + num_species
-            member = Scenario(
-                size = AerosolModalSizeState(
-                    modes = mode_states,
-                ),
-                flux = params[index],
-                relative_humidity = params[index + 1],
-                temperature = params[index + 2],
-                pressure = reference_state.pressure,
-                height = reference_state.height,
+            size = AerosolModalSizeState(
+                modes = mode_states,
             )
-            index += 3
-            members.append(member)
-    else:
-        raise TypeError(f'Unsupported particle size state: {reference_state.size.__class__}')
+        else:
+            raise TypeError(f'Unsupported particle size state: {reference_state.size.__class__}')
+        gas_concs = []
+        for g in range(len(reference_state.gas_concs)):
+            gas_concs.append(params[index + g])
+        index += len(gas_concs)
+        member = Scenario(
+            aerosols = reference_state.aerosols,
+            gases = reference_state.gases,
+            size = size,
+            gas_concs = tuple(gas_concs),
+            flux = params[index],
+            relative_humidity = params[index + 1],
+            temperature = params[index + 2],
+            pressure = reference_state.pressure,
+            height = reference_state.height,
+        )
+        index += 3
+        members.append(member)
 
     return ensemble_from_scenarios(members)
