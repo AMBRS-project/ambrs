@@ -155,9 +155,8 @@ class TestPartMCInput(unittest.TestCase):
         dt = 4.0
         nstep = 100
         input = partmc.create_partmc_input('particle', processes, scenario, dt, nstep)
-        prefix = 'partmc'
         temp_dir = tempfile.TemporaryDirectory()
-        input.write_files(temp_dir.name)
+        input.write_files(temp_dir.name, 'partmc')
         self.assertTrue(os.path.exists(os.path.join(temp_dir.name, 'partmc.spec')))
         temp_dir.cleanup()
 
