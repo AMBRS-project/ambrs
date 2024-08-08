@@ -27,10 +27,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           submodules: recursive
 
-      - name: Setting up Python 3.10 (${{ matrix.os }})
+      - name: Setting up Python 3.12 (${{ matrix.os }})
         uses: actions/setup-python@v5.1.1
         with:
-          python-version: "3.10"
+          python-version: "3.12"
 
       - name: Installing ambrs dependencies (${{ matrix.os }})
         run: python3 -m pip install -r requirements.txt
