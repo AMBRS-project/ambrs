@@ -72,7 +72,6 @@ class PartMCInput:
     # in the .spec scenario file for the PartMC box model
 
     run_type: str               # particle, analytic, sectional
-    output_prefix: str          # prefix of output files
 
     restart:  bool              # whether to restart from saved state
     do_select_weighting: bool   # whether to select weighting explicitly
@@ -154,14 +153,15 @@ class PartMCInput:
                 for species, mass_frac in mode.mass_frac.items():
                     f.write(f'{species}\t{mass_frac}\n')
 
-    def write_files(self, dir):
-        """input.write_files(dir) -> writes a set of PartMC box model input
-files to the given directory"""
+    def write_files(self, dir, prefix):
+        """input.write_files(dir, prefix) -> writes a set of PartMC box model
+input files to the given directory with the given prefix for the main .spec
+file"""
         if not os.path.exists(dir):
             raise OSError(f'Directory not found: {dir}')
 
         # write the main (.spec) file
-        spec_content = f'run_type {self.run_type}\noutput_prefix {self.output_prefix}\n'
+        spec_content = f'run_type {self.run_type}\noutput_prefix {prefix}\n'
 
         if self.run_type == 'particle':
             spec_content += f'n_repeat {self.n_repeat}\nn_part {self.n_part}\n'
@@ -253,7 +253,7 @@ files to the given directory"""
         else:
             spec_content += 'do_parallel no\n'
 
-        with open(os.path.join(dir, self.output_prefix + '.spec'), 'w') as f:
+        with open(os.path.join(dir, prefix + '.spec'), 'w') as f:
             f.write(spec_content)
 
         # write auxiliary data files
@@ -342,7 +342,6 @@ def _partmc_input(run_type: str,
     aero_init = []
     return PartMCInput(
         run_type = run_type,
-        output_prefix = 'partmc', # FIXME: we need something better here
 
         restart = False,
         do_select_weighting = False,
