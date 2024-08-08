@@ -9,7 +9,7 @@ import numpy as np
 import scipy.stats
 
 from dataclasses import dataclass
-from typing import TypeVar
+from typing import Optional, TypeVar
 
 # this type represents a frozen scipy.stats.rv_continous distribution
 # (this frozen type isn't made available by the scipy.stats package)
@@ -21,15 +21,18 @@ class AerosolProcesses:
     # processes that can be enabled/disabled
     aging: bool = False
     coagulation: bool = False
+    condensation: bool = False
     mosaic: bool = False
+    optical: bool = False
     nucleation: bool = False
 
 @dataclass(frozen=True)
 class AerosolSpecies:
     """AerosolSpecies: the definition of an aerosol species in terms of species-
 specific parameters (no state information)"""
-    name: str          # name of the species
-    molar_mass: float  # [g/mol]
+    name: str           # name of the species
+    molar_mass: float   # [g/mol]
+    aliases: Optional[tuple[str, ...]] = None # tuple of alternative species names
 
 #----------------------------
 # Modal aerosol descriptions
