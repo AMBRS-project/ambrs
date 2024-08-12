@@ -160,6 +160,20 @@ class TestMAM4Input(unittest.TestCase):
         self.assertTrue(abs(scenario.size.modes[3].mass_fractions[0] - input.mfpom4) < 1e-12)
         self.assertTrue(abs(scenario.size.modes[3].mass_fractions[1] - input.mfbc4)  < 1e-12)
 
+        # test that passing invalid parameters raises exceptions appropriately
+        bad_scenario = scenario
+        bad_scenario.size = None
+        bad_args = [processes, bad_scenario, dt, nstep]
+        self.assertRaises(TypeError, mam4.create_mam4_input, *bad_args)
+
+        bad_dt = 0
+        bad_args = [processes, scenario, bad_dt, nstep]
+        self.assertRaises(ValueError, mam4.create_mam4_input, *bad_args)
+
+        bad_nstep = 0
+        bad_args = [processes, scenario, dt, bad_nstep]
+        self.assertRaises(ValueError, mam4.create_mam4_input, *bad_args)
+
     def test_create_mam4_inputs(self):
         processes = aerosol.AerosolProcesses(
             aging = True,
@@ -222,6 +236,30 @@ class TestMAM4Input(unittest.TestCase):
             self.assertEqual('primary carbon', scenario.size.modes[3].name)
             self.assertTrue(abs(scenario.size.modes[3].mass_fractions[0] - input.mfpom4) < 1e-12)
             self.assertTrue(abs(scenario.size.modes[3].mass_fractions[1] - input.mfbc4)  < 1e-12)
+
+        # test that passing invalid parameters raises exceptions appropriately
+        bad_ensemble = ppe.Ensemble(
+            aerosols = self.ensemble.aerosols,
+            gases = self.ensemble.gases,
+            size = None,
+            gas_concs = self.ensemble.gas_concs,
+            flux = self.ensemble.flux,
+            relative_humidity = self.ensemble.relative_humidity,
+            temperature = self.ensemble.temperature,
+            pressure = self.ensemble.pressure,
+            height = self.ensemble.height,
+            specification = self.ensemble.specification,
+        )
+        bad_args = [processes, bad_ensemble, dt, nstep]
+        self.assertRaises(TypeError, mam4.create_mam4_inputs, *bad_args)
+
+        bad_dt = 0
+        bad_args = [processes, self.ensemble, bad_dt, nstep]
+        self.assertRaises(ValueError, mam4.create_mam4_inputs, *bad_args)
+
+        bad_nstep = 0
+        bad_args = [processes, self.ensemble, dt, bad_nstep]
+        self.assertRaises(ValueError, mam4.create_mam4_inputs, *bad_args)
 
     def test_write_namelist(self):
         processes = aerosol.AerosolProcesses(
