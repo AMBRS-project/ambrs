@@ -8,6 +8,8 @@ from .gas import GasSpecies
 from .scenario import Scenario
 from .ppe import Ensemble
 
+import os.path
+
 @dataclass
 class MAM4Input:
     """MAM4Input -- represents input for a single MAM4 box model simulation"""
@@ -76,9 +78,9 @@ class MAM4Input:
     qh2so4: float
     qsoag: float
 
-    def write_namelist(self, filename):
-        """input.write_namelist(filename) -> writes a MAM4 box model namelist
-file with the given name"""
+    def write_files(self, dir, prefix):
+        """input.write_files(dir, prefix) -> writes MAM4 box model input files
+to the given directory with the given prefix"""
         content = f"""
 &time_input
   mam_dt         = {self.mam_dt},
@@ -131,6 +133,9 @@ file with the given name"""
   qsoag          = {self.qsoag},
 /
 """
+        if not os.path.exists(dir):
+            raise OSError(f'Directory not found: {dir}')
+        filename = os.path.join(dir, f'{prefix}.nl')
         with open(filename, 'w') as f:
             f.write(content)
 
