@@ -10,6 +10,7 @@ import math
 import numpy as np
 import os, os.path
 import scipy.stats
+import tempfile
 import unittest
 
 # relevant aerosol and gas species
@@ -261,7 +262,7 @@ class TestMAM4Input(unittest.TestCase):
         bad_args = [processes, self.ensemble, dt, bad_nstep]
         self.assertRaises(ValueError, mam4.create_mam4_inputs, *bad_args)
 
-    def test_write_namelist(self):
+    def test_write_files(self):
         processes = aerosol.AerosolProcesses(
             aging = True,
             coagulation = True,
@@ -270,10 +271,10 @@ class TestMAM4Input(unittest.TestCase):
         dt = 4.0
         nstep = 100
         input = mam4.create_mam4_input(processes, scenario, dt, nstep)
-        input_file = 'mam4_input.nl'
-        input.write_namelist(input_file)
-        self.assertTrue(os.path.exists(input_file))
-        os.remove(input_file)
+        temp_dir = tempfile.TemporaryDirectory()
+        input.write_files(temp_dir.name, 'mam4_input')
+        self.assertTrue(os.path.exists(os.path.join(temp_dir.name, 'mam4_input.nl')))
+        temp_dir.cleanup()
 
 if __name__ == '__main__':
     unittest.main()
