@@ -8,7 +8,7 @@ import ambrs.mam4 as mam4
 
 import math
 import numpy as np
-import os, os.path
+import os
 import scipy.stats
 import tempfile
 import unittest
