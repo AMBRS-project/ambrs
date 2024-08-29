@@ -160,9 +160,9 @@ def _mam4_input(processes: AerosolProcesses,
         mam_dt = dt,
         mam_nstep = nstep,
 
-        mdo_gaschem = False,
-        mdo_gasaerexch = False,
-        mdo_rename = False,
+        mdo_gaschem = process.gas_phase_chemistry,
+        mdo_gasaerexch = processes.condensation,
+        mdo_rename = True,
         mdo_newnuc = processes.nucleation,
         mdo_coag = processes.coagulation,
 

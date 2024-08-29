@@ -20,10 +20,11 @@ class AerosolProcesses:
     """AerosolProcesses: a definition of a set of aerosol processes under consideration"""
     # processes that can be enabled/disabled
     aging: bool = False
+    aqueous_chemistry: bool = False
     coagulation: bool = False
     condensation: bool = False
-    mosaic: bool = False
-    optical: bool = False
+    gas_phase_chemistry: bool = False
+    optics: bool = False
     nucleation: bool = False
 
 @dataclass(frozen=True)
