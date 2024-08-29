@@ -1,10 +1,23 @@
-import ambrs
-import scipy.stats
+# This script attempts to reproduce the ensembles for MAM4 and PartMC from
+# Fierce et al, _Quantifying_structural_errors_in_cloud_condensation_nuclei_
+# activity_from_reduced_representation_of_aerosol_size_distributions_,
+# J. Aerosol Science 181 (2024) 106388 (https://doi.org/10.1016/j.jaerosci.2024.106388)
+#
+# The reproduction is approximate because this script does not sample size
+# distribution parameters from E3SM.
 
-# aerosol processes under consideration (all are off by default)
+import ambrs
+import scipy.stats as stats
+
+# aerosol processes under consideration
 processes = ambrs.AerosolProcesses(
     coagulation = True,
+    condensation = True,
 )
+
+# simulation parameters
+dt    = 60          # time step size [s]
+nstep = 1440        # number of steps [-]
 
 # relevant aerosol and gas species
 so4 = ambrs.AerosolSpecies(name='so4')
@@ -18,8 +31,7 @@ so2   = ambrs.GasSpecies(name='so2')
 h2so4 = ambrs.GasSpecies(name='h2so4')
 soag  = ambrs.GasSpecies(name='soag')
 
-# specify all the distributions to sample in the creation of an ensemble
-# (taken roughly from get_lhs_ensemble_settings in ensemble_maker.py)
+# specify distributions sampled for the ensemble
 spec = ambrs.EnsembleSpecification(
     name = 'demo',
     size = ambrs.AerosolModalSizeDistribution(
@@ -27,56 +39,56 @@ spec = ambrs.EnsembleSpecification(
             ambrs.AerosolModeDistribution(
                 name = "accumulation",
                 species = [so4, pom, soa, bc, dst, ncl],
-                number = scipy.stats.loguniform(3e7, 2e12),
-                geom_mean_diam = scipy.stats.loguniform(0.5e-7, 1.1e-7),
+                number = stats.loguniform(3e7, 2e12),
+                geom_mean_diam = stats.loguniform(0.5e-7, 1.1e-7),
                 mass_fractions = [
-                    scipy.stats.uniform(0, 1), # so4
-                    scipy.stats.uniform(0, 1), # pom
-                    scipy.stats.uniform(0, 1), # soa
-                    scipy.stats.uniform(0, 1), # bc
-                    scipy.stats.uniform(0, 1), # dst
-                    scipy.stats.uniform(0, 1), # ncl
+                    stats.uniform(0, 1), # so4
+                    stats.uniform(0, 1), # pom
+                    stats.uniform(0, 1), # soa
+                    stats.uniform(0, 1), # bc
+                    stats.uniform(0, 1), # dst
+                    stats.uniform(0, 1), # ncl
                 ],
             ),
             ambrs.AerosolModeDistribution(
                 name = "aitken",
                 species = [so4, soa, ncl],
-                number = scipy.stats.loguniform(3e7, 2e12),
-                geom_mean_diam = scipy.stats.loguniform(0.5e-8, 3e-8),
+                number = stats.loguniform(3e7, 2e12),
+                geom_mean_diam = stats.loguniform(0.5e-8, 3e-8),
                 mass_fractions = [
-                    scipy.stats.uniform(0, 1), # so4
-                    scipy.stats.uniform(0, 1), # soa
-                    scipy.stats.uniform(0, 1), # ncl
+                    stats.uniform(0, 1), # so4
+                    stats.uniform(0, 1), # soa
+                    stats.uniform(0, 1), # ncl
                 ],
             ),
             ambrs.AerosolModeDistribution(
                 name = "coarse",
                 species = [dst, ncl, so4, bc, pom, soa],
-                number = scipy.stats.loguniform(3e7, 2e12),
-                geom_mean_diam = scipy.stats.loguniform(1e-6, 2e-6),
+                number = stats.loguniform(3e7, 2e12),
+                geom_mean_diam = stats.loguniform(1e-6, 2e-6),
                 mass_fractions = [
-                    scipy.stats.uniform(0, 1), # dst
-                    scipy.stats.uniform(0, 1), # ncl
-                    scipy.stats.uniform(0, 1), # so4
-                    scipy.stats.uniform(0, 1), # bc
-                    scipy.stats.uniform(0, 1), # pom
-                    scipy.stats.uniform(0, 1), # soa
+                    stats.uniform(0, 1), # dst
+                    stats.uniform(0, 1), # ncl
+                    stats.uniform(0, 1), # so4
+                    stats.uniform(0, 1), # bc
+                    stats.uniform(0, 1), # pom
+                    stats.uniform(0, 1), # soa
                 ],
             ),
             ambrs.AerosolModeDistribution(
                 name = "primary carbon",
                 species = [pom, bc],
-                number = scipy.stats.loguniform(3e7, 2e12),
-                geom_mean_diam = scipy.stats.loguniform(1e-8, 6e-8),
+                number = stats.loguniform(3e7, 2e12),
+                geom_mean_diam = stats.loguniform(1e-8, 6e-8),
                 mass_fractions = [
-                    scipy.stats.uniform(0, 1), # pom
-                    scipy.stats.uniform(0, 1), # bc
+                    stats.uniform(0, 1), # pom
+                    stats.uniform(0, 1), # bc
                 ],
             ),
         ]),
-    flux = scipy.stats.loguniform(1e-2*1e-9, 1e1*1e-9),
-    relative_humidity = scipy.stats.loguniform(0, 0.99),
-    temperature = scipy.stats.uniform(240, 310),
+    flux = stats.loguniform(1e-2*1e-9, 1e1*1e-9),
+    relative_humidity = stats.loguniform(0, 0.99),
+    temperature = stats.uniform(240, 310),
 )
 
 # create an ensemble using latin hypercube sampling
