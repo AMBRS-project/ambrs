@@ -16,8 +16,8 @@ processes = ambrs.AerosolProcesses(
 )
 
 # simulation parameters
-dt    = 60          # time step size [s]
-nstep = 1440        # number of steps [-]
+dt    = 60   # time step size [s]
+nstep = 1440 # number of steps [-]
 
 # relevant aerosol and gas species
 so4 = ambrs.AerosolSpecies(name='so4')
@@ -99,7 +99,7 @@ ensemble = ambrs.lhs(specification = spec, n = n)
 mam4_inputs = ambrs.create_mam4_inputs(processes, ensemble)
 
 # create partmc inputs for each ensemble member
-n_particles = 10000
+n_particles = 5000
 partmc_inputs = ambrs.create_partmc_inputs(processes, ensemble, n_particles,
                                            ...)
 

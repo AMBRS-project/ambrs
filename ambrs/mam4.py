@@ -11,8 +11,8 @@ from .ppe import Ensemble
 import os.path
 
 @dataclass
-class MAM4Input:
-    """MAM4Input -- represents input for a single MAM4 box model simulation"""
+class Input:
+    """ambrs.mam4.Input -- represents input for a single MAM4 box model simulation"""
     # all fields here are named identically to their respective namelist
     # parameters in the MAM4 box model
 
@@ -142,7 +142,7 @@ to the given directory with the given prefix"""
 def _mam4_input(processes: AerosolProcesses,
                 scenario: Scenario,
                 dt: float,
-                nstep: int) -> MAM4Input:
+                nstep: int) -> Input:
     if not isinstance(scenario.size, AerosolModalSizeState):
         raise TypeError('Non-modal aerosol particle size state cannot be used to create MAM4 input!')
     if len(scenario.size.modes) != 4:
@@ -156,11 +156,11 @@ def _mam4_input(processes: AerosolProcesses,
     isoag = GasSpecies.find(scenario.gases, 'soag')
     if isoag == -1:
         raise ValueError("SOAG gas ('soag') not found in gas species")
-    return MAM4Input(
+    return Input(
         mam_dt = dt,
         mam_nstep = nstep,
 
-        mdo_gaschem = process.gas_phase_chemistry,
+        mdo_gaschem = processes.gas_phase_chemistry,
         mdo_gasaerexch = processes.condensation,
         mdo_rename = True,
         mdo_newnuc = processes.nucleation,
@@ -201,12 +201,13 @@ def _mam4_input(processes: AerosolProcesses,
         qsoag = scenario.gas_concs[isoag],
      )
 
-def create_mam4_input(processes: AerosolProcesses,
-                      scenario: Scenario,
-                      dt: float,
-                      nstep: int) -> MAM4Input:
-    """create_mam4_input(processes, scenario, dt, nstep) -> MAM4Input object
-that can create a namelist input file for a MAM4 box model simulation
+def create_input(processes: AerosolProcesses,
+                 scenario: Scenario,
+                 dt: float,
+                 nstep: int) -> Input:
+    """ambrs.mam4.create_input(processes, scenario, dt, nstep) ->
+ambrs.mam4.Input object that can create input files for a MAM4 box model
+simulation
 
 Parameters:
     * processes: an ambrs.AerosolProcesses object that defines the aerosol
@@ -221,12 +222,13 @@ Parameters:
         raise ValueError("nstep must be positive")
     return _mam4_input(processes, scenario, dt, nstep)
 
-def create_mam4_inputs(processes: AerosolProcesses,
-                       ensemble: Ensemble,
-                       dt: float,
-                       nstep: int) -> list[MAM4Input]:
-    """create_mam4_inputs(processes, ensemble, dt, nstep) -> list of MAM4Input
-objects that can create namelist input files for MAM4 box model simulations
+def create_inputs(processes: AerosolProcesses,
+                  ensemble: Ensemble,
+                  dt: float,
+                  nstep: int) -> list[Input]:
+    """ambrs.mam4.create_inputs(processes, ensemble, dt, nstep) -> list of
+ambrs.mam4.Input objects that can create input files for MAM4 box model
+simulations
 
 Parameters:
     * processes: an ambrs.AerosolProcesses object that defines the aerosol
