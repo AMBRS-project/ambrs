@@ -66,8 +66,8 @@ type DictTimeSeries = list[tuple[float, dict], ...] # list of (t, dict) pairs
 type AerosolModeTimeSeries = list[tuple[float, PartMCAeroMode], ...] # list of (t, mode) pairs
 
 @dataclass
-class PartMCInput:
-    """PartMCInput -- represents input for a single PartMC box model simulation"""
+class Input:
+    """ambrs.partmc.Input -- represents input for a single PartMC box model simulation"""
     # all fields here are named identically to their respective parameters
     # in the .spec scenario file for the PartMC box model
 
@@ -103,7 +103,7 @@ class PartMCInput:
 
     do_coagulation: bool        # whether to do coagulation
     do_condensation: bool       # whether to do condensation
-    do_mosaic: bool             # whether to do MOSAIC
+    do_mosaic: bool             # whether to use MOSAIC
     do_optical: bool            # whether to compute optical props
     do_nucleation: bool         # whether to do nucleation
 
@@ -331,17 +331,18 @@ file"""
             for i, time_series in enumerate(self.aero_background):
                 self._write_aero_modes(dir, f'aero_back_dist_{i+1}', self.aero_background)
 
-def _partmc_input(run_type: str,
-                  processes: AerosolProcesses,
-                  scenario: Scenario,
-                  dt: float,
-                  nstep: int) -> PartMCInput:
+def _particle_input(n_part: int,
+                    processes: AerosolProcesses,
+                    scenario: Scenario,
+                    dt: float,
+                    nstep: int) -> Input:
     if not isinstance(scenario.size, AerosolModalSizeState):
-        raise TypeError('Non-modal aerosol particle size state cannot be used to create MAM4 input!')
+        raise TypeError('Non-modal aerosol particle size state cannot be used to create PartMC input!')
     aero_data = []
     aero_init = []
-    return PartMCInput(
-        run_type = run_type,
+    return Input(
+        run_type = 'particle',
+        n_part = n_part,
 
         restart = False,
         do_select_weighting = False,
@@ -373,8 +374,8 @@ def _partmc_input(run_type: str,
 
         do_coagulation = processes.coagulation,
         do_condensation = processes.condensation,
-        do_mosaic = processes.mosaic,
-        do_optical = processes.optical,
+        do_mosaic = False,
+        do_optical = processes.optics,
         do_nucleation = processes.nucleation,
 
         rand_init = 0, # FIXME: uses time to initialize random seed
@@ -384,48 +385,50 @@ def _partmc_input(run_type: str,
         do_parallel = False,
     )
 
-def create_partmc_input(run_type: str,
-                        processes: AerosolProcesses,
-                        scenario: Scenario,
-                        dt: float,
-                        nstep: int) -> PartMCInput:
-    """create_partmc_input(processes, scenario, dt, nstep) -> PartMCInput object
-that can create a namelist input file for a PartMC box model simulation
+def create_particle_input(n_part: int,
+                          processes: AerosolProcesses,
+                          scenario: Scenario,
+                          dt: float,
+                          nstep: int) -> Input:
+    """ambrs.partmc.create_particle_input(n_part, scenario, dt, nstep) ->
+ambrs.partmc.Input object that can create input files for a particle-based box
+model simulation
 
 Parameters:
-    * run_type: the type of particle size distribution ('particle', 'analytic', 'sectional')
+    * n_part: the number of computational particles for the simulation
     * processes: an ambrs.AerosolProcesses object that defines the aerosol
       processes under consideration
     * scenario: an ambrs.Scenario object created by sampling a modal particle
       size distribution
     * dt: a fixed time step size for simulations
     * nsteps: the number of steps in each simulation"""
-    if run_type != 'particle':
-        raise ValueError(f"Unsupported run_type: {run_type} (only 'particle' is supported)")
+    if n_part <= 0:
+        raise ValueError(f"n_part must be positive")
     if dt <= 0.0:
         raise ValueError("dt must be positive")
     if nstep <= 0:
         raise ValueError("nstep must be positive")
-    return _partmc_input(run_type, processes, scenario, dt, nstep)
+    return _particle_input(n_part, processes, scenario, dt, nstep)
 
-def create_partmc_inputs(run_type: str,
-                         processes: AerosolProcesses,
-                         ensemble: Ensemble,
-                         dt: float,
-                         nstep: int) -> list[PartMCInput]:
-    """create_mam4_inputs(processes, ensemble, dt, nstep) -> list of PartMCInput
-objects that can create namelist input files for PartMC box model simulations
+def create_particle_inputs(n_part: int,
+                           processes: AerosolProcesses,
+                           ensemble: Ensemble,
+                           dt: float,
+                           nstep: int) -> list[Input]:
+    """ambrs.partmc.create_particle_inputs(n_part, ensemble, dt, nstep) -> list
+of ambrs.partmc.Input objects that can create input files for particle-based
+box model simulations
 
 Parameters:
-    * run_type: the type of particle size distribution ('particle', 'analytic', 'sectional')
+    * n_part: the number of computational particles for each simulation
     * processes: an ambrs.AerosolProcesses object that defines the aerosol
       processes under consideration
     * ensemble: a ppe.Ensemble object created by sampling a modal particle size
       distribution
     * dt: a fixed time step size for simulations
     * nsteps: the number of steps in each simulation"""
-    if run_type != 'particle':
-        raise ValueError(f"Unsupported run_type: {run_type} (only 'particle' is supported)")
+    if n_part <= 0:
+        raise ValueError(f"n_part must be positive")
     if not isinstance(ensemble.size, AerosolModalSizePopulation):
         raise TypeError("ensemble must have a modal size distribution!")
     if dt <= 0.0:
@@ -434,5 +437,5 @@ Parameters:
         raise ValueError("nstep must be positive")
     inputs = []
     for scenario in ensemble:
-        inputs.append(_partmc_input(run_type, processes, scenario, dt, nstep))
+        inputs.append(_particle_input(n_part, processes, scenario, dt, nstep))
     return inputs

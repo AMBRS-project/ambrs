@@ -30,7 +30,7 @@ p0 = 101325 # [Pa]
 h0 = 500    # [m]
 
 class TestPartMCInput(unittest.TestCase):
-    """Unit tests for ambr.partmc.PartMCInput"""
+    """Unit tests for ambr.partmc.Input"""
 
     def setUp(self):
         self.n = 100
@@ -100,7 +100,8 @@ class TestPartMCInput(unittest.TestCase):
         )
         self.ensemble = ppe.sample(self.ensemble_spec, self.n)
 
-    def test_create_partmc_input(self):
+    def test_create_particle_input(self):
+        n_part = 1000
         processes = aerosol.AerosolProcesses(
             aging = True,
             coagulation = True,
@@ -108,7 +109,7 @@ class TestPartMCInput(unittest.TestCase):
         scenario = self.ensemble.member(0)
         dt = 4.0
         nstep = 100
-        input = partmc.create_partmc_input('particle', processes, scenario, dt, nstep)
+        input = partmc.create_particle_input(n_part, processes, scenario, dt, nstep)
 
         # timestepping parameters
         self.assertTrue(abs(dt - input.del_t) < 1e-12)
@@ -122,7 +123,8 @@ class TestPartMCInput(unittest.TestCase):
 
         # FIXME: more stuff vvv
 
-    def test_create_partmc_inputs(self):
+    def test_create_particle_inputs(self):
+        n_part = 1000
         processes = aerosol.AerosolProcesses(
             aging = True,
             coagulation = True,
@@ -130,7 +132,7 @@ class TestPartMCInput(unittest.TestCase):
         dt = 4.0
         nstep = 100
 
-        inputs = partmc.create_partmc_inputs('particle', processes, self.ensemble, dt, nstep)
+        inputs = partmc.create_particle_inputs(n_part, processes, self.ensemble, dt, nstep)
         for i, input in enumerate(inputs):
             scenario = self.ensemble.member(i)
 
@@ -147,6 +149,7 @@ class TestPartMCInput(unittest.TestCase):
             # FIXME: more stuff vvv
 
     def test_write_files(self):
+        n_part = 1000
         processes = aerosol.AerosolProcesses(
             aging = True,
             coagulation = True,
@@ -154,7 +157,7 @@ class TestPartMCInput(unittest.TestCase):
         scenario = self.ensemble.member(0)
         dt = 4.0
         nstep = 100
-        input = partmc.create_partmc_input('particle', processes, scenario, dt, nstep)
+        input = partmc.create_particle_input(n_part, processes, scenario, dt, nstep)
         temp_dir = tempfile.TemporaryDirectory()
         input.write_files(temp_dir.name, 'partmc')
         self.assertTrue(os.path.exists(os.path.join(temp_dir.name, 'partmc.spec')))

@@ -30,7 +30,7 @@ p0 = 101325 # [Pa]
 h0 = 500    # [m]
 
 class TestMAM4Input(unittest.TestCase):
-    """Unit tests for ambr.mam4.MAM4Input"""
+    """Unit tests for ambr.mam4.Input"""
 
     def setUp(self):
         self.n = 100
@@ -100,7 +100,7 @@ class TestMAM4Input(unittest.TestCase):
         )
         self.ensemble = ppe.sample(self.ensemble_spec, self.n)
 
-    def test_create_mam4_input(self):
+    def test_create_input(self):
         processes = aerosol.AerosolProcesses(
             aging = True,
             coagulation = True,
@@ -108,7 +108,7 @@ class TestMAM4Input(unittest.TestCase):
         scenario = self.ensemble.member(0)
         dt = 4.0
         nstep = 100
-        input = mam4.create_mam4_input(processes, scenario, dt, nstep)
+        input = mam4.create_input(processes, scenario, dt, nstep)
 
         # timestepping parameters
         self.assertTrue(abs(dt - input.mam_dt) < 1e-12)
@@ -117,7 +117,7 @@ class TestMAM4Input(unittest.TestCase):
         # aerosol processes
         self.assertFalse(input.mdo_gaschem)
         self.assertFalse(input.mdo_gasaerexch)
-        self.assertFalse(input.mdo_rename)
+        self.assertTrue(input.mdo_rename)
         self.assertFalse(input.mdo_newnuc)
         self.assertTrue(input.mdo_coag)
 
@@ -165,17 +165,17 @@ class TestMAM4Input(unittest.TestCase):
         bad_scenario = scenario
         bad_scenario.size = None
         bad_args = [processes, bad_scenario, dt, nstep]
-        self.assertRaises(TypeError, mam4.create_mam4_input, *bad_args)
+        self.assertRaises(TypeError, mam4.create_input, *bad_args)
 
         bad_dt = 0
         bad_args = [processes, scenario, bad_dt, nstep]
-        self.assertRaises(ValueError, mam4.create_mam4_input, *bad_args)
+        self.assertRaises(ValueError, mam4.create_input, *bad_args)
 
         bad_nstep = 0
         bad_args = [processes, scenario, dt, bad_nstep]
-        self.assertRaises(ValueError, mam4.create_mam4_input, *bad_args)
+        self.assertRaises(ValueError, mam4.create_input, *bad_args)
 
-    def test_create_mam4_inputs(self):
+    def test_create_inputs(self):
         processes = aerosol.AerosolProcesses(
             aging = True,
             coagulation = True,
@@ -183,7 +183,7 @@ class TestMAM4Input(unittest.TestCase):
         dt = 4.0
         nstep = 100
 
-        inputs = mam4.create_mam4_inputs(processes, self.ensemble, dt, nstep)
+        inputs = mam4.create_inputs(processes, self.ensemble, dt, nstep)
         for i, input in enumerate(inputs):
             scenario = self.ensemble.member(i)
 
@@ -194,7 +194,7 @@ class TestMAM4Input(unittest.TestCase):
             # aerosol processes
             self.assertFalse(input.mdo_gaschem)
             self.assertFalse(input.mdo_gasaerexch)
-            self.assertFalse(input.mdo_rename)
+            self.assertTrue(input.mdo_rename)
             self.assertFalse(input.mdo_newnuc)
             self.assertTrue(True, input.mdo_coag)
 
@@ -252,15 +252,15 @@ class TestMAM4Input(unittest.TestCase):
             specification = self.ensemble.specification,
         )
         bad_args = [processes, bad_ensemble, dt, nstep]
-        self.assertRaises(TypeError, mam4.create_mam4_inputs, *bad_args)
+        self.assertRaises(TypeError, mam4.create_inputs, *bad_args)
 
         bad_dt = 0
         bad_args = [processes, self.ensemble, bad_dt, nstep]
-        self.assertRaises(ValueError, mam4.create_mam4_inputs, *bad_args)
+        self.assertRaises(ValueError, mam4.create_inputs, *bad_args)
 
         bad_nstep = 0
         bad_args = [processes, self.ensemble, dt, bad_nstep]
-        self.assertRaises(ValueError, mam4.create_mam4_inputs, *bad_args)
+        self.assertRaises(ValueError, mam4.create_inputs, *bad_args)
 
     def test_write_files(self):
         processes = aerosol.AerosolProcesses(
@@ -270,10 +270,10 @@ class TestMAM4Input(unittest.TestCase):
         scenario = self.ensemble.member(0)
         dt = 4.0
         nstep = 100
-        input = mam4.create_mam4_input(processes, scenario, dt, nstep)
+        input = mam4.create_input(processes, scenario, dt, nstep)
         temp_dir = tempfile.TemporaryDirectory()
-        input.write_files(temp_dir.name, 'mam4_input')
-        self.assertTrue(os.path.exists(os.path.join(temp_dir.name, 'mam4_input.nl')))
+        input.write_files(temp_dir.name, 'namelist')
+        self.assertTrue(os.path.exists(os.path.join(temp_dir.name, 'namelist.nl')))
         temp_dir.cleanup()
 
 if __name__ == '__main__':
