@@ -51,7 +51,7 @@ runner's root directory, generating a directory for each of the scenarios"""
         # make scenario directories and populate them with input files
         num_inputs = len(inputs)
         commands = []
-        for i, input in enumerate(num_inputs):
+        for i, input in enumerate(inputs):
             scenario_name = self.scenario_name.format(index = i)
             dir = os.path.join(self.root, scenario_name)
             os.mkdir(dir)

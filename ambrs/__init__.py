@@ -7,3 +7,6 @@ from .ppe import EnsembleSpecification, Ensemble, ensemble_from_scenarios, \
                  AerosolParameterSweeps, sweep
 from .runners import PoolRunner
 from .scenario import Scenario
+
+from . import mam4
+from . import partmc
