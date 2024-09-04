@@ -7,6 +7,7 @@
 # distribution parameters from E3SM.
 
 import ambrs
+import os
 import scipy.stats as stats
 
 # aerosol processes under consideration
@@ -20,20 +21,26 @@ dt    = 60   # time step size [s]
 nstep = 1440 # number of steps [-]
 
 # relevant aerosol and gas species
-so4 = ambrs.AerosolSpecies(name='so4')
-pom = ambrs.AerosolSpecies(name='pom')
-soa = ambrs.AerosolSpecies(name='soa')
-bc  = ambrs.AerosolSpecies(name='bc')
-dst = ambrs.AerosolSpecies(name='dst')
-ncl = ambrs.AerosolSpecies(name='ncl')
+so4 = ambrs.AerosolSpecies(name='so4', molar_mass = 97.071)
+pom = ambrs.AerosolSpecies(name='pom', molar_mass = 12.01)
+soa = ambrs.AerosolSpecies(name='soa', molar_mass = 12.01)
+bc  = ambrs.AerosolSpecies(name='bc', molar_mass = 12.01)
+dst = ambrs.AerosolSpecies(name='dst', molar_mass = 135.065)
+ncl = ambrs.AerosolSpecies(name='ncl', molar_mass = 58.44)
 
-so2   = ambrs.GasSpecies(name='so2')
-h2so4 = ambrs.GasSpecies(name='h2so4')
-soag  = ambrs.GasSpecies(name='soag')
+so2   = ambrs.GasSpecies(name='so2', molar_mass = 64.07)
+h2so4 = ambrs.GasSpecies(name='h2so4', molar_mass = 98.079)
+soag  = ambrs.GasSpecies(name='soag', molar_mass = 12.01)
+
+# reference pressure and height
+p0 = 101325 # [Pa]
+h0 = 500    # [m]
 
 # specify distributions sampled for the ensemble
 spec = ambrs.EnsembleSpecification(
     name = 'demo',
+    aerosols = (so4, pom, soa, bc, dst, ncl),
+    gases = (so2, h2so4, soag),
     size = ambrs.AerosolModalSizeDistribution(
         modes = [
             ambrs.AerosolModeDistribution(
@@ -86,9 +93,12 @@ spec = ambrs.EnsembleSpecification(
                 ],
             ),
         ]),
+    gas_concs = tuple([stats.uniform(1e5, 1e6) for g in range(3)]),
     flux = stats.loguniform(1e-2*1e-9, 1e1*1e-9),
     relative_humidity = stats.loguniform(0, 0.99),
     temperature = stats.uniform(240, 310),
+    pressure = p0,
+    height = h0,
 )
 
 # create an ensemble using latin hypercube sampling
@@ -96,16 +106,44 @@ n = 100
 ensemble = ambrs.lhs(specification = spec, n = n)
 
 # create MAM4 inputs for each ensemble member
-mam4_inputs = ambrs.create_mam4_inputs(processes, ensemble)
+mam4_inputs = ambrs.mam4.create_inputs(
+    processes = processes,
+    ensemble = ensemble,
+    dt = dt,
+    nstep = nstep
+)
 
 # create partmc inputs for each ensemble member
 n_particles = 5000
-partmc_inputs = ambrs.create_partmc_inputs(processes, ensemble, n_particles,
-                                           ...)
+partmc_inputs = ambrs.partmc.create_particle_inputs(
+    n_part = n_particles,
+    processes = processes,
+    ensemble = ensemble,
+    dt = dt,
+    nstep = nstep
+)
 
 # run simulations
-# ...
-for i, input in enumerate(mam4_inputs):
-    f = open(f'mam4_{i}.nl', 'w')
-    f.write(repr(input))
-    f.close()
+cwd = os.getcwd()
+mam4_dir = os.path.join(cwd, 'mam4_runs')
+partmc_dir = os.path.join(cwd, 'partmc_runs')
+for dir in [mam4_dir, partmc_dir]:
+    if not os.path.exists(dir):
+        os.mkdir(dir)
+
+mam4_runner = ambrs.PoolRunner(
+    executable = 'mam4',
+    invocation = '{exe} {prefix}.nl',
+    root = mam4_dir,
+)
+
+mam4_runner.run(mam4_inputs)
+
+partmc_runner = ambrs.PoolRunner(
+    executable = 'partmc',
+    invocation = '{exe} {prefix}.spec',
+    root = partmc_dir,
+)
+
+#partmc_runner.run(partmc_inputs)
+
