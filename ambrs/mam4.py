@@ -82,7 +82,7 @@ class Input:
         """input.invocation(exe, prefix) -> a string defining the command invoking
 the input with the given executable and input prefix, assuming that the current
 working directory contains any needed input files."""
-        return f'{exe} {prefix}.nl'
+        return f'{exe}'
 
     def write_files(self, dir, prefix) -> None:
         """input.write_files(dir, prefix) -> writes MAM4 box model input files
@@ -141,7 +141,7 @@ to the given directory with the given prefix"""
 """
         if not os.path.exists(dir):
             raise OSError(f'Directory not found: {dir}')
-        filename = os.path.join(dir, f'{prefix}.nl')
+        filename = os.path.join(dir, 'namelist')
         with open(filename, 'w') as f:
             f.write(content)
 
@@ -166,11 +166,11 @@ def _mam4_input(processes: AerosolProcesses,
         mam_dt = dt,
         mam_nstep = nstep,
 
-        mdo_gaschem = processes.gas_phase_chemistry,
-        mdo_gasaerexch = processes.condensation,
-        mdo_rename = True,
-        mdo_newnuc = processes.nucleation,
-        mdo_coag = processes.coagulation,
+        mdo_gaschem = 1 if processes.gas_phase_chemistry else 0,
+        mdo_gasaerexch = 1 if processes.condensation else 0,
+        mdo_rename = 1,
+        mdo_newnuc = 1 if processes.nucleation else 0,
+        mdo_coag = 1 if processes.coagulation else 0,
 
         temp = scenario.temperature,
         press = scenario.pressure,
