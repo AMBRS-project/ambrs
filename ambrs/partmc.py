@@ -153,7 +153,13 @@ class Input:
                 for species, mass_frac in mode.mass_frac.items():
                     f.write(f'{species}\t{mass_frac}\n')
 
-    def write_files(self, dir, prefix):
+    def invocation(self, exe: str, prefix: str) -> str:
+        """input.invocation(exe, prefix) -> a string defining the command invoking
+the input with the given executable and input prefix, assuming that the current
+working directory contains any needed input files."""
+        return f'{exe} {prefix}.spec'
+
+    def write_files(self, dir: str, prefix: str):
         """input.write_files(dir, prefix) -> writes a set of PartMC box model
 input files to the given directory with the given prefix for the main .spec
 file"""
