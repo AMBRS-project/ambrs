@@ -7,8 +7,12 @@
 # distribution parameters from E3SM.
 
 import ambrs
+import logging
 import os
 import scipy.stats as stats
+
+# log to the terminal
+logging.basicConfig(level = logging.INFO)
 
 # aerosol processes under consideration
 processes = ambrs.AerosolProcesses(
@@ -132,18 +136,20 @@ for dir in [mam4_dir, partmc_dir]:
         os.mkdir(dir)
 
 mam4_runner = ambrs.PoolRunner(
+    name = 'mam4',
     executable = 'mam4',
-    invocation = '{exe} {prefix}.nl',
     root = mam4_dir,
 )
 
 mam4_runner.run(mam4_inputs)
 
 partmc_runner = ambrs.PoolRunner(
+    name = 'partmc',
     executable = 'partmc',
-    invocation = '{exe} {prefix}.spec',
     root = partmc_dir,
 )
 
+#if not os.path.exists(partmc_dir):
+#    os.mkdir(partmc_dir)
 #partmc_runner.run(partmc_inputs)
 
