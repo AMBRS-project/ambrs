@@ -149,7 +149,7 @@ partmc_runner = ambrs.PoolRunner(
     root = partmc_dir,
 )
 
-#if not os.path.exists(partmc_dir):
-#    os.mkdir(partmc_dir)
-#partmc_runner.run(partmc_inputs)
+if not os.path.exists(partmc_dir):
+    os.mkdir(partmc_dir)
+partmc_runner.run(partmc_inputs)
 

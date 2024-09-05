@@ -1,6 +1,7 @@
 """ambrs.runners -- data types and functions related to running scenarios"""
 
 import logging
+import math
 import multiprocessing
 import multiprocessing.dummy
 import os
@@ -47,25 +48,32 @@ runner's root directory, generating a directory for each of the scenarios"""
         if not isinstance(inputs, list):
             raise TypeError('inputs must be a list of scenario inputs')
 
-        # make scenario directories, populate them with input files, and set
-        # up arguments to subprocesses
+        # prep scenarios to run
         num_inputs = len(inputs)
+        max_num_digits = math.floor(math.log10(num_inputs)) + 1
         logger.info(f'{self.name}: writing {num_inputs} sets of input files...')
         found_dir = False
         args = []
         for i, input in enumerate(inputs):
-            scenario_name = self.scenario_name.format(index = i+1)
+
+            # zero-pad the 1-based scenario index
+            num_digits = math.floor(math.log10(i+1)) + 1
+            formatted_index = '0' * (max_num_digits - num_digits) + f'{i+1}'
+            scenario_name = self.scenario_name.format(index = formatted_index)
+
+            # make the scenario directory if needed
             dir = os.path.join(self.root, scenario_name)
             if os.path.exists(dir):
                 found_dir = True
             else:
                 os.mkdir(dir)
+
+            # write input files and define commands
             input.write_files(dir, scenario_name)
             command = input.invocation(self.executable, scenario_name)
             dir = os.path.join(self.root, scenario_name)
             args.append({
                 'command': command,
-                'name': scenario_name,
                 'dir': dir
             })
         if found_dir:
@@ -77,9 +85,13 @@ runner's root directory, generating a directory for each of the scenarios"""
         logger.info(f'{self.name}: running {num_inputs} inputs...')
 
         error_occurred = False
+
+        # this function is called with a list of completed processes by pool.map_async
         def callback(completed_processes) -> None:
             if not all([p.returncode == 0 for p in completed_processes]):
                 error_occurred = True
+
+        # this function is called with one of a mapped set of arguments by pool.map_async
         def run_scenario(args) -> subprocess.CompletedProcess:
             f_stdout = open(os.path.join(args['dir'], 'stdout.txt'), 'w')
             f_stderr = open(os.path.join(args['dir'], 'stderr.txt'), 'w')
@@ -89,6 +101,7 @@ runner's root directory, generating a directory for each of the scenarios"""
                 stdout = f_stdout,
                 stderr = f_stderr,
             )
+
         results = pool.map_async(run_scenario, args, callback = callback)
         results.wait()
 
