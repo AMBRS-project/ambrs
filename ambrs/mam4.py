@@ -10,8 +10,10 @@ from .ppe import Ensemble
 
 import os.path
 
+from . import aero_model # provides base Input class
+
 @dataclass
-class Input:
+class Input(aero_model.Input):
     """ambrs.mam4.Input -- represents input for a single MAM4 box model simulation"""
     # all fields here are named identically to their respective namelist
     # parameters in the MAM4 box model
