@@ -225,13 +225,13 @@ file"""
 
         if self.do_mosaic:
             spec_content += 'do_mosaic yes\n'
+            # do_optical is only parsed when do_mosaic is set
+            if self.do_optical:
+                spec_content += 'do_optical yes\n'
+            else:
+                spec_content += 'do_optical no\n'
         else:
             spec_content += 'do_mosaic no\n'
-
-        if self.do_optical:
-            spec_content += 'do_optical yes\n'
-        else:
-            spec_content += 'do_optical no\n'
 
         if self.do_nucleation:
             spec_content += 'do_nucleation yes\n'
@@ -412,7 +412,7 @@ def _particle_input(n_part: int,
         start_day = 0,   # FIXME:
 
         do_coagulation = processes.coagulation,
-        do_condensation = processes.condensation,
+        do_condensation = False, # this is cloud condensation, not for aerosols
         do_mosaic = False,
         do_optical = processes.optics,
         do_nucleation = processes.nucleation,
