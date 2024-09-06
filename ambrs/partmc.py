@@ -11,7 +11,7 @@ from typing import Dict, Optional
 import os.path
 
 @dataclass
-class PartMCAeroData:
+class AeroData:
     species: str            # name of aerosol species
     density: float          # aerosol species density [kg/m^3]
     ions_in_soln: int       # number of ions in solution [-]
@@ -19,12 +19,12 @@ class PartMCAeroData:
     kappa: float            # "kappa" [-]
 
 @dataclass 
-class PartMCAeroSizeDistribution:
+class AeroSizeDistribution:
     diam: tuple[float, ...] # diameters of bin edges [m]
     num_conc: tuple[float, ...] # total number concentrations of particles in bins [m^{-3}]
 
 @dataclass
-class PartMCAeroMode:
+class AeroMode:
     mode_name: str  # name of aerosol mode
     mass_frac: Dict[str, float | tuple[float, float]]
                     # mapping of modal species names to mass fractions (and possibly also std deviations)
@@ -57,13 +57,12 @@ class PartMCAeroMode:
     radius: Optional[float] = None             # the radius R0 for which 2*R0 = D0 [m]
 
     # sampled
-    size_dist: Optional[PartMCAeroSizeDistribution] = None # aerosol size distribution
-
+    size_dist: Optional[AeroSizeDistribution] = None # aerosol size distribution
 
 # time series data types
 type ScalarTimeSeries = list[tuple[float, float], ...] # list of (t, value) pairs
 type DictTimeSeries = list[tuple[float, dict], ...] # list of (t, dict) pairs
-type AerosolModeTimeSeries = list[tuple[float, PartMCAeroMode], ...] # list of (t, mode) pairs
+type AerosolModeTimeSeries = list[tuple[float, AeroMode], ...] # list of (t, mode) pairs
 
 @dataclass
 class Input:
@@ -86,9 +85,9 @@ class Input:
     gas_data: tuple[str, ...]   # tuple of gas species names
     gas_init: tuple[float, ...] # initial gas concentrations (ordered like gas_data)
 
-    aerosol_data: tuple[PartMCAeroData, ...] # tuple of aerosol data
+    aerosol_data: tuple[AeroData, ...] # tuple of aerosol data
     do_fractal: bool                         # whether todo fractal treatment
-    aerosol_init: tuple[PartMCAeroMode, ...] # aerosol modal initial condition file
+    aerosol_init: tuple[AeroMode, ...] # aerosol modal initial condition file
 
     temp_profile: ScalarTimeSeries       # temperature time series ((t1, T1), (t2, T2), ...)
     pressure_profile: ScalarTimeSeries   # pressure time series
@@ -284,38 +283,56 @@ file"""
         # temp.dat, pres.dat, height.dat
         with open(os.path.join(dir, 'temp.dat'), 'w') as f:
             f.write('# time (s)\n# temp (K)\n')
-            f.write('\t'.join(['time'] + [str(time_series[0]) for time_series in self.temp_profile]) + '\n')
-            f.write('\t'.join(['temp'] + [str(time_series[1]) for time_series in self.temp_profile]))
+            f.write('\t'.join(['time'] + [str(pair[0]) for pair in self.temp_profile]) + '\n')
+            f.write('\t'.join(['temp'] + [str(pair[1]) for pair in self.temp_profile]))
         with open(os.path.join(dir, 'pres.dat'), 'w') as f:
             f.write('# time (s)\n# pressure (Pa)\n')
-            f.write('\t'.join(['time'] + [str(time_series[0]) for time_series in self.pressure_profile]) + '\n')
-            f.write('\t'.join(['pressure'] + [str(time_series[1]) for time_series in self.pressure_profile]))
+            f.write('\t'.join(['time'] + [str(pair[0]) for pair in self.pressure_profile]) + '\n')
+            f.write('\t'.join(['pressure'] + [str(pair[1]) for pair in self.pressure_profile]))
         with open(os.path.join(dir, 'height.dat'), 'w') as f:
             f.write('# time (s)\n# height (m)\n')
-            f.write('\t'.join(['time'] + [str(time_series[0]) for time_series in self.height_profile]) + '\n')
-            f.write('\t'.join(['height'] + [str(time_series[1]) for time_series in self.height_profile]))
+            f.write('\t'.join(['time'] + [str(pair[0]) for pair in self.height_profile]) + '\n')
+            f.write('\t'.join(['height'] + [str(pair[1]) for pair in self.height_profile]))
 
-        # gas_emit.dat, gas_back.dat
+        # gas_emit.dat
         if self.gas_emissions:
             gas_emission_species = [self.gas_emissions[0].time_series[1].keys()]
             gas_emission_species.remove('rate')
             with open(os.path.join(dir, 'gas_emit.dat'), 'w') as f:
                 f.write('# time (s)\n# rate = scaling parameter\n# emissions (mol m^{-2} s^{-1})\n')
-                f.write('\t'.join(['time'] + [time_series[0] for time_series in self.emissions]) + '\n')
-                f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in self.emissions]) + '\n')
-                f.write('\t'.join([species_name] + [time_series[1][species_name] \
+                f.write('\t'.join(['time'] + [pair[0] for pair in self.gas_emissions]) + '\n')
+                f.write('\t'.join(['rate'] + [pair[1]['rate'] for pair in self.gas_emissions]) + '\n')
+                f.write('\t'.join([species_name] + [emit.pair[1][species_name] \
                                   for species_name in gas_emission_species \
-                                  for time_series in self.emissions]))
+                                  for pair in self.gas_emissions]))
+        else:
+            # write a gas emissions file with zero data
+            with open(os.path.join(dir, 'gas_emit.dat'), 'w') as f:
+                f.write('# time (s)\n# rate = scaling parameter\n# emissions (mol m^{-2} s^{-1})\n')
+                f.write('time\t0.0\n')
+                f.write('rate\t1.0\n')
+                for gas in self.gas_data:
+                    f.write(f'{gas}\t0.0\n')
+
+        # gas_back.dat
         if self.gas_background:
             gas_background_species = [self.gas_background[0].time_series[1].keys()]
             gas_background_species.remove('rate')
             with open(os.path.join(dir, 'gas_back.dat'), 'w') as f:
                 f.write('# time (s)\n# rate (s^{-1})\n# concentrations (ppb)\n')
-                f.write('\t'.join(['time'] + [time_series[0] for time_series in self.gas_background]) + '\n')
-                f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in self.gas_background]) + '\n')
-                f.write('\t'.join([species_name] + [time_series[1][species_name] \
+                f.write('\t'.join(['time'] + [pair[0] for pair in self.gas_background]) + '\n')
+                f.write('\t'.join(['rate'] + [pair[1]['rate'] for pair in self.gas_background]) + '\n')
+                f.write('\t'.join([species_name] + [pair[1][species_name] \
                                   for species_name in gas_background_species \
-                                  for time_series in self.gas_background]))
+                                  for pair in self.gas_background]))
+        else:
+            # write a gas background file with zero data
+            with open(os.path.join(dir, 'gas_back.dat'), 'w') as f:
+                f.write('# time (s)\n# rate = scaling parameter\n# emissions (mol m^{-2} s^{-1})\n')
+                f.write('time\t0.0\n')
+                f.write('rate\t1.0\n')
+                for gas in self.gas_data:
+                    f.write(f'{gas}\t0.0\n')
 
         # aero_emit.dat, aero_emit_dist_*.dat, aero_emit_comp_*.dat
         if self.aero_emissions:
@@ -326,6 +343,13 @@ file"""
                 f.write('\t'.join(['dist'] + [f'aero_emit_dist_{i+1}.dat' for i in range(len(self.aero_emissions))]))
             for i, time_series in enumerate(self.aero_emissions):
                 self._write_aero_modes(dir, f'aero_emit_dist_{i+1}', self.aero_emissions)
+        else:
+            # write a zero-scaled aerosol emissions file
+            with open(os.path.join(dir, 'aero_emit.dat'), 'w') as f:
+                f.write('# time (s)\n# rate (s^{-1})\n# aerosol distribution filename\n')
+                f.write('time\t0.0\n')
+                f.write('rate\t0.0\n')
+                f.write('dist\taero_init_dist.dat\n')
 
         # aero_back.dat, aero_back_dist.dat, aero_back_comp.dat
         if self.aero_background:
@@ -336,6 +360,13 @@ file"""
                 f.write('\t'.join(['dist'] + [f'aero_emit_dist_{i+1}.dat' for i in range(len(self.aero_background))]))
             for i, time_series in enumerate(self.aero_background):
                 self._write_aero_modes(dir, f'aero_back_dist_{i+1}', self.aero_background)
+        else:
+            # write a zero-scaled aerosol background file
+            with open(os.path.join(dir, 'aero_back.dat'), 'w') as f:
+                f.write('# time (s)\n# rate (s^{-1})\n# aerosol distribution filename\n')
+                f.write('time\t0.0\n')
+                f.write('rate\t0.0\n')
+                f.write('dist\taero_init_dist.dat\n')
 
 def _particle_input(n_part: int,
                     processes: AerosolProcesses,
