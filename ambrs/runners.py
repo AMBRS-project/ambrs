@@ -36,7 +36,7 @@ Optional parameters:
         self.name = name
         self.executable = executable
         self.root = root
-        self.num_processes = num_processes
+        self.num_processes = num_processes if num_processes else multiprocessing.cpu_count()
         self.scenario_name = scenario_name
 
         if not os.path.exists(self.root):
@@ -51,7 +51,7 @@ runner's root directory, generating a directory for each of the scenarios"""
         # prep scenarios to run
         num_inputs = len(inputs)
         max_num_digits = math.floor(math.log10(num_inputs)) + 1
-        logger.info(f'{self.name}: writing {num_inputs} sets of input files...')
+        logger.info(f'{self.name}: generating input for {num_inputs} scenarios...')
         found_dir = False
         args = []
         for i, input in enumerate(inputs):
@@ -78,11 +78,11 @@ runner's root directory, generating a directory for each of the scenarios"""
             })
         if found_dir:
             logger.warning(f'{self.name}: one or more existing scenario directories found. Overwriting contents...')
-        logger.info(f'{self.name}: completed writing input files.')
+        logger.info(f'{self.name}: finished generating scenario input.')
 
         # now run scenarios in parallel
         pool = multiprocessing.dummy.Pool(self.num_processes)
-        logger.info(f'{self.name}: running {num_inputs} inputs...')
+        logger.info(f'{self.name}: running {num_inputs} inputs ({self.num_processes} parallel processes)')
 
         error_occurred = False
 
