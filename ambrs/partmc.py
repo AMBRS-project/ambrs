@@ -10,6 +10,8 @@ from typing import Dict, Optional
 
 import os.path
 
+from . import aero_model # provides base Input class
+
 @dataclass
 class AeroData:
     species: str            # name of aerosol species
@@ -65,7 +67,7 @@ type DictTimeSeries = list[tuple[float, dict], ...] # list of (t, dict) pairs
 type AerosolModeTimeSeries = list[tuple[float, AeroMode], ...] # list of (t, mode) pairs
 
 @dataclass
-class Input:
+class Input(aero_model.Input):
     """ambrs.partmc.Input -- represents input for a single PartMC box model simulation"""
     # all fields here are named identically to their respective parameters
     # in the .spec scenario file for the PartMC box model
