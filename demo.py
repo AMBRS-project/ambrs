@@ -105,51 +105,45 @@ spec = ambrs.EnsembleSpecification(
     height = h0,
 )
 
+cwd = os.getcwd()
+
 # create an ensemble using latin hypercube sampling
 n = 100
 ensemble = ambrs.lhs(specification = spec, n = n)
 
-# create MAM4 inputs for each ensemble member
-mam4_inputs = ambrs.mam4.create_inputs(
+# run a MAM4 ensemble
+mam4 = ambrs.mam4.AerosolModel()
+mam4_inputs = mam4.create_inputs(
     processes = processes,
     ensemble = ensemble,
     dt = dt,
     nstep = nstep
 )
-
-# create partmc inputs for each ensemble member
-n_particles = 5000
-partmc_inputs = ambrs.partmc.create_particle_inputs(
-    n_part = n_particles,
-    processes = processes,
-    ensemble = ensemble,
-    dt = dt,
-    nstep = nstep
-)
-
-# run simulations
-cwd = os.getcwd()
 mam4_dir = os.path.join(cwd, 'mam4_runs')
-partmc_dir = os.path.join(cwd, 'partmc_runs')
-for dir in [mam4_dir, partmc_dir]:
-    if not os.path.exists(dir):
-        os.mkdir(dir)
-
+if not os.path.exists(mam4_dir):
+    os.mkdir(mam4_dir)
 mam4_runner = ambrs.PoolRunner(
-    name = 'mam4',
+    model = mam4,
     executable = 'mam4',
     root = mam4_dir,
 )
-
 mam4_runner.run(mam4_inputs)
 
+# run a PartMC ensemble
+partmc = ambrs.partmc.AerosolModel(num_particles = 5000)
+partmc_inputs = partmc.create_inputs(
+    processes = processes,
+    ensemble = ensemble,
+    dt = dt,
+    nstep = nstep
+)
+partmc_dir = os.path.join(cwd, 'partmc_runs')
+if not os.path.exists(partmc_dir):
+    os.mkdir(dir)
 partmc_runner = ambrs.PoolRunner(
-    name = 'partmc',
+    model = partmc,
     executable = 'partmc',
     root = partmc_dir,
 )
-
-if not os.path.exists(partmc_dir):
-    os.mkdir(partmc_dir)
 partmc_runner.run(partmc_inputs)
 

@@ -13,8 +13,8 @@ class PoolRunner:
     """PoolRunner: a simple scenario runner that runs scenarios in parallel
 within a given root directory using a process pool of a given size
 Required parameters:
-    * executable: an absolute path to an executable aerosol model used to run
-                  scenarios
+    * model: an instance of a supported AMBRS aerosol model
+    * executable: an absolute path to the executable for the model
     * root: an absolute path to the directory in which the scenarios are run.
             Each scenario is run in its own subdirectory, which is named either
             after the 1-based index of the scenario or using the scenario_name
@@ -27,13 +27,12 @@ Optional parameters:
                      an {index} parameter which the runner replaces with the
                      1-based scenario index (default: '{index}')
     """
-    def __init__(self,
-                 name: str,
+    def __init__(self, model,
                  executable: str,
                  root: str,
                  num_processes: int = None,
                  scenario_name: str = '{index}'):
-        self.name = name
+        self.model = model
         self.executable = executable
         self.root = root
         self.num_processes = num_processes if num_processes else multiprocessing.cpu_count()
@@ -48,10 +47,13 @@ runner's root directory, generating a directory for each of the scenarios"""
         if not isinstance(inputs, list):
             raise TypeError('inputs must be a list of scenario inputs')
 
+        # name the model after its module (just the last part)
+        model_name = self.model.__module__[self.model.__module__.index('.')+1:]
+
         # prep scenarios to run
         num_inputs = len(inputs)
         max_num_digits = math.floor(math.log10(num_inputs)) + 1
-        logger.info(f'{self.name}: generating input for {num_inputs} scenarios...')
+        logger.info(f'{model_name}: generating input for {num_inputs} scenarios...')
         found_dir = False
         args = []
         for i, input in enumerate(inputs):
@@ -69,20 +71,20 @@ runner's root directory, generating a directory for each of the scenarios"""
                 os.mkdir(dir)
 
             # write input files and define commands
-            input.write_files(dir, scenario_name)
-            command = input.invocation(self.executable, scenario_name)
+            self.model.write_input_files(input, dir, scenario_name)
+            command = self.model.invocation(self.executable, scenario_name)
             dir = os.path.join(self.root, scenario_name)
             args.append({
                 'command': command,
                 'dir': dir
             })
         if found_dir:
-            logger.warning(f'{self.name}: one or more existing scenario directories found. Overwriting contents...')
-        logger.info(f'{self.name}: finished generating scenario input.')
+            logger.warning(f'{model_name}: one or more existing scenario directories found. Overwriting contents...')
+        logger.info(f'{model_name}: finished generating scenario input.')
 
         # now run scenarios in parallel
         pool = multiprocessing.dummy.Pool(self.num_processes)
-        logger.info(f'{self.name}: running {num_inputs} inputs ({self.num_processes} parallel processes)')
+        logger.info(f'{model_name}: running {num_inputs} inputs ({self.num_processes} parallel processes)')
 
         error_occurred = False
 
@@ -105,6 +107,6 @@ runner's root directory, generating a directory for each of the scenarios"""
         results = pool.map_async(run_scenario, args, callback = callback)
         results.wait()
 
-        logger.info(f'{self.name}: completed runs.')
+        logger.info(f'{model_name}: completed runs.')
         if error_occurred:
-            logger.error('f{self.name}: At least one run failed.')
+            logger.error('f{model_name}: At least one run failed.')
