@@ -20,9 +20,6 @@ To add an aerosol model to AMBRS:
 2. Define an input dataclass that holds all necessary parameters for defining
    input for your aerosol model. An instance of this dataclass is created from
    AerosolModel.create_input and passed to Aerosol.write_input_files.
-2. Define an output dataclass that holds all relevant output data produced by
-   running a scenario with your aerosol model. An instance of this dataclass is
-   created from AerosolModel.read_outputs and passed to diagnostics methods.
 """
 
     def __init__(self):
@@ -86,14 +83,27 @@ You may assume that this command is issued in the directory in which all necessa
 input files reside."""
         raise NotImplementedError('BaseAerosolModel.invocation not overridden!')
 
-    def read_output_files(self, dir: str, prefix: str) -> None:
-        """ambrs.BaseAerosolModel.read_output_files(dir, prefix) -> list of
-output dataclasses
+    def read_output_files(self, dir: str, prefix: str) -> dict:
+        """ambrs.BaseAerosolModel.read_output_files(dir, prefix) -> dict
+containing diagnostic information about the final state of the aerosol particle
+distribution
 
 Override this method to read the contents of output files for an aerosol model
-into appropriate output dataclasses for postprocessing and analysis. Arguments:
+and compute diagnostic quantities for the aerosol model in its final state.
+
+Input parameters:
     * dir: an absolute path to a directory containing the output files
-    * prefix: a prefix used to identify the output files (if any)"""
+    * prefix: a prefix used to identify the output files (if any)
+
+Output diagnostics (key/value pairs in the dict returned by this method):
+    -------------------------------------------------------------------------
+    Key:        Value:
+    -------------------------------------------------------------------------
+    'dNdlnD'    a rank-3 numpy.array containing the logarithmic derivative of
+                the number of particles of diameter D w.r.t. D
+                (FIXME: describe indices here)
+    -------------------------------------------------------------------------
+"""
         raise NotImplementedError('BaseAerosolModel.read_output_files not overridden!')
 
     def write_input_files(self, input, dir: str, prefix: str) -> None:
