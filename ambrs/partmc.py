@@ -73,7 +73,10 @@ class Input:
     run_type: str               # particle, analytic, sectional
 
     restart:  bool              # whether to restart from saved state
+
     do_select_weighting: bool   # whether to select weighting explicitly
+    weight_type: str            # type of weighting to use (power, power_source)
+    weighting_exponent: int     # exponent to use in weighting curve (-3 to 0)
 
     t_max: float                # total simulation time [s]
     del_t: float                # timestep [s]
@@ -156,7 +159,9 @@ class AerosolModel(BaseAerosolModel):
             n_part = self.num_particles,
 
             restart = False,
-            do_select_weighting = False,
+            do_select_weighting = True,
+            weight_type = 'power',
+            weighting_exponent = 0,
 
             t_max = nstep * dt,
             del_t = dt,
@@ -217,24 +222,26 @@ class AerosolModel(BaseAerosolModel):
             spec_content += 'restart no\n'
         if input.do_select_weighting:
             spec_content += 'do_select_weighting yes\n'
+            spec_content += f'weight_type {input.weight_type}\n'
+            spec_content += f'weighting_exponent {input.weighting_exponent}\n'
         else:
             spec_content += 'do_select_weighting no\n'
 
-        spec_content += f'\nt_max {input.t_max}\ndel_t {input.del_t}\nt_output {input.t_output}\nt_progress {input.t_progress}\n\n'
+        spec_content += f't_max {input.t_max}\ndel_t {input.del_t}\nt_output {input.t_output}\nt_progress {input.t_progress}\n'
 
         if input.do_camp_chem:
             spec_content += 'do_camp_chem yes\n'
         else:
             spec_content += 'do_camp_chem no\n'
 
-        spec_content += '\ngas_data gas_data.dat\ngas_init gas_init.dat\n\n'
+        spec_content += 'gas_data gas_data.dat\ngas_init gas_init.dat\n'
 
-        spec_content += 'aerosol_data aerosol_data.dat\n'
+        spec_content += 'aerosol_data aero_data.dat\n'
         if input.do_fractal:
             spec_content += 'do_fractal yes\n'
         else:
             spec_content += 'do_fractal no\n'
-        spec_content += 'aerosol_init aero_init_dist.dat\n\n'
+        spec_content += 'aerosol_init aero_init_dist.dat\n'
 
         spec_content += 'temp_profile temp.dat\npressure_profile pres.dat\nheight_profile height.dat\n'
         spec_content += 'gas_emissions gas_emit.dat\ngas_background gas_back.dat\n'
@@ -314,8 +321,8 @@ class AerosolModel(BaseAerosolModel):
             for g in range(len(input.gas_data)):
                 f.write(f'{input.gas_data[g]}\t{input.gas_init[g]}\n')
 
-        # aerosol_data.dat, aero_init_dist.dat, aero_init_comp.dat
-        with open(os.path.join(dir, 'aerosol_data.dat'), 'w') as f:
+        # aero_data.dat, aero_init_dist.dat, aero_init_comp.dat
+        with open(os.path.join(dir, 'aero_data.dat'), 'w') as f:
             f.write('#\tdens (kg/m^3)\tions in soln (1)\tmolec wght (kg/mole)\tkappa (1)\n')
             for aero in input.aerosol_data:
                 f.write(f'{aero.species}\t{aero.density}\t{aero.ions_in_soln}\t{aero.molecular_weight}\t{aero.kappa}\n')
