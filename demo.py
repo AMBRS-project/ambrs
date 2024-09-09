@@ -139,7 +139,7 @@ partmc_inputs = partmc.create_inputs(
 )
 partmc_dir = os.path.join(cwd, 'partmc_runs')
 if not os.path.exists(partmc_dir):
-    os.mkdir(dir)
+    os.mkdir(partmc_dir)
 partmc_runner = ambrs.PoolRunner(
     model = partmc,
     executable = 'partmc',
