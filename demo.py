@@ -112,9 +112,10 @@ n = 100
 ensemble = ambrs.lhs(specification = spec, n = n)
 
 # run a MAM4 ensemble
-mam4 = ambrs.mam4.AerosolModel()
-mam4_inputs = mam4.create_inputs(
+mam4 = ambrs.mam4.AerosolModel(
     processes = processes,
+)
+mam4_inputs = mam4.create_inputs(
     ensemble = ensemble,
     dt = dt,
     nstep = nstep
@@ -130,9 +131,13 @@ mam4_runner = ambrs.PoolRunner(
 mam4_runner.run(mam4_inputs)
 
 # run a PartMC ensemble
-partmc = ambrs.partmc.AerosolModel(num_particles = 5000)
-partmc_inputs = partmc.create_inputs(
+partmc = ambrs.partmc.AerosolModel(
     processes = processes,
+    run_type = 'particle',
+    n_part = 5000,
+    n_repeat = 5,
+)
+partmc_inputs = partmc.create_inputs(
     ensemble = ensemble,
     dt = dt,
     nstep = nstep

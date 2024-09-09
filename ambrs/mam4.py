@@ -79,11 +79,10 @@ class Input:
     qsoag: float
 
 class AerosolModel(BaseAerosolModel):
-    def __init__(self):
-        BaseAerosolModel.__init__(self)
+    def __init__(self, processes: AerosolProcesses):
+        BaseAerosolModel.__init__(self, processes)
 
     def create_input(self,
-                     processes: AerosolProcesses,
                      scenario: Scenario,
                      dt: float,
                      nstep: int) -> Input:
@@ -92,8 +91,6 @@ ambrs.mam4.Input object that can create input files for a MAM4 box model
 simulation
 
 Parameters:
-    * processes: an ambrs.AerosolProcesses object that defines the aerosol
-      processes under consideration
     * scenario: an ambrs.Scenario object created by sampling a modal particle
       size distribution
     * dt: a fixed time step size for simulations
@@ -119,11 +116,11 @@ Parameters:
             mam_dt = dt,
             mam_nstep = nstep,
 
-            mdo_gaschem = 1 if processes.gas_phase_chemistry else 0,
-            mdo_gasaerexch = 1 if processes.condensation else 0,
+            mdo_gaschem = 1 if self.processes.gas_phase_chemistry else 0,
+            mdo_gasaerexch = 1 if self.processes.condensation else 0,
             mdo_rename = 1,
-            mdo_newnuc = 1 if processes.nucleation else 0,
-            mdo_coag = 1 if processes.coagulation else 0,
+            mdo_newnuc = 1 if self.processes.nucleation else 0,
+            mdo_coag = 1 if self.processes.coagulation else 0,
 
             temp = scenario.temperature,
             press = scenario.pressure,
