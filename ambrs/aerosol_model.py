@@ -22,40 +22,37 @@ To add an aerosol model to AMBRS:
    AerosolModel.create_input and passed to Aerosol.write_input_files.
 """
 
-    def __init__(self):
+    def __init__(self, processes: AerosolProcesses):
         """ambrs.BaseAerosolModel.__init__(self) - base class constructor
 Call this constructor in your derived aerosol model class's __init__ method in
-the usual Python way."""
-        pass
+the usual Python way. Arguments:
+    * processes: an ambrs.AerosolProcesses object that defines the aerosol
+      processes under consideration
+"""
+        self.processes = processes
 
     def create_input(self,
-                     processes: AerosolProcesses,
                      scenario: Scenario,
                      dt: float,
                      nstep: int):
-        """ambrs.BaseAerosolModel.create_input(processes, scenario, dt, nstep) ->
+        """ambrs.BaseAerosolModel.create_input(scenario, dt, nstep) ->
 an instance of the relevant input dataclass for an aerosol model that holds data
 used to create input files for a scenario
 
 Parameters:
-    * processes: an ambrs.AerosolProcesses object that defines the aerosol
-      processes under consideration
     * scenario: an ambrs.Scenario object defining an individual scenario
     * dt: a fixed time step size for simulations
     * nsteps: the number of steps in each simulation"""
         raise NotImplementedError('BaseAerosolModel.create_input not overridden!')
 
     def create_inputs(self,
-                      processes: AerosolProcesses,
                       ensemble: Ensemble,
                       dt: float,
                       nstep: int) -> list:
-        """ambrs.BaseAerosolModel.create_inputs(processes, ensemble, dt, nstep) -> list of
+        """ambrs.BaseAerosolModel.create_inputs(ensemble, dt, nstep) -> list of
 relevant input dataclasses that can create input files for an entire ensemble
 
 Parameters:
-    * processes: an ambrs.AerosolProcesses object that defines the aerosol
-      processes under consideration
     * ensemble: a ppe.Ensemble object created by sampling a modal particle size
       distribution
     * dt: a fixed time step size for simulations
@@ -69,7 +66,7 @@ input dataclasses for each individual scenario."""
             raise ValueError("nstep must be positive")
         inputs = []
         for scenario in ensemble:
-            inputs.append(self.create_input(processes, scenario, dt, nstep))
+            inputs.append(self.create_input(scenario, dt, nstep))
         return inputs
 
     def invocation(self, exe: str, prefix: str) -> str:

@@ -109,7 +109,13 @@ class TestPartMCInput(unittest.TestCase):
         scenario = self.ensemble.member(0)
         dt = 4.0
         nstep = 100
-        input = partmc.create_particle_input(n_part, processes, scenario, dt, nstep)
+        model = partmc.AerosolModel(
+            processes = processes,
+            run_type = 'particle',
+            n_part = 1000,
+            n_repeat = 5,
+        )
+        input = model.create_input(scenario, dt, nstep)
 
         # timestepping parameters
         self.assertTrue(abs(dt - input.del_t) < 1e-12)
@@ -124,7 +130,6 @@ class TestPartMCInput(unittest.TestCase):
         # FIXME: more stuff vvv
 
     def test_create_particle_inputs(self):
-        n_part = 1000
         processes = aerosol.AerosolProcesses(
             aging = True,
             coagulation = True,
@@ -132,7 +137,13 @@ class TestPartMCInput(unittest.TestCase):
         dt = 4.0
         nstep = 100
 
-        inputs = partmc.create_particle_inputs(n_part, processes, self.ensemble, dt, nstep)
+        model = partmc.AerosolModel(
+            processes = processes,
+            run_type = 'particle',
+            n_part = 1000,
+            n_repeat = 5,
+        )
+        inputs = model.create_inputs(self.ensemble, dt, nstep)
         for i, input in enumerate(inputs):
             scenario = self.ensemble.member(i)
 
@@ -148,7 +159,7 @@ class TestPartMCInput(unittest.TestCase):
 
             # FIXME: more stuff vvv
 
-    def test_write_files(self):
+    def test_write_input_files(self):
         n_part = 1000
         processes = aerosol.AerosolProcesses(
             aging = True,
@@ -157,9 +168,15 @@ class TestPartMCInput(unittest.TestCase):
         scenario = self.ensemble.member(0)
         dt = 4.0
         nstep = 100
-        input = partmc.create_particle_input(n_part, processes, scenario, dt, nstep)
+        model = partmc.AerosolModel(
+            processes = processes,
+            run_type = 'particle',
+            n_part = 1000,
+            n_repeat = 5,
+        )
+        input = model.create_input(scenario, dt, nstep)
         temp_dir = tempfile.TemporaryDirectory()
-        input.write_files(temp_dir.name, 'partmc')
+        model.write_input_files(input, temp_dir.name, 'partmc')
         self.assertTrue(os.path.exists(os.path.join(temp_dir.name, 'partmc.spec')))
         temp_dir.cleanup()
 

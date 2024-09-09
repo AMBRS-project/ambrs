@@ -135,14 +135,22 @@ class Input:
     aero_background: Optional[AerosolModeTimeSeries] = None # aerosol background time series
 
 class AerosolModel(BaseAerosolModel):
-    def __init__(self, num_particles):
-        BaseAerosolModel.__init__(self)
-        if num_particles < 1:
-            raise ValueError('num_particles must be positive!')
-        self.num_particles = num_particles
+    def __init__(self, processes,
+        run_type = 'particle',
+        n_part = None,
+        n_repeat = 0):
+        BaseAerosolModel.__init__(self, processes)
+        if run_type not in ['particle']:
+            raise ValueError(f'Unsupported run_type: {run_type}')
+        if not n_part or n_part < 1:
+            raise ValueError('n_part must be positive!')
+        if n_repeat < 0:
+            raise ValueError('n_repeat must be non-negative!')
+        self.run_type = run_type
+        self.n_part = n_part
+        self.n_repeat = n_repeat
 
     def create_input(self,
-                     processes: AerosolProcesses,
                      scenario: Scenario,
                      dt: float,
                      nstep: int) -> Input:
@@ -155,8 +163,9 @@ class AerosolModel(BaseAerosolModel):
         aero_data = []
         aero_init = []
         return Input(
-            run_type = 'particle',
-            n_part = self.num_particles,
+            run_type = self.run_type,
+            n_part = self.n_part,
+            n_repeat = self.n_repeat,
 
             restart = False,
             do_select_weighting = True,
@@ -188,11 +197,11 @@ class AerosolModel(BaseAerosolModel):
             start_time = 0,   # FIXME:
             start_day = 0,   # FIXME:
 
-            do_coagulation = processes.coagulation,
+            do_coagulation = self.processes.coagulation,
             do_condensation = False, # this is cloud condensation, not for aerosols
             do_mosaic = False,
-            do_optical = processes.optics,
-            do_nucleation = processes.nucleation,
+            do_optical = self.processes.optics,
+            do_nucleation = self.processes.nucleation,
 
             rand_init = 0, # FIXME: uses time to initialize random seed
             allow_doubling = False,
