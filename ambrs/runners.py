@@ -95,8 +95,8 @@ runner's root directory, generating a directory for each of the scenarios"""
 
         # this function is called with one of a mapped set of arguments by pool.map_async
         def run_scenario(args) -> subprocess.CompletedProcess:
-            f_stdout = open(os.path.join(args['dir'], 'stdout.txt'), 'w')
-            f_stderr = open(os.path.join(args['dir'], 'stderr.txt'), 'w')
+            f_stdout = open(os.path.join(args['dir'], 'stdout.log'), 'w')
+            f_stderr = open(os.path.join(args['dir'], 'stderr.log'), 'w')
             return subprocess.run(args['command'].split(),
                 close_fds = True,
                 cwd = args['dir'],
