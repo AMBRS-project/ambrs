@@ -1,16 +1,18 @@
 """ambrs.mam4 -- data types and functions related to the MAM4 box model"""
 
-from dataclasses import dataclass
-
 from .aerosol import AerosolProcesses, AerosolModalSizePopulation, \
                      AerosolModalSizeState
+from .aerosol_model import BaseAerosolModel
 from .gas import GasSpecies
 from .scenario import Scenario
 from .ppe import Ensemble
 
+from dataclasses import dataclass
+import os.path
+
 @dataclass
-class MAM4Input:
-    """MAM4Input -- represents input for a single MAM4 box model simulation"""
+class Input:
+    """ambrs.mam4.Input -- an input dataclass for the MAM4 box model"""
     # all fields here are named identically to their respective namelist
     # parameters in the MAM4 box model
 
@@ -76,31 +78,117 @@ class MAM4Input:
     qh2so4: float
     qsoag: float
 
-    def write_namelist(self, filename):
-        """input.write_namelist(filename) -> writes a MAM4 box model namelist
-file with the given name"""
-        content = f"""
+class AerosolModel(BaseAerosolModel):
+    def __init__(self, processes: AerosolProcesses):
+        BaseAerosolModel.__init__(self, processes)
+
+    def create_input(self,
+                     scenario: Scenario,
+                     dt: float,
+                     nstep: int) -> Input:
+        """ambrs.mam4.AerosolModel.create_input(processes, scenario, dt, nstep) ->
+ambrs.mam4.Input object that can create input files for a MAM4 box model
+simulation
+
+Parameters:
+    * scenario: an ambrs.Scenario object created by sampling a modal particle
+      size distribution
+    * dt: a fixed time step size for simulations
+    * nsteps: the number of steps in each simulation"""
+        if dt <= 0.0:
+            raise ValueError("dt must be positive")
+        if nstep <= 0:
+            raise ValueError("nstep must be positive")
+        if not isinstance(scenario.size, AerosolModalSizeState):
+            raise TypeError('Non-modal aerosol particle size state cannot be used to create MAM4 input!')
+        if len(scenario.size.modes) != 4:
+            raise TypeError(f'{len(scenario.size.mode)}-mode aerosol particle size state cannot be used to create MAM4 input!')
+        iso2 = GasSpecies.find(scenario.gases, 'so2')
+        if iso2 == -1:
+            raise ValueError("SO2 gas ('so2') not found in gas species")
+        ih2so4 = GasSpecies.find(scenario.gases, 'h2so4')
+        if ih2so4 == -1:
+            raise ValueError("H2SO4 gas ('h2so4') not found in gas species")
+        isoag = GasSpecies.find(scenario.gases, 'soag')
+        if isoag == -1:
+            raise ValueError("SOAG gas ('soag') not found in gas species")
+        return Input(
+            mam_dt = dt,
+            mam_nstep = nstep,
+
+            mdo_gaschem = 1 if self.processes.gas_phase_chemistry else 0,
+            mdo_gasaerexch = 1 if self.processes.condensation else 0,
+            mdo_rename = 1,
+            mdo_newnuc = 1 if self.processes.nucleation else 0,
+            mdo_coag = 1 if self.processes.coagulation else 0,
+
+            temp = scenario.temperature,
+            press = scenario.pressure,
+            RH_CLEA = scenario.relative_humidity,
+
+            numc1 = scenario.size.modes[0].number,
+            numc2 = scenario.size.modes[1].number,
+            numc3 = scenario.size.modes[2].number,
+            numc4 = scenario.size.modes[3].number,
+
+            mfso41 = scenario.size.modes[0].mass_fraction("so4"),
+            mfpom1 = scenario.size.modes[0].mass_fraction("pom"),
+            mfsoa1 = scenario.size.modes[0].mass_fraction("soa"),
+            mfbc1  = scenario.size.modes[0].mass_fraction("bc"),
+            mfdst1 = scenario.size.modes[0].mass_fraction("dst"),
+            mfncl1 = scenario.size.modes[0].mass_fraction("ncl"),
+
+            mfso42 = scenario.size.modes[1].mass_fraction("so4"),
+            mfsoa2 = scenario.size.modes[1].mass_fraction("soa"),
+            mfncl2 = scenario.size.modes[1].mass_fraction("ncl"),
+
+            mfdst3 = scenario.size.modes[2].mass_fraction("dst"),
+            mfncl3 = scenario.size.modes[2].mass_fraction("ncl"),
+            mfso43 = scenario.size.modes[2].mass_fraction("so4"),
+            mfbc3  = scenario.size.modes[2].mass_fraction("bc"),
+            mfpom3 = scenario.size.modes[2].mass_fraction("pom"),
+            mfsoa3 = scenario.size.modes[2].mass_fraction("soa"),
+
+            mfpom4 = scenario.size.modes[3].mass_fraction("pom"),
+            mfbc4  = scenario.size.modes[3].mass_fraction("bc"),
+
+            qso2 = scenario.gas_concs[iso2],
+            qh2so4 = scenario.gas_concs[ih2so4],
+            qsoag = scenario.gas_concs[isoag],
+        )
+
+    def invocation(self, exe: str, prefix: str) -> str:
+        """input.invocation(exe, prefix) -> a string defining the command invoking
+the input with the given executable and input prefix, assuming that the current
+working directory contains any needed input files."""
+        return f'{exe}'
+
+    def read_output_files(self, dir: str, prefix: str) -> None:
+        pass
+
+    def write_input_files(self, input, dir, prefix) -> None:
+        content = f"""! generated by ambrs.mam4.AerosolModel.write_input_files
 &time_input
-  mam_dt         = {self.mam_dt},
-  mam_nstep      = {self.mam_nstep},
+  mam_dt         = {input.mam_dt},
+  mam_nstep      = {input.mam_nstep},
 /
 &cntl_input
-  mdo_gaschem    = {self.mdo_gaschem},
-  mdo_gasaerexch = {self.mdo_gasaerexch},
-  mdo_rename     = {self.mdo_rename},
-  mdo_newnuc     = {self.mdo_newnuc},
-  mdo_coag       = {self.mdo_coag},
+  mdo_gaschem    = {input.mdo_gaschem},
+  mdo_gasaerexch = {input.mdo_gasaerexch},
+  mdo_rename     = {input.mdo_rename},
+  mdo_newnuc     = {input.mdo_newnuc},
+  mdo_coag       = {input.mdo_coag},
 /
 &met_input
-  temp           = {self.temp},
-  press          = {self.press},
-  RH_CLEA        = {self.RH_CLEA},
+  temp           = {input.temp},
+  press          = {input.press},
+  RH_CLEA        = {input.RH_CLEA},
 /
 &chem_input
-  numc1          = {self.numc1}, ! unit: #/m3
-  numc2          = {self.numc2},
-  numc3          = {self.numc3},
-  numc4          = {self.numc4},
+  numc1          = {input.numc1}, ! unit: #/m3
+  numc2          = {input.numc2},
+  numc3          = {input.numc3},
+  numc4          = {input.numc4},
   !
   ! mfABCx: mass fraction of species ABC in mode x.
   ! 
@@ -109,134 +197,30 @@ file with the given name"""
   ! is issued by the test driver. number of species
   ! ABC in each mode x comes from the MAM4 with mom.
   ! 
-  mfso41         = {self.mfso41},
-  mfpom1         = {self.mfpom1},
-  mfsoa1         = {self.mfsoa1},
-  mfbc1          = {self.mfbc1},
-  mfdst1         = {self.mfdst1},
-  mfncl1         = {self.mfncl1},
-  mfso42         = {self.mfso42},
-  mfsoa2         = {self.mfsoa2},
-  mfncl2         = {self.mfncl2},
-  mfdst3         = {self.mfdst3},
-  mfncl3         = {self.mfncl3},
-  mfso43         = {self.mfso43},
-  mfbc3          = {self.mfbc3},
-  mfpom3         = {self.mfpom3},
-  mfsoa3         = {self.mfsoa3},
-  mfpom4         = {self.mfpom4},
-  mfbc4          = {self.mfbc4},
-  qso2           = {self.qso2},
-  qh2so4         = {self.qh2so4},
-  qsoag          = {self.qsoag},
+  mfso41         = {input.mfso41},
+  mfpom1         = {input.mfpom1},
+  mfsoa1         = {input.mfsoa1},
+  mfbc1          = {input.mfbc1},
+  mfdst1         = {input.mfdst1},
+  mfncl1         = {input.mfncl1},
+  mfso42         = {input.mfso42},
+  mfsoa2         = {input.mfsoa2},
+  mfncl2         = {input.mfncl2},
+  mfdst3         = {input.mfdst3},
+  mfncl3         = {input.mfncl3},
+  mfso43         = {input.mfso43},
+  mfbc3          = {input.mfbc3},
+  mfpom3         = {input.mfpom3},
+  mfsoa3         = {input.mfsoa3},
+  mfpom4         = {input.mfpom4},
+  mfbc4          = {input.mfbc4},
+  qso2           = {input.qso2},
+  qh2so4         = {input.qh2so4},
+  qsoag          = {input.qsoag},
 /
 """
+        if not os.path.exists(dir):
+            raise OSError(f'Directory not found: {dir}')
+        filename = os.path.join(dir, 'namelist')
         with open(filename, 'w') as f:
             f.write(content)
-
-def _mam4_input(processes: AerosolProcesses,
-                scenario: Scenario,
-                dt: float,
-                nstep: int) -> MAM4Input:
-    if not isinstance(scenario.size, AerosolModalSizeState):
-        raise TypeError('Non-modal aerosol particle size state cannot be used to create MAM4 input!')
-    if len(scenario.size.modes) != 4:
-        raise TypeError(f'{len(scenario.size.mode)}-mode aerosol particle size state cannot be used to create MAM4 input!')
-    iso2 = GasSpecies.find(scenario.gases, 'so2')
-    if iso2 == -1:
-        raise ValueError("SO2 gas ('so2') not found in gas species")
-    ih2so4 = GasSpecies.find(scenario.gases, 'h2so4')
-    if ih2so4 == -1:
-        raise ValueError("H2SO4 gas ('h2so4') not found in gas species")
-    isoag = GasSpecies.find(scenario.gases, 'soag')
-    if isoag == -1:
-        raise ValueError("SOAG gas ('soag') not found in gas species")
-    return MAM4Input(
-        mam_dt = dt,
-        mam_nstep = nstep,
-
-        mdo_gaschem = False,
-        mdo_gasaerexch = False,
-        mdo_rename = False,
-        mdo_newnuc = processes.nucleation,
-        mdo_coag = processes.coagulation,
-
-        temp = scenario.temperature,
-        press = scenario.pressure,
-        RH_CLEA = scenario.relative_humidity,
-
-        numc1 = scenario.size.modes[0].number,
-        numc2 = scenario.size.modes[1].number,
-        numc3 = scenario.size.modes[2].number,
-        numc4 = scenario.size.modes[3].number,
-
-        mfso41 = scenario.size.modes[0].mass_fraction("so4"),
-        mfpom1 = scenario.size.modes[0].mass_fraction("pom"),
-        mfsoa1 = scenario.size.modes[0].mass_fraction("soa"),
-        mfbc1  = scenario.size.modes[0].mass_fraction("bc"),
-        mfdst1 = scenario.size.modes[0].mass_fraction("dst"),
-        mfncl1 = scenario.size.modes[0].mass_fraction("ncl"),
-
-        mfso42 = scenario.size.modes[1].mass_fraction("so4"),
-        mfsoa2 = scenario.size.modes[1].mass_fraction("soa"),
-        mfncl2 = scenario.size.modes[1].mass_fraction("ncl"),
-
-        mfdst3 = scenario.size.modes[2].mass_fraction("dst"),
-        mfncl3 = scenario.size.modes[2].mass_fraction("ncl"),
-        mfso43 = scenario.size.modes[2].mass_fraction("so4"),
-        mfbc3  = scenario.size.modes[2].mass_fraction("bc"),
-        mfpom3 = scenario.size.modes[2].mass_fraction("pom"),
-        mfsoa3 = scenario.size.modes[2].mass_fraction("soa"),
-
-        mfpom4 = scenario.size.modes[3].mass_fraction("pom"),
-        mfbc4  = scenario.size.modes[3].mass_fraction("bc"),
-
-        qso2 = scenario.gas_concs[iso2],
-        qh2so4 = scenario.gas_concs[ih2so4],
-        qsoag = scenario.gas_concs[isoag],
-     )
-
-def create_mam4_input(processes: AerosolProcesses,
-                      scenario: Scenario,
-                      dt: float,
-                      nstep: int) -> MAM4Input:
-    """create_mam4_input(processes, scenario, dt, nstep) -> MAM4Input object
-that can create a namelist input file for a MAM4 box model simulation
-
-Parameters:
-    * processes: an ambrs.AerosolProcesses object that defines the aerosol
-      processes under consideration
-    * scenario: an ambrs.Scenario object created by sampling a modal particle
-      size distribution
-    * dt: a fixed time step size for simulations
-    * nsteps: the number of steps in each simulation"""
-    if dt <= 0.0:
-        raise ValueError("dt must be positive")
-    if nstep <= 0:
-        raise ValueError("nstep must be positive")
-    return _mam4_input(processes, scenario, dt, nstep)
-
-def create_mam4_inputs(processes: AerosolProcesses,
-                       ensemble: Ensemble,
-                       dt: float,
-                       nstep: int) -> list[MAM4Input]:
-    """create_mam4_inputs(processes, ensemble, dt, nstep) -> list of MAM4Input
-objects that can create namelist input files for MAM4 box model simulations
-
-Parameters:
-    * processes: an ambrs.AerosolProcesses object that defines the aerosol
-      processes under consideration
-    * ensemble: a ppe.Ensemble object created by sampling a modal particle size
-      distribution
-    * dt: a fixed time step size for simulations
-    * nsteps: the number of steps in each simulation"""
-    if not isinstance(ensemble.size, AerosolModalSizePopulation):
-        raise TypeError("ensemble must have a modal size distribution!")
-    if dt <= 0.0:
-        raise ValueError("dt must be positive")
-    if nstep <= 0:
-        raise ValueError("nstep must be positive")
-    inputs = []
-    for scenario in ensemble:
-        inputs.append(_mam4_input(processes, scenario, dt, nstep))
-    return inputs
