@@ -1,8 +1,32 @@
 # We build the MAM4 box model with CMake since it doesn't have its own build system.
-project(mam4)
-enable_language(Fortran)
+cmake_minimum_required (VERSION 3.24.0)
 
-include(netcdf)
+project(mam4 Fortran C)
+
+include(netcdf.cmake)
+
+set(CMAKE_Fortran_FLAGS "-cpp")
+if (CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+  if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fbacktrace")
+  endif()
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Wall -ffree-form -ffree-line-length-0")
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Wno-unused-dummy-argument")
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Wno-unused-variable")
+
+  # This is a hack to make our non-standard inf/nan values work with
+  # recent, picky versions of GFortran.
+  if (${CMAKE_Fortran_COMPILER_VERSION} GREATER_EQUAL 10)
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fallow-invalid-boz")
+    message(STATUS "BOZ literal hack enabled")
+    # we also need this guy
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fallow-argument-mismatch")
+  endif()
+elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
+  if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -traceback")
+  endif()
+endif()
 
 add_executable(mam4
   e3sm_src/shr_kind_mod.F90
