@@ -2,10 +2,6 @@
 
 FROM fedora:41
 
-# NOTE: we install Fedora's contourpy and matplotlib packages because the builds
-# NOTE: for both of these fail to the tune of:
-#  Run-time dependency python found: NO (tried pkgconfig, pkgconfig and sysconfig)
-#  ../src/meson.build:5:10: ERROR: Python dependency not found
 RUN dnf -y update \
     && dnf -y install \
         cmake \
@@ -15,11 +11,8 @@ RUN dnf -y update \
         less \
         make \
         netcdf-fortran-devel \
-        openblas-devel \
+        python3.12 \
         python3.12-devel \
-        python3-contourpy \
-        python3-matplotlib \
-        python3-pip \
         tmux \
     && dnf clean all
 
@@ -47,6 +40,10 @@ RUN git clone --depth 1 https://github.com/AMBRS-project/MAM_box_model.git /mam4
     && make \
     && cp /mam4/build/mam4 /usr/local/bin
 
-# install AMBRS
+# install AMBRS in its own "ambrs" virtual environment
 COPY / /
-RUN pip3 install -r requirements.txt
+RUN mkdir /venv \
+    && python3.12 -m venv /venv/ambrs \
+    && source /venv/ambrs/bin/activate \
+    && pip install -r requirements.txt
+CMD source/venv/ambrs/bin/activate
