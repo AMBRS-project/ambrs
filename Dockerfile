@@ -2,22 +2,32 @@
 
 FROM fedora:41
 
+# NOTE: we install Fedora's contourpy and matplotlib packages because the builds
+# NOTE: for both of these fail to the tune of:
+#  Run-time dependency python found: NO (tried pkgconfig, pkgconfig and sysconfig)
+#  ../src/meson.build:5:10: ERROR: Python dependency not found
 RUN dnf -y update \
     && dnf -y install \
-        less \
-        tmux \
+        cmake \
+        gcc-c++ \
         gcc-gfortran \
+        git \
+        less \
         make \
         netcdf-fortran-devel \
-        cmake \
-        python3.12 \
+        openblas-devel \
+        python3.12-devel \
+        python3-contourpy \
+        python3-matplotlib \
+        python3-pip \
+        tmux \
     && dnf clean all
 
 # copy box model config files into place
 COPY config /config/
 
 # build PartMC
-RUN git clone https://github.com/AMBRS-Project/partmc/archive/refs/heads/master.zip /partmc \
+RUN git clone --depth 1 https://github.com/AMBRS-Project/partmc.git /partmc \
     && mkdir -p /partmc/build \
     && cd /partmc/build \
     && cmake -D CMAKE_BUILD_TYPE=release \
@@ -25,21 +35,18 @@ RUN git clone https://github.com/AMBRS-Project/partmc/archive/refs/heads/master.
              -D CMAKE_Fortran_FLAGS_RELEASE="-O2 -g -Werror -fimplicit-none -Wall -Wextra -Wconversion -Wunderflow -Wimplicit-interface -Wno-compare-reals -Wno-unused -Wno-unused-parameter -Wno-unused-dummy-argument -fbounds-check" \
              /partmc \
     && make \
-    && cp /partmc/build/src/partmc /bin
+    && cp /partmc/build/partmc /usr/local/bin
 
 # build MAM4
-RUN git clone https://github.com/AMBRS-project/MAM_box_model/archive/refs/heads/main.zip /mam4\
-    && cp /config/mam4/CMakeLists.txt /mam4
-    && cp /partmc/netcdf.cmake /mam4
+RUN git clone --depth 1 https://github.com/AMBRS-project/MAM_box_model.git /mam4\
+    && cp /config/mam4/CMakeLists.txt /mam4 \
+    && cp /partmc/netcdf.cmake /mam4 \
     && mkdir -p /mam4/build \
     && cd /mam4/build \
-    && cmake -D CMAKE_BUILD_TYPE=Release \
-             -D CMAKE_C_FLAGS="-O2 -g -Wall" \
-             -D CMAKE_Fortran_FLAGS="-O2 -g -Wall -ffree-form -ffree-line-length=0 -fallow-invalid-boz -fallow-argument-mismatch" \
-             /mam4 \
+    && cmake -D CMAKE_BUILD_TYPE=Release /mam4 \
     && make \
-    && cp /mam4/build/mam4 /bin
+    && cp /mam4/build/mam4 /usr/local/bin
 
-# Install AMBRS
+# install AMBRS
 COPY / /
-pip3 install -r requirements.txt
+RUN pip3 install -r requirements.txt
