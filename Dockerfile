@@ -16,8 +16,8 @@ RUN dnf -y update \
         tmux \
     && dnf clean all
 
-# copy box model config files into place
-COPY config /config/
+# copy local files into place (make sure to remove any temporary clutter first!)
+COPY . /
 
 # build PartMC
 RUN git clone --depth 1 https://github.com/AMBRS-Project/partmc.git /partmc \
@@ -41,9 +41,8 @@ RUN git clone --depth 1 https://github.com/AMBRS-project/MAM_box_model.git /mam4
     && cp /mam4/build/mam4 /usr/local/bin
 
 # install AMBRS in its own "ambrs" virtual environment
-COPY / /
 RUN mkdir /venv \
     && python3.12 -m venv /venv/ambrs \
     && source /venv/ambrs/bin/activate \
     && pip install -r requirements.txt
-CMD source/venv/ambrs/bin/activate
+CMD source /venv/ambrs/bin/activate
