@@ -75,8 +75,6 @@ class Input:
     restart:  bool              # whether to restart from saved state
 
     do_select_weighting: bool   # whether to select weighting explicitly
-    weight_type: str            # type of weighting to use (power, power_source)
-    weighting_exponent: int     # exponent to use in weighting curve (-3 to 0)
 
     t_max: float                # total simulation time [s]
     del_t: float                # timestep [s]
@@ -114,6 +112,10 @@ class Input:
     allow_halving: bool         # whether to allow halving
     record_removals: bool       # whether to record particle removals
     do_parallel: bool           # whether to run in parallel
+
+    # weighting fields
+    weight_type: str = ''       # type of weighting to use (power, power_source)
+    weighting_exponent: int = 0 # exponent to use in weighting curve (-3 to 0)
 
     # particle-specific fields
     n_repeat: Optional[int] = None # number of Monte Carlo repeats
@@ -168,14 +170,15 @@ class AerosolModel(BaseAerosolModel):
             n_repeat = self.n_repeat,
 
             restart = False,
-            do_select_weighting = True,
-            weight_type = 'power',
-            weighting_exponent = 0,
+            do_select_weighting = False,
+            #do_select_weighting = True,
+            #weight_type = 'power',
+            #weighting_exponent = 0,
 
             t_max = nstep * dt,
             del_t = dt,
-            t_output = 0,
-            t_progress = 0,
+            t_output = nstep * dt,
+            t_progress = nstep * dt,
 
             do_camp_chem = False,
 
@@ -190,12 +193,12 @@ class AerosolModel(BaseAerosolModel):
             pressure_profile = [(0, scenario.pressure)],
             height_profile = [(0, scenario.height)],
 
-            rel_humidity = scenario.relative_humidity,
-            latitude = 0.0,   # FIXME:
-            longitude = 0.0,  # FIXME:
-            altitude = 10000, # FIXME:
-            start_time = 0,   # FIXME:
-            start_day = 0,   # FIXME:
+            rel_humidity = 0.5,#scenario.relative_humidity,
+            latitude = 0,       # FIXME:
+            longitude = 0,      # FIXME:
+            altitude = 0,       # FIXME:
+            start_time = 21600, # FIXME:
+            start_day = 200,    # FIXME:
 
             do_coagulation = self.processes.coagulation,
             do_condensation = False, # this is cloud condensation, not for aerosols
@@ -219,10 +222,15 @@ class AerosolModel(BaseAerosolModel):
     def write_input_files(self, input, dir: str, prefix: str):
         if not os.path.exists(dir):
             raise OSError(f'Directory not found: {dir}')
+        output_dir = os.path.join(dir, 'out')
+        if not os.path.exists(output_dir):
+            os.mkdir(output_dir)
 
         # write the main (.spec) file
-        spec_content = f'run_type {input.run_type}\noutput_prefix {prefix}\n'
+        output_prefix = os.path.join('out', prefix)
+        spec_content = f'run_type {input.run_type}\noutput_prefix {output_prefix}\n'
 
+        # simulation metadata
         if input.run_type == 'particle':
             spec_content += f'n_repeat {input.n_repeat if input.n_repeat else 1}\nn_part {input.n_part}\n'
         if input.restart:
@@ -235,31 +243,41 @@ class AerosolModel(BaseAerosolModel):
             spec_content += f'weighting_exponent {input.weighting_exponent}\n'
         else:
             spec_content += 'do_select_weighting no\n'
+        spec_content += '\n'
 
+        # time info
         spec_content += f't_max {input.t_max}\ndel_t {input.del_t}\nt_output {input.t_output}\nt_progress {input.t_progress}\n'
+        spec_content += '\n'
 
+        # chemistry
         if input.do_camp_chem:
             spec_content += 'do_camp_chem yes\n'
         else:
             spec_content += 'do_camp_chem no\n'
+        spec_content += '\n'
 
+        # gas data
         spec_content += 'gas_data gas_data.dat\ngas_init gas_init.dat\n'
+        spec_content += '\n'
 
+        # aerosol data
         spec_content += 'aerosol_data aero_data.dat\n'
         if input.do_fractal:
             spec_content += 'do_fractal yes\n'
         else:
             spec_content += 'do_fractal no\n'
         spec_content += 'aerosol_init aero_init_dist.dat\n'
+        spec_content += '\n'
 
+        # atmospheric environment data
         spec_content += 'temp_profile temp.dat\npressure_profile pres.dat\nheight_profile height.dat\n'
         spec_content += 'gas_emissions gas_emit.dat\ngas_background gas_back.dat\n'
         spec_content += 'aero_emissions aero_emit.dat\naero_background aero_back.dat\n'
-
         if input.loss_function:
             spec_content += f'loss_function {input.loss_function}\n'
         else:
             spec_content += 'loss_function none\n'
+        spec_content += '\n'
 
         spec_content += f'rel_humidity {input.rel_humidity}\n'
         spec_content += f'latitude {input.latitude}\n'
@@ -267,17 +285,17 @@ class AerosolModel(BaseAerosolModel):
         spec_content += f'altitude {input.altitude}\n'
         spec_content += f'start_time {input.start_time}\n'
         spec_content += f'start_day {input.start_day}\n'
+        spec_content += '\n'
 
+        # processes
         if input.do_coagulation:
             spec_content += f'do_coagulation yes\ncoag_kernel {input.coag_kernel if input.coag_kernel else 'zero'}\n'
         else:
             spec_content += 'do_coagulation no\n'
-
         if input.do_condensation:
             spec_content += 'do_condensation yes\n'
         else:
             spec_content += 'do_condensation no\n'
-
         if input.do_mosaic:
             spec_content += 'do_mosaic yes\n'
             # do_optical is only parsed when do_mosaic is set
@@ -287,33 +305,30 @@ class AerosolModel(BaseAerosolModel):
                 spec_content += 'do_optical no\n'
         else:
             spec_content += 'do_mosaic no\n'
-
         if input.do_nucleation:
             spec_content += 'do_nucleation yes\n'
         else:
             spec_content += 'do_nucleation no\n'
+        spec_content += '\n'
 
+        # misc simulation parameters
         spec_content += f'rand_init {input.rand_init}\n'
-
         if input.allow_doubling:
             spec_content += 'allow_doubling yes\n'
         else:
             spec_content += 'allow_doubling no\n'
-
         if input.allow_halving:
             spec_content += 'allow_halving yes\n'
         else:
             spec_content += 'allow_halving no\n'
-
         if input.record_removals:
             spec_content += 'record_removals yes\n'
         else:
             spec_content += 'record_removals no\n'
-
         if input.do_parallel:
-            spec_content += 'do_parallel yes\n'
+            spec_content += 'do_parallel yes'
         else:
-            spec_content += 'do_parallel no\n'
+            spec_content += 'do_parallel no'
 
         with open(os.path.join(dir, prefix + '.spec'), 'w') as f:
             f.write(spec_content)
