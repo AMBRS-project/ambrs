@@ -25,22 +25,64 @@ dt    = 60   # time step size [s]
 nstep = 1440 # number of steps [-]
 
 # relevant aerosol and gas species
-so4 = ambrs.AerosolSpecies(name='so4', molar_mass = 97.071)
-pom = ambrs.AerosolSpecies(name='pom', molar_mass = 12.01)
-soa = ambrs.AerosolSpecies(name='soa', molar_mass = 12.01)
-bc  = ambrs.AerosolSpecies(name='bc', molar_mass = 12.01)
-dst = ambrs.AerosolSpecies(name='dst', molar_mass = 135.065)
-ncl = ambrs.AerosolSpecies(name='ncl', molar_mass = 58.44)
+# FIXME: proper species and properties need to be filled in here!
+so4 = ambrs.AerosolSpecies(
+    name='so4',
+    molar_mass = 97.071, # NOTE: 1000x smaller than "molecular weight"!
+    density = 1770,
+    hygroscopicity = 0.507,
+)
+pom = ambrs.AerosolSpecies(
+    name='pom',
+    molar_mass = 12.01,
+    density = 1000,
+    hygroscopicity = 0.5,
+)
+soa = ambrs.AerosolSpecies(
+    name='soa',
+    molar_mass = 12.01,
+    density = 1000,
+    hygroscopicity = 0.5,
+)
+bc = ambrs.AerosolSpecies(
+    name='bc',
+    molar_mass = 12.01,
+    density = 1000,
+    hygroscopicity = 0.5,
+)
+dst = ambrs.AerosolSpecies(
+    name='dst',
+    molar_mass = 135.065,
+    density = 1000,
+    hygroscopicity = 0.5,
+)
+ncl = ambrs.AerosolSpecies(
+    name='ncl',
+    molar_mass = 58.44,
+    density = 1000,
+    hygroscopicity = 0.5,
+)
 
-so2   = ambrs.GasSpecies(name='so2', molar_mass = 64.07)
-h2so4 = ambrs.GasSpecies(name='h2so4', molar_mass = 98.079)
-soag  = ambrs.GasSpecies(name='soag', molar_mass = 12.01)
+so2 = ambrs.GasSpecies(
+    name='so2',
+    molar_mass = 64.07,
+)
+h2so4 = ambrs.GasSpecies(
+    name='h2so4',
+    molar_mass = 98.079,
+)
+soag = ambrs.GasSpecies(
+    name='soag',
+    molar_mass = 12.01,
+)
 
 # reference pressure and height
 p0 = 101325 # [Pa]
 h0 = 500    # [m]
 
 # specify distributions sampled for the ensemble
+# FIXME: PartMC complains about a negative log10(stddev) for particle radius
+# FIXME: when we feed it e.g. log10_geom_std_dev = spec.size.modes[0].geom_mean_diam.std()
 spec = ambrs.EnsembleSpecification(
     name = 'demo',
     aerosols = (so4, pom, soa, bc, dst, ncl),

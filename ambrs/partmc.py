@@ -48,7 +48,7 @@ class AeroMode:
 
     # log_normal
     geom_mean_diam: Optional[float] = None     # modal geometric mean diameter
-    log10_geom_std_dev: Optional[float] = None # log_10 of geometric std dev of diameter
+    log10_geom_std_dev: Optional[float] = None # log10 of geometric std dev of diameter
 
     # exp
     diam_at_mean_vol: Optional[float] = None   # the diameter corresponding to the mean volume [m]
@@ -162,8 +162,22 @@ class AerosolModel(BaseAerosolModel):
             raise ValueError("nstep must be positive")
         if not isinstance(scenario.size, AerosolModalSizeState):
             raise TypeError('Non-modal aerosol particle size state cannot be used to create PartMC input!')
-        aero_data = []
-        aero_init = []
+        aero_data = [AeroData(
+            species = s.name,
+            density = s.density,
+            ions_in_soln = s.ions_in_soln,
+            molecular_weight = 1000 * s.molar_mass,
+            kappa = s.hygroscopicity,
+        ) for s in scenario.aerosols]
+        aero_init = [AeroMode(
+            mode_name = m.name.replace(' ', '_'),
+            mass_frac = {m.species[i].name:m.mass_fractions[i] for i in range(len(m.species))},
+            diam_type = 'geometric', # FIXME: could also be 'mobility'
+            mode_type = 'log_normal', # FIXME: could also be 'exp', 'mono', 'sampled'
+            num_conc = m.number,
+            geom_mean_diam = m.geom_mean_diam,
+            log10_geom_std_dev = m.log10_geom_std_dev,
+        ) for m in scenario.size.modes]
         return Input(
             run_type = self.run_type,
             n_part = self.n_part,
@@ -456,7 +470,7 @@ class AerosolModel(BaseAerosolModel):
                     raise TypeError(f'Unsupported diam_type for {mode.mode_name} mode: {mode.diam_type}')
                 f.write('\n')
         for i, mode in enumerate(modes):
-            with open(os.path.join(dir, f'{prefix}_comp_{i+1}.dat')) as f:
+            with open(os.path.join(dir, f'{prefix}_comp_{i+1}.dat'), 'w') as f:
                 f.write('#\tproportion\n')
                 for species, mass_frac in mode.mass_frac.items():
                     f.write(f'{species}\t{mass_frac}\n')

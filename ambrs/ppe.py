@@ -101,6 +101,8 @@ specified scenarios (which must all have the same particle size representation)"
                                    for scenario in scenarios]),
                 geom_mean_diam = np.array([scenario.size.modes[m].geom_mean_diam \
                                            for scenario in scenarios]),
+                log10_geom_std_dev = np.array([scenario.size.modes[m].log10_geom_std_dev \
+                                              for scenario in scenarios]),
                 mass_fractions = tuple(
                     [np.array([scenario.size.modes[m].mass_fractions[s] \
                                for scenario in scenarios]) \
@@ -142,6 +144,7 @@ def sample(specification: EnsembleSpecification, n: int) -> Ensemble:
                     species = mode.species,
                     number = mode.number.rvs(n),
                     geom_mean_diam = mode.geom_mean_diam.rvs(n),
+                    log10_geom_std_dev = log10(mode.geom_mean_diam.std()),
                     mass_fractions = tuple([f.rvs(n) for f in mode.mass_fractions]),
                 ) for mode in specification.size.modes]),
         )
@@ -189,6 +192,7 @@ distribution from which ensemble members are sampled."""
                     species = mode.species,
                     number=mode.number.ppf(lhd[:,(2+num_species[m])*m]),
                     geom_mean_diam=mode.geom_mean_diam.ppf(lhd[:,(2+num_species[m])*m+1]),
+                    log10_geom_std_dev = log10(mode.geom_mean_diam.std()),
                     mass_fractions=tuple(
                         [mass_fraction.ppf(lhd[:,(2+num_species[m])*m+f])
                          for f, mass_fraction in enumerate(mode.mass_fractions)]),
@@ -366,6 +370,7 @@ parameter sweeps"""
                         species = mode.species,
                         number = params[index],
                         geom_mean_diam = params[index+1],
+                        log10_geom_std_dev = mode.log10_geom_std_dev,
                         mass_fractions = tuple(mass_fractions),
                     ),
                 )
