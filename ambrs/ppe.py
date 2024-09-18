@@ -144,7 +144,7 @@ def sample(specification: EnsembleSpecification, n: int) -> Ensemble:
                     species = mode.species,
                     number = mode.number.rvs(n),
                     geom_mean_diam = mode.geom_mean_diam.rvs(n),
-                    log10_geom_std_dev = log10(mode.geom_mean_diam.std()),
+                    log10_geom_std_dev = np.array([mode.log10_geom_std_dev for i in range(n)]),
                     mass_fractions = tuple([f.rvs(n) for f in mode.mass_fractions]),
                 ) for mode in specification.size.modes]),
         )
@@ -192,7 +192,7 @@ distribution from which ensemble members are sampled."""
                     species = mode.species,
                     number=mode.number.ppf(lhd[:,(2+num_species[m])*m]),
                     geom_mean_diam=mode.geom_mean_diam.ppf(lhd[:,(2+num_species[m])*m+1]),
-                    log10_geom_std_dev = log10(mode.geom_mean_diam.std()),
+                    log10_geom_std_dev = np.array([mode.log10_geom_std_dev for i in range(n)]),
                     mass_fractions=tuple(
                         [mass_fraction.ppf(lhd[:,(2+num_species[m])*m+f])
                          for f, mass_fraction in enumerate(mode.mass_fractions)]),
