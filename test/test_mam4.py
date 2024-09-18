@@ -6,7 +6,7 @@ import ambrs.ppe as ppe
 from ambrs.scenario import Scenario
 import ambrs.mam4 as mam4
 
-import math
+from math import log10
 import numpy as np
 import os
 import scipy.stats
@@ -84,7 +84,7 @@ class TestMAM4AerosolModel(unittest.TestCase):
                         species = [so4, pom, soa, bc, dst, ncl],
                         number = scipy.stats.loguniform(3e7, 2e12),
                         geom_mean_diam = scipy.stats.loguniform(0.5e-7, 1.1e-7),
-                        log10_geom_std_dev = 1.6,
+                        log10_geom_std_dev = log10(1.6),
                         mass_fractions = [
                             scipy.stats.uniform(0, 1), # so4
                             scipy.stats.uniform(0, 1), # pom
@@ -99,7 +99,7 @@ class TestMAM4AerosolModel(unittest.TestCase):
                         species = [so4, soa, ncl],
                         number = scipy.stats.loguniform(3e7, 2e12),
                         geom_mean_diam = scipy.stats.loguniform(0.5e-8, 3e-8),
-                        log10_geom_std_dev = 1.6,
+                        log10_geom_std_dev = log10(1.6),
                         mass_fractions = [
                             scipy.stats.uniform(0, 1), # so4
                             scipy.stats.uniform(0, 1), # soa
@@ -111,7 +111,7 @@ class TestMAM4AerosolModel(unittest.TestCase):
                         species = [dst, ncl, so4, bc, pom, soa],
                         number = scipy.stats.loguniform(3e7, 2e12),
                         geom_mean_diam = scipy.stats.loguniform(1e-6, 2e-6),
-                        log10_geom_std_dev = 1.8,
+                        log10_geom_std_dev = log10(1.8),
                         mass_fractions = [
                             scipy.stats.uniform(0, 1), # dst
                             scipy.stats.uniform(0, 1), # ncl
@@ -126,7 +126,7 @@ class TestMAM4AerosolModel(unittest.TestCase):
                         species = [pom, bc],
                         number = scipy.stats.loguniform(3e7, 2e12),
                         geom_mean_diam = scipy.stats.loguniform(1e-8, 6e-8),
-                        log10_geom_std_dev = 1.8,
+                        log10_geom_std_dev = log10(1.8),
                         mass_fractions = [
                             scipy.stats.uniform(0, 1), # pom
                             scipy.stats.uniform(0, 1), # bc
