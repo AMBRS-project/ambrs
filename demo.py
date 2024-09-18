@@ -108,7 +108,7 @@ spec = ambrs.EnsembleSpecification(
                 species = [so4, soa, ncl],
                 number = stats.loguniform(3e7, 2e12),
                 geom_mean_diam = stats.loguniform(0.5e-8, 3e-8),
-                log10_geom_std_dev = log(1.6),
+                log10_geom_std_dev = log10(1.6),
                 mass_fractions = [
                     stats.uniform(0, 1), # so4
                     stats.uniform(0, 1), # soa
