@@ -4,7 +4,7 @@ import ambrs.aerosol as aerosol
 import ambrs.gas as gas
 import ambrs.ppe as ppe
 from ambrs.scenario import Scenario
-import math
+from math import log10
 import numpy as np
 import scipy.stats
 import unittest
@@ -79,7 +79,7 @@ class TestEnsemble(unittest.TestCase):
                         species = [so4, soa, ncl],
                         number = 5e8,
                         geom_mean_diam = 1e-7,
-                        log10_geom_std_dev = 1.6,
+                        log10_geom_std_dev = log10(1.6),
                         mass_fractions = (0.4, 0.3, 0.3),
                     ),
                 ),
@@ -101,7 +101,7 @@ class TestEnsemble(unittest.TestCase):
                         species = self.ref_scenario.size.modes[0].species,
                         number = np.full(self.n, self.ref_scenario.size.modes[0].number),
                         geom_mean_diam = np.full(self.n, self.ref_scenario.size.modes[0].geom_mean_diam),
-                        log10_geom_std_dev = np.full(self.n, 1.6),
+                        log10_geom_std_dev = np.full(self.n, log10(1.6)),
                         mass_fractions = (
                             np.full(self.n, self.ref_scenario.size.modes[0].mass_fractions[0]),
                             np.full(self.n, self.ref_scenario.size.modes[0].mass_fractions[1]),
@@ -150,7 +150,7 @@ class TestSampling(unittest.TestCase):
                         species = [so4, pom, soa, bc, dst, ncl],
                         number = scipy.stats.loguniform(3e7, 2e12),
                         geom_mean_diam = scipy.stats.loguniform(0.5e-7, 1.1e-7),
-                        log10_geom_std_dev = 1.6,
+                        log10_geom_std_dev = log10(1.6),
                         mass_fractions = [
                             scipy.stats.uniform(0, 1), # so4
                             scipy.stats.uniform(0, 1), # pom
@@ -165,7 +165,7 @@ class TestSampling(unittest.TestCase):
                         species = [so4, soa, ncl],
                         number = scipy.stats.loguniform(3e7, 2e12),
                         geom_mean_diam = scipy.stats.loguniform(0.5e-8, 3e-8),
-                        log10_geom_std_dev = 1.6,
+                        log10_geom_std_dev = log10(1.6),
                         mass_fractions = [
                             scipy.stats.uniform(0, 1), # so4
                             scipy.stats.uniform(0, 1), # soa
@@ -177,7 +177,7 @@ class TestSampling(unittest.TestCase):
                         species = [dst, ncl, so4, bc, pom, soa],
                         number = scipy.stats.loguniform(3e7, 2e12),
                         geom_mean_diam = scipy.stats.loguniform(1e-6, 2e-6),
-                        log10_geom_std_dev = 1.8,
+                        log10_geom_std_dev = log10(1.8),
                         mass_fractions = [
                             scipy.stats.uniform(0, 1), # dst
                             scipy.stats.uniform(0, 1), # ncl
@@ -192,7 +192,7 @@ class TestSampling(unittest.TestCase):
                         species = [pom, bc],
                         number = scipy.stats.loguniform(3e7, 2e12),
                         geom_mean_diam = scipy.stats.loguniform(1e-8, 6e-8),
-                        log10_geom_std_dev = 1.8,
+                        log10_geom_std_dev = log10(1.8),
                         mass_fractions = [
                             scipy.stats.uniform(0, 1), # pom
                             scipy.stats.uniform(0, 1), # bc
@@ -263,9 +263,9 @@ class TestSampling(unittest.TestCase):
         ensemble = ppe.sweep(ref_state, sweeps)
         self.assertEqual(100, len(ensemble))
         for i, member in enumerate(ensemble):
-            step = (math.log10(2e12) - math.log10(3e7)) / 100
-            log_ni = math.log10(3e7) + i * step
-            self.assertTrue(abs(log_ni - math.log10(member.size.modes[1].number)) < 1e-12)
+            step = (log10(2e12) - log10(3e7)) / 100
+            log_ni = log10(3e7) + i * step
+            self.assertTrue(abs(log_ni - log10(member.size.modes[1].number)) < 1e-12)
 
 if __name__ == '__main__':
     unittest.main()

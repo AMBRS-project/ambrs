@@ -8,6 +8,7 @@
 
 import ambrs
 import logging
+from math import log10
 import os
 import scipy.stats as stats
 
@@ -92,7 +93,7 @@ spec = ambrs.EnsembleSpecification(
                 species = [so4, pom, soa, bc, dst, ncl],
                 number = stats.loguniform(3e7, 2e12),
                 geom_mean_diam = stats.loguniform(0.5e-7, 1.1e-7),
-                log10_geom_std_dev = 1.6,
+                log10_geom_std_dev = log10(1.6),
                 mass_fractions = [
                     stats.uniform(0, 1), # so4
                     stats.uniform(0, 1), # pom
@@ -107,7 +108,7 @@ spec = ambrs.EnsembleSpecification(
                 species = [so4, soa, ncl],
                 number = stats.loguniform(3e7, 2e12),
                 geom_mean_diam = stats.loguniform(0.5e-8, 3e-8),
-                log10_geom_std_dev = 1.6,
+                log10_geom_std_dev = log(1.6),
                 mass_fractions = [
                     stats.uniform(0, 1), # so4
                     stats.uniform(0, 1), # soa
@@ -119,7 +120,7 @@ spec = ambrs.EnsembleSpecification(
                 species = [dst, ncl, so4, bc, pom, soa],
                 number = stats.loguniform(3e7, 2e12),
                 geom_mean_diam = stats.loguniform(1e-6, 2e-6),
-                log10_geom_std_dev = 1.8,
+                log10_geom_std_dev = log10(1.8),
                 mass_fractions = [
                     stats.uniform(0, 1), # dst
                     stats.uniform(0, 1), # ncl
@@ -134,7 +135,7 @@ spec = ambrs.EnsembleSpecification(
                 species = [pom, bc],
                 number = stats.loguniform(3e7, 2e12),
                 geom_mean_diam = stats.loguniform(1e-8, 6e-8),
-                log10_geom_std_dev = 1.8,
+                log10_geom_std_dev = log10(1.8),
                 mass_fractions = [
                     stats.uniform(0, 1), # pom
                     stats.uniform(0, 1), # bc

@@ -1,6 +1,7 @@
 # unit tests for the ambrs.aerosol package
 
 import ambrs.aerosol as aerosol
+from math import log10
 import numpy as np
 import unittest
 
@@ -29,7 +30,7 @@ class TestAerosolModeState(unittest.TestCase):
             species = [so4, soa, ncl],
             number = 5e8,
             geom_mean_diam = 1e-7,
-            log10_geom_std_dev = 1.6,
+            log10_geom_std_dev = log10(1.6),
             mass_fractions = (0.4, 0.3, 0.3),
         )
 
@@ -48,7 +49,7 @@ class TestAerosolModePopulation(unittest.TestCase):
             species = [so4, soa, ncl],
             number = 5e8,
             geom_mean_diam = 1e-7,
-            log10_geom_std_dev = 1.6,
+            log10_geom_std_dev = log10(1.6),
             mass_fractions = (0.4, 0.3, 0.3),
         )
         self.mode_population = aerosol.AerosolModePopulation(
@@ -56,7 +57,7 @@ class TestAerosolModePopulation(unittest.TestCase):
             species = self.ref_state.species,
             number = np.full(self.n, self.ref_state.number),
             geom_mean_diam = np.full(self.n, self.ref_state.geom_mean_diam),
-            log10_geom_std_dev = np.full(self.n, 1.6),
+            log10_geom_std_dev = np.full(self.n, log10(1.6)),
             mass_fractions = (
                 np.full(self.n, self.ref_state.mass_fractions[0]),
                 np.full(self.n, self.ref_state.mass_fractions[1]),
@@ -87,7 +88,7 @@ class TestAerosolModalSizePopulation(unittest.TestCase):
                     species = [so4, soa, ncl],
                     number = 5e8,
                     geom_mean_diam = 1e-7,
-                    log10_geom_std_dev = 1.6,
+                    log10_geom_std_dev = log10(1.6),
                     mass_fractions = (0.4, 0.3, 0.3),
                 ),
             ),
@@ -99,7 +100,7 @@ class TestAerosolModalSizePopulation(unittest.TestCase):
                     species = self.ref_state.modes[0].species,
                     number = np.full(self.n, self.ref_state.modes[0].number),
                     geom_mean_diam = np.full(self.n, self.ref_state.modes[0].geom_mean_diam),
-                    log10_geom_std_dev = np.full(self.n, 1.6),
+                    log10_geom_std_dev = np.full(self.n, log10(1.6)),
                     mass_fractions = (
                         np.full(self.n, self.ref_state.modes[0].mass_fractions[0]),
                         np.full(self.n, self.ref_state.modes[0].mass_fractions[1]),
