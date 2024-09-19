@@ -173,7 +173,7 @@ mam4_runner = ambrs.PoolRunner(
     executable = 'mam4',
     root = mam4_dir,
 )
-mam4_runner.run(mam4_inputs)
+mam_outputs = mam4_runner.run(mam4_inputs)
 
 # run a PartMC ensemble
 partmc = ambrs.partmc.AerosolModel(
@@ -195,5 +195,5 @@ partmc_runner = ambrs.PoolRunner(
     executable = 'partmc',
     root = partmc_dir,
 )
-partmc_runner.run(partmc_inputs)
+partmc_outputs = partmc_runner.run(partmc_inputs)
 
