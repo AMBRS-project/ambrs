@@ -3,11 +3,12 @@
 from .aerosol import AerosolProcesses, AerosolModalSizePopulation, \
                      AerosolModalSizeState
 from .aerosol_model import BaseAerosolModel
+from .analysis import Output
 from .scenario import Scenario
 from .ppe import Ensemble
 from typing import Dict, Optional
 
-import os.path
+import os
 from dataclasses import dataclass
 
 @dataclass
@@ -137,11 +138,13 @@ class Input:
     aero_background: Optional[AerosolModeTimeSeries] = None # aerosol background time series
 
 class AerosolModel(BaseAerosolModel):
-    def __init__(self, processes,
-        run_type = 'particle',
-        n_part = None,
-        n_repeat = 0):
-        BaseAerosolModel.__init__(self, processes)
+    def __init__(self,
+                 name: str,
+                 processes: AerosolProcesses,
+                 run_type = 'particle',
+                 n_part = None,
+                 n_repeat = 0):
+        BaseAerosolModel.__init__(self, name, processes)
         if run_type not in ['particle']:
             raise ValueError(f'Unsupported run_type: {run_type}')
         if not n_part or n_part < 1:
@@ -227,13 +230,15 @@ class AerosolModel(BaseAerosolModel):
             do_parallel = False,
         )
 
-    def invocation(self, exe: str, prefix: str) -> str:
+    def invocation(self,
+                   exe: str,
+                   prefix: str) -> str:
         return f'{exe} {prefix}.spec'
 
-    def read_output_files(self, dir: str, prefix: str):
-        pass
-
-    def write_input_files(self, input, dir: str, prefix: str):
+    def write_input_files(self,
+                          input,
+                          dir: str,
+                          prefix: str):
         if not os.path.exists(dir):
             raise OSError(f'Directory not found: {dir}')
         output_dir = os.path.join(dir, 'out')
@@ -454,7 +459,10 @@ class AerosolModel(BaseAerosolModel):
                 f.write('rate\t0.0\n')
                 f.write('dist\taero_init_dist.dat\n')
 
-    def _write_aero_modes(input, dir, prefix, modes):
+    def _write_aero_modes(self,
+                          dir: str,
+                          prefix: str,
+                          modes):
         dist_file = f'{prefix}_dist.dat'
         with open(os.path.join(dir, dist_file), 'w') as f:
             for i, mode in enumerate(modes):
@@ -474,3 +482,29 @@ class AerosolModel(BaseAerosolModel):
                 f.write('#\tproportion\n')
                 for species, mass_frac in mode.mass_frac.items():
                     f.write(f'{species}\t{mass_frac}\n')
+
+    def read_output_files(self,
+                          input,
+                          dir: str,
+                          prefix: str) -> Output:
+        n_repeat = self.n_repeat
+        timestep = -1 # FIXME: for now, we use the last timestep in the output
+        if timestep == -1:
+            nc_files = [f for f in os.listdir(dir) if filename.endswith('.nc')]
+            nc_files.sort()
+            nc_file = nc_files[-1]
+        else:
+            nc_file = os.path.join(dir, prefix + '_' + str(timestep).zfill(4) + '_' + '1'.zfill(8) + '.nc')
+            if not os.path.exists(nc_file):
+                raise OSError('Could not open
+        dNdlnD_repeat = np.zeros([len(lnDs), n_repeat])
+        for i, repeat in enumerate(range(1, n_repeat+1)):
+            output_dir = os.path.join(dir, 'out')
+            output_file = prefix + '_' + str(timestep)
+            nc_output = read_partmc.get_ncfile(partmc_dir, timestep, ensemble_number=repeat)
+            dNdlnD_repeats[:,ii] = get_partmc_dsd_onefile(lnDs,ncfile,density_type=density_type)
+        return Output(
+            model = self.name,
+            input = input,
+            dNdlnD = dNdlnD,
+            )

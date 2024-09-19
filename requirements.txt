@@ -1,4 +1,4 @@
-certifi==2024.7.4
+certifi==2024.6.2
 cftime==1.6.4
 contourpy==1.2.1
 coverage==7.6.0

@@ -1,11 +1,14 @@
 """ambrs.runners -- data types and functions related to running scenarios"""
 
+from . import analysis
+
 import logging
 import math
 import multiprocessing
 import multiprocessing.dummy
 import os
 import subprocess
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -41,19 +44,16 @@ Optional parameters:
         if not os.path.exists(self.root):
             raise OSError(f"root path '{self.root}' does not exist!")
 
-    def run(self, inputs):
+    def run(self, inputs: list[Any]) -> list[analysis.Output]:
         """runner.run(inputs) -> runs a list of scenario inputs within the
 runner's root directory, generating a directory for each of the scenarios"""
         if not isinstance(inputs, list):
             raise TypeError('inputs must be a list of scenario inputs')
 
-        # name the model after its module (just the last part)
-        model_name = self.model.__module__[self.model.__module__.index('.')+1:]
-
         # prep scenarios to run
         num_inputs = len(inputs)
         max_num_digits = math.floor(math.log10(num_inputs)) + 1
-        logger.info(f'{model_name}: generating input for {num_inputs} scenarios...')
+        logger.info(f'{self.model.name}: generating input for {num_inputs} scenarios...')
         found_dir = False
         args = []
         for i, input in enumerate(inputs):
@@ -79,12 +79,12 @@ runner's root directory, generating a directory for each of the scenarios"""
                 'dir': dir
             })
         if found_dir:
-            logger.warning(f'{model_name}: one or more existing scenario directories found. Overwriting contents...')
-        logger.info(f'{model_name}: finished generating scenario input.')
+            logger.warning(f'{self.model.name}: one or more existing scenario directories found. Overwriting contents...')
+        logger.info(f'{self.model.name}: finished generating scenario input.')
 
         # now run scenarios in parallel
         pool = multiprocessing.dummy.Pool(self.num_processes)
-        logger.info(f'{model_name}: running {num_inputs} inputs ({self.num_processes} parallel processes)')
+        logger.info(f'{self.model.name}: running {num_inputs} inputs ({self.num_processes} parallel processes)')
 
         error_occurred = False
 
@@ -107,6 +107,14 @@ runner's root directory, generating a directory for each of the scenarios"""
         results = pool.map_async(run_scenario, args, callback = callback)
         results.wait()
 
-        logger.info(f'{model_name}: completed runs.')
+        logger.info(f'{self.model.name}: completed runs.')
         if error_occurred:
-            logger.error('f{model_name}: At least one run failed.')
+            logger.error('f{self.model.name}: At least one run failed.')
+
+        # gather model output
+        outputs = []
+        for i, input in enumerate(inputs):
+            scenario_name = self.scenario_name.format(index = formatted_index)
+            output = self.model.read_output_files(input, args[i]['dir'], scenario_name)
+            outputs.append(output)
+        return outputs
