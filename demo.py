@@ -8,6 +8,7 @@
 
 import ambrs
 import logging
+from math import log10
 import os
 import scipy.stats as stats
 
@@ -25,16 +26,56 @@ dt    = 60   # time step size [s]
 nstep = 1440 # number of steps [-]
 
 # relevant aerosol and gas species
-so4 = ambrs.AerosolSpecies(name='so4', molar_mass = 97.071)
-pom = ambrs.AerosolSpecies(name='pom', molar_mass = 12.01)
-soa = ambrs.AerosolSpecies(name='soa', molar_mass = 12.01)
-bc  = ambrs.AerosolSpecies(name='bc', molar_mass = 12.01)
-dst = ambrs.AerosolSpecies(name='dst', molar_mass = 135.065)
-ncl = ambrs.AerosolSpecies(name='ncl', molar_mass = 58.44)
+# FIXME: proper species and properties need to be filled in here!
+so4 = ambrs.AerosolSpecies(
+    name='so4',
+    molar_mass = 97.071, # NOTE: 1000x smaller than "molecular weight"!
+    density = 1770,
+    hygroscopicity = 0.507,
+)
+pom = ambrs.AerosolSpecies(
+    name='pom',
+    molar_mass = 12.01,
+    density = 1000,
+    hygroscopicity = 0.5,
+)
+soa = ambrs.AerosolSpecies(
+    name='soa',
+    molar_mass = 12.01,
+    density = 1000,
+    hygroscopicity = 0.5,
+)
+bc = ambrs.AerosolSpecies(
+    name='bc',
+    molar_mass = 12.01,
+    density = 1000,
+    hygroscopicity = 0.5,
+)
+dst = ambrs.AerosolSpecies(
+    name='dst',
+    molar_mass = 135.065,
+    density = 1000,
+    hygroscopicity = 0.5,
+)
+ncl = ambrs.AerosolSpecies(
+    name='ncl',
+    molar_mass = 58.44,
+    density = 1000,
+    hygroscopicity = 0.5,
+)
 
-so2   = ambrs.GasSpecies(name='so2', molar_mass = 64.07)
-h2so4 = ambrs.GasSpecies(name='h2so4', molar_mass = 98.079)
-soag  = ambrs.GasSpecies(name='soag', molar_mass = 12.01)
+so2 = ambrs.GasSpecies(
+    name='so2',
+    molar_mass = 64.07,
+)
+h2so4 = ambrs.GasSpecies(
+    name='h2so4',
+    molar_mass = 98.079,
+)
+soag = ambrs.GasSpecies(
+    name='soag',
+    molar_mass = 12.01,
+)
 
 # reference pressure and height
 p0 = 101325 # [Pa]
@@ -52,6 +93,7 @@ spec = ambrs.EnsembleSpecification(
                 species = [so4, pom, soa, bc, dst, ncl],
                 number = stats.loguniform(3e7, 2e12),
                 geom_mean_diam = stats.loguniform(0.5e-7, 1.1e-7),
+                log10_geom_std_dev = log10(1.6),
                 mass_fractions = [
                     stats.uniform(0, 1), # so4
                     stats.uniform(0, 1), # pom
@@ -66,6 +108,7 @@ spec = ambrs.EnsembleSpecification(
                 species = [so4, soa, ncl],
                 number = stats.loguniform(3e7, 2e12),
                 geom_mean_diam = stats.loguniform(0.5e-8, 3e-8),
+                log10_geom_std_dev = log10(1.6),
                 mass_fractions = [
                     stats.uniform(0, 1), # so4
                     stats.uniform(0, 1), # soa
@@ -77,6 +120,7 @@ spec = ambrs.EnsembleSpecification(
                 species = [dst, ncl, so4, bc, pom, soa],
                 number = stats.loguniform(3e7, 2e12),
                 geom_mean_diam = stats.loguniform(1e-6, 2e-6),
+                log10_geom_std_dev = log10(1.8),
                 mass_fractions = [
                     stats.uniform(0, 1), # dst
                     stats.uniform(0, 1), # ncl
@@ -91,6 +135,7 @@ spec = ambrs.EnsembleSpecification(
                 species = [pom, bc],
                 number = stats.loguniform(3e7, 2e12),
                 geom_mean_diam = stats.loguniform(1e-8, 6e-8),
+                log10_geom_std_dev = log10(1.8),
                 mass_fractions = [
                     stats.uniform(0, 1), # pom
                     stats.uniform(0, 1), # bc
@@ -134,8 +179,8 @@ mam4_runner.run(mam4_inputs)
 partmc = ambrs.partmc.AerosolModel(
     processes = processes,
     run_type = 'particle',
-    n_part = 5000,
-    n_repeat = 5,
+    n_part = 1000,
+    n_repeat = 1,
 )
 partmc_inputs = partmc.create_inputs(
     ensemble = ensemble,

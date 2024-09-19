@@ -31,8 +31,11 @@ class AerosolProcesses:
 class AerosolSpecies:
     """AerosolSpecies: the definition of an aerosol species in terms of species-
 specific parameters (no state information)"""
-    name: str           # name of the species
-    molar_mass: float   # [g/mol]
+    name: str                   # name of the species
+    molar_mass: float           # [g/mol]
+    density: float              # density [kg/m^3]
+    ions_in_soln: int = 0       # number of ions in solution [-]
+    hygroscopicity: float = 0.0 # "kappa" [-]
     aliases: Optional[tuple[str, ...]] = None # tuple of alternative species names
 
 #----------------------------
@@ -47,6 +50,7 @@ log-normal aerosol mode"""
     species: tuple[AerosolSpecies, ...]
     number: float                     # modal number concentration
     geom_mean_diam: float             # geometric mean diameter
+    log10_geom_std_dev: float         # log10 of geometric std dev of diameter
     mass_fractions: tuple[float, ...] # species mass fractions
 
     def mass_fraction(self, species_name: str):
@@ -63,6 +67,7 @@ log-normal aerosol mode (distribution only--no state information)"""
     species: tuple[AerosolSpecies, ...]
     number: RVFrozenDistribution                     # modal number concentration distribution
     geom_mean_diam: RVFrozenDistribution             # geometric mean diameter distribution
+    log10_geom_std_dev: float                        # mode-specific logarithmic diameter std dev
     mass_fractions: tuple[RVFrozenDistribution, ...] # species mass fraction distributions
 
 @dataclass
@@ -74,6 +79,7 @@ distribution"""
     species: tuple[AerosolSpecies, ...]
     number: np.array
     geom_mean_diam: np.array
+    log10_geom_std_dev: np.array
     mass_fractions: tuple[np.array, ...] # species-specific mass fractions
 
     def __len__(self) -> int:
@@ -91,6 +97,7 @@ population member"""
             species = self.species,
             number = self.number[i],
             geom_mean_diam = self.geom_mean_diam[i],
+            log10_geom_std_dev = self.log10_geom_std_dev[i],
             mass_fractions = tuple([mass_frac[i] for mass_frac in self.mass_fractions]))
 
 @dataclass
