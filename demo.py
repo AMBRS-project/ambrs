@@ -179,8 +179,8 @@ mam4_runner.run(mam4_inputs)
 partmc = ambrs.partmc.AerosolModel(
     processes = processes,
     run_type = 'particle',
-    n_part = 5000,
-    n_repeat = 5,
+    n_part = 1000,
+    n_repeat = 1,
 )
 partmc_inputs = partmc.create_inputs(
     ensemble = ensemble,
