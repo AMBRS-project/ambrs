@@ -488,23 +488,33 @@ class AerosolModel(BaseAerosolModel):
                           dir: str,
                           prefix: str) -> Output:
         n_repeat = self.n_repeat
-        timestep = -1 # FIXME: for now, we use the last timestep in the output
-        if timestep == -1:
-            nc_files = [f for f in os.listdir(dir) if filename.endswith('.nc')]
-            nc_files.sort()
-            nc_file = nc_files[-1]
-        else:
-            nc_file = os.path.join(dir, prefix + '_' + str(timestep).zfill(4) + '_' + '1'.zfill(8) + '.nc')
-            if not os.path.exists(nc_file):
-                raise OSError('Could not open
+        timestep = -1 # for now, we use the last timestep
         dNdlnD_repeat = np.zeros([len(lnDs), n_repeat])
         for i, repeat in enumerate(range(1, n_repeat+1)):
-            output_dir = os.path.join(dir, 'out')
-            output_file = prefix + '_' + str(timestep)
-            nc_output = read_partmc.get_ncfile(partmc_dir, timestep, ensemble_number=repeat)
-            dNdlnD_repeats[:,ii] = get_partmc_dsd_onefile(lnDs,ncfile,density_type=density_type)
+            output_file = self.get_ncfile(dir, prefix, timestep, repeat)
+            # FIXME: we need something equivalent to get_partmc_dsd_onefile here,
+            # FIXME: and that's a lot of code. Also: Where do we get lnDs?
+            dNdlnD_repeats[:,ii] = get_partmc_dsd_onefile(lnDs,output_file,density_type=density_type)
         return Output(
             model = self.name,
             input = input,
-            dNdlnD = dNdlnD,
-            )
+            dNdlnD = dNdlnD, # FIXME: how is this reduced from dNdlnD_repeats?
+        )
+
+    def get_ncfile(self, dir, prefix, timestep, ensemble_number=1):
+        """helper function that returns the filename corresponding to the given
+timestep and ensemble index, given the directory in which it resides"""
+        output_dir = os.path.join(dir, 'out')
+        full_prefix = prefix + '_' + str(int(ensemble_number)).zfill(4)
+        ncfiles = [f for f in os.listdir(output_dir) if f.startswith(full_prefix) and f.endswith('.nc')]
+        if len(ncfiles) == 0:
+            raise OSError(f'No NetCDF output found for ensemble number {ensemble_number} in {dir}!')
+        if timestep == -1: # return the most recent output file
+            ncfiles.sort()
+            return ncfiles[-1]
+        else:
+            ncfile = full_prefix + str(int(timestep)).zfill(8) + '.nc'
+            if ncfile in ncfiles:
+                return ncfile
+            else:
+                raise OSError(f'No NetCDF output found for ensemble number {ensemble_number} and timestep {timestep} in {dir}!')
