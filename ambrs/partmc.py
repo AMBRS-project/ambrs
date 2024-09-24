@@ -169,7 +169,7 @@ class AerosolModel(BaseAerosolModel):
             species = s.name,
             density = s.density,
             ions_in_soln = s.ions_in_soln,
-            molecular_weight = 1000 * s.molar_mass,
+            molecular_weight = s.molar_mass / 1000.,
             kappa = s.hygroscopicity,
         ) for s in scenario.aerosols]
         aero_init = [AeroMode(
