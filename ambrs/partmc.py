@@ -191,8 +191,8 @@ class AerosolModel(BaseAerosolModel):
 
             t_max = nstep * dt,
             del_t = dt,
-            t_output = nstep * dt,
-            t_progress = nstep * dt,
+            t_output = dt, # setting t_output = dt for now, which I believe is how MAM4 works.
+            t_progress = dt, # reporting progress at every time step for now. 
 
             do_camp_chem = False,
 
