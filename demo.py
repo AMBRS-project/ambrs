@@ -28,48 +28,48 @@ nstep = 1440 # number of steps [-]
 # relevant aerosol and gas species
 # FIXME: proper species and properties need to be filled in here!
 so4 = ambrs.AerosolSpecies(
-    name='so4',
+    name='SO4',
     molar_mass = 97.071, # NOTE: 1000x smaller than "molecular weight"!
     density = 1770,
     hygroscopicity = 0.507,
 )
 pom = ambrs.AerosolSpecies(
-    name='pom',
+    name='OC',
     molar_mass = 12.01,
-    density = 1000,
-    hygroscopicity = 0.5,
-)
-soa = ambrs.AerosolSpecies(
-    name='soa',
-    molar_mass = 12.01,
-    density = 1000,
+    density = 1000, # wrong
     hygroscopicity = 0.5,
 )
 bc = ambrs.AerosolSpecies(
-    name='bc',
+    name='BC',
     molar_mass = 12.01,
-    density = 1000,
+    density = 1000, # wrong
     hygroscopicity = 0.5,
 )
 dst = ambrs.AerosolSpecies(
-    name='dst',
+    name='OIN',
     molar_mass = 135.065,
-    density = 1000,
+    density = 1000, # wrong
     hygroscopicity = 0.5,
 )
-ncl = ambrs.AerosolSpecies(
-    name='ncl',
-    molar_mass = 58.44,
-    density = 1000,
-    hygroscopicity = 0.5,
+na = ambrs.AerosolSpecies(
+    name='Na',
+    molar_mass = 22.99,
+    density = 1000, # wrong
+    ions_in_soln = 1,
+)
+cl = ambrs.AerosolSpecies(
+    name='Cl',
+    molar_mass = 35.45,
+    density = 1000, # wrong
+    ions_in_soln = 1,
 )
 
 so2 = ambrs.GasSpecies(
-    name='so2',
+    name='SO2',
     molar_mass = 64.07,
 )
 h2so4 = ambrs.GasSpecies(
-    name='h2so4',
+    name='H2SO4',
     molar_mass = 98.079,
 )
 soag = ambrs.GasSpecies(
