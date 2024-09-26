@@ -139,12 +139,11 @@ class Input:
 
 class AerosolModel(BaseAerosolModel):
     def __init__(self,
-                 name: str,
                  processes: AerosolProcesses,
                  run_type = 'particle',
                  n_part = None,
                  n_repeat = 0):
-        BaseAerosolModel.__init__(self, name, processes)
+        BaseAerosolModel.__init__(self, 'partmc', processes)
         if run_type not in ['particle']:
             raise ValueError(f'Unsupported run_type: {run_type}')
         if not n_part or n_part < 1:
@@ -489,16 +488,18 @@ class AerosolModel(BaseAerosolModel):
                           prefix: str) -> Output:
         n_repeat = self.n_repeat
         timestep = -1 # for now, we use the last timestep
+        '''
         dNdlnD_repeat = np.zeros([len(lnDs), n_repeat])
         for i, repeat in enumerate(range(1, n_repeat+1)):
             output_file = self.get_ncfile(dir, prefix, timestep, repeat)
             # FIXME: we need something equivalent to get_partmc_dsd_onefile here,
             # FIXME: and that's a lot of code. Also: Where do we get lnDs?
             dNdlnD_repeats[:,ii] = get_partmc_dsd_onefile(lnDs,output_file,density_type=density_type)
+        ''' 
         return Output(
             model = self.name,
             input = input,
-            dNdlnD = dNdlnD, # FIXME: how is this reduced from dNdlnD_repeats?
+            dNdlnD = np.zeros([len(lnDs)]),
         )
 
     def get_ncfile(self, dir, prefix, timestep, ensemble_number=1):
