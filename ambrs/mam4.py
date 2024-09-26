@@ -14,6 +14,14 @@ import numpy as np
 import os.path
 import scipy.stats
 
+# this dict maps AMBRS (PartMC) aerosol species names to their MAM4 equivalents
+mam_aerosol_species_map = {
+    'OC': 'POM',
+    'OIN': 'DST',
+    'Na': 'NA',
+    'Cl': 'CL',
+}
+
 @dataclass
 class Input:
     """ambrs.mam4.Input -- an input dataclass for the MAM4 box model"""
