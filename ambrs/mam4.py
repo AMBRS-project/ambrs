@@ -84,9 +84,8 @@ class Input:
 
 class AerosolModel(BaseAerosolModel):
     def __init__(self,
-                 name: str,
                  processes: AerosolProcesses):
-        BaseAerosolModel.__init__(self, name, processes)
+        BaseAerosolModel.__init__(self, 'mam4', processes)
 
     def create_input(self,
                      scenario: Scenario,
@@ -246,7 +245,7 @@ working directory contains any needed input files."""
         Ns = nc_output['num_aer'][:,timestep]        # particle numbers
         mus = np.log(nc_output['dgn_a'][:,timestep]) # log of mean geometric diameters
         sigmas = [1.8, 1.6, 1.8, 1.6] # geometric diameter stddevs (hardwired into MAM4)
-        dNlnD_by_mode = np.zeros([num_modes, len(lnDs)])
+        dNdlnD_by_mode = np.zeros([num_modes, len(lnDs)])
         for k, (N, mu, sigma) in enumerate(zip(Ns,mus,sigmas)):
             dNdlnD_by_mode[k,:] = N * scipy.stats.norm(loc=mu, scale=sigma).pdf(lnDs)
 
