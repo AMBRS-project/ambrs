@@ -9,4 +9,5 @@ from .runners import PoolRunner
 from .scenario import Scenario
 
 from . import mam4
+from . import mphys
 from . import partmc
