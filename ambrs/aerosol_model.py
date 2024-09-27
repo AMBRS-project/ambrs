@@ -2,6 +2,7 @@
 AMBRS framework"""
 
 from .aerosol import AerosolProcesses
+from .analysis import Output
 from .ppe import Ensemble
 from .scenario import Scenario
 
@@ -22,13 +23,17 @@ To add an aerosol model to AMBRS:
    AerosolModel.create_input and passed to Aerosol.write_input_files.
 """
 
-    def __init__(self, processes: AerosolProcesses):
-        """ambrs.BaseAerosolModel.__init__(self) - base class constructor
+    def __init__(self,
+                 name: str,
+                 processes: AerosolProcesses):
+        """ambrs.BaseAerosolModel.__init__(self, name, processes) - base class constructor
 Call this constructor in your derived aerosol model class's __init__ method in
 the usual Python way. Arguments:
+    * name: a name that uniquely identifies this aerosol model
     * processes: an ambrs.AerosolProcesses object that defines the aerosol
       processes under consideration
 """
+        self.name = name
         self.processes = processes
 
     def create_input(self,
@@ -69,7 +74,9 @@ input dataclasses for each individual scenario."""
             inputs.append(self.create_input(scenario, dt, nstep))
         return inputs
 
-    def invocation(self, exe: str, prefix: str) -> str:
+    def invocation(self,
+                   exe: str,
+                   prefix: str) -> str:
         """ambrs.BaseAerosolModel.invocation(exe, prefix) -> command string
 Override this method to provide the command invoking the aerosol model on the
 command line given
@@ -80,15 +87,31 @@ You may assume that this command is issued in the directory in which all necessa
 input files reside."""
         raise NotImplementedError('BaseAerosolModel.invocation not overridden!')
 
-    def read_output_files(self, dir: str, prefix: str) -> dict:
-        """ambrs.BaseAerosolModel.read_output_files(dir, prefix) -> dict
-containing diagnostic information about the final state of the aerosol particle
-distribution
+    def write_input_files(self,
+                          input,
+                          dir: str,
+                          prefix: str) -> None:
+        """ambrs.BaseAerosolModel.write_input_files(input, dir, prefix) -> None
+Override this method to write input files for an aerosol model. Arguments:
+    * input: an instance of your aerosol model's dataclass that defines the
+             input parameters to be written to the files
+    * dir: an absolute path to a directory where the files are written
+    * prefix: a prefix used to identify the main input file"""
+        raise NotImplementedError('BaseAerosolModel.write_input_files not overridden!')
+
+    def read_output_files(self,
+                          input,
+                          dir: str,
+                          prefix: str) -> Output:
+        """ambrs.BaseAerosolModel.read_output_files(input, dir, prefix) ->
+ambrs.analysis.Output containing diagnostic information about the final state of
+the aerosol particle distribution
 
 Override this method to read the contents of output files for an aerosol model
 and compute diagnostic quantities for the aerosol model in its final state.
 
 Input parameters:
+    * input: the input corresponding to the output files to be read
     * dir: an absolute path to a directory containing the output files
     * prefix: a prefix used to identify the output files (if any)
 
@@ -103,11 +126,3 @@ Output diagnostics (key/value pairs in the dict returned by this method):
 """
         raise NotImplementedError('BaseAerosolModel.read_output_files not overridden!')
 
-    def write_input_files(self, input, dir: str, prefix: str) -> None:
-        """ambrs.BaseAerosolModel.write_input_files(input, dir, prefix) -> None
-Override this method to write input files for an aerosol model. Arguments:
-    * input: an instance of your aerosol model's dataclass that defines the
-             input parameters to be written to the files
-    * dir: an absolute path to a directory where the files are written
-    * prefix: a prefix used to identify the main input file"""
-        raise NotImplementedError('BaseAerosolModel.write_input_files not overridden!')

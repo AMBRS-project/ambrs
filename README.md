@@ -1,8 +1,7 @@
 # ambrs
 
-![Tests](https://github.com/AMBRS-project/ambrs/actions/workflows/tests.yml/badge.svg)
+![Tests](https://github.com/AMBRS-project/ambrs/actions/workflows/tests.yml/badge.svg) [![Coverage](https://codecov.io/gh/AMBRS-project/ambrs/graph/badge.svg?token=HF1V8JOZFJ)](https://codecov.io/gh/AMBRS-project/ambrs)
 
-[![Coverage](https://codecov.io/gh/AMBRS-project/ambrs/graph/badge.svg?token=HF1V8JOZFJ)](https://codecov.io/gh/AMBRS-project/ambrs)
 The AMBRS Project aims to advance the state of science in aerosol model
 development by providing a simple framework for systematically comparing the
 parameterizations in different model implementations. In this repository you'll
