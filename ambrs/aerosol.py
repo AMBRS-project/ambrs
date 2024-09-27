@@ -38,6 +38,39 @@ specific parameters (no state information)"""
     hygroscopicity: float = 0.0 # "kappa" [-]
     aliases: Optional[tuple[str, ...]] = None # tuple of alternative species names
 
+    def __post_init__(self): # checks initialized fields
+        # check the name of the species
+        valid_aerosol_species = [
+            'SO4',
+            'NO3',
+            'Cl',
+            'NH4',
+            'MSA'
+            'ARO1',
+            'ARO2',
+            'ALK1',
+            'OLE1',
+            'API1',
+            'API2',
+            'LIM1',
+            'LIM2',
+            'CO3',
+            'Na',
+            'Ca',
+            'OIN',
+            'OC',
+            'BC',
+            'H2O',
+        ]
+        if self.name not in valid_aerosol_species:
+            raise NameError(f'Invalid aerosol species name: {self.name}\nValid names are {valid_aerosol_species}')
+        if self.molar_mass <= 0.0:
+            raise ValueError(f'Non-positive molar mass: {self.molar_mass}')
+        if self.density <= 0.0:
+            raise ValueError(f'Non-positive density: {self.density}')
+        if self.ions_in_soln > 0.0 and self.hygroscopicity > 0.0:
+            raise ValueError('Only one of ions_in_soln and hygroscopicity may be given!')
+
 #----------------------------
 # Modal aerosol descriptions
 #----------------------------

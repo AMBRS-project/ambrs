@@ -82,6 +82,82 @@ class Input:
     qh2so4: float
     qsoag: float
 
+# this type handles the mapping of AMBRS aerosol species to MAM4 species
+# within all aerosol modes
+class AerosolMassFractions:
+    @dataclass
+    class AccumMode:
+        SO4: float
+        POM: float
+        SOA: float
+        BC: float
+        DST: float
+        NCL: float
+
+    @dataclass
+    class AitkenMode:
+        SO4: float
+        SOA: float
+        NCL: float
+
+    @dataclass
+    class CoarseMode:
+        DST: float
+        NCL: float
+        SO4: float
+        BC: float
+        POM: float
+        SOA: float
+
+    @dataclass
+    class PCarbonMode:
+        POM: float
+        BC: float
+
+    def __init__(self,
+                 scenario: Scenario):
+        self.accum = self.AccumMode(
+            SO4 = scenario.size.modes[0].mass_fraction('SO4'),
+            POM = scenario.size.modes[0].mass_fraction("OC"),
+            SOA = scenario.size.modes[0].mass_fraction("OC"), # FIXME: SOA and POM are the same for now(!)
+            BC  = scenario.size.modes[0].mass_fraction("BC"),
+            DST = scenario.size.modes[0].mass_fraction("OIN"),
+            NCL = scenario.size.modes[0].mass_fraction("Na"), # FIXME: and "Cl"? Assuming 1:1 for now
+        )
+        self.aitken = self.AitkenMode(
+            SO4 = scenario.size.modes[1].mass_fraction("SO4"),
+            SOA = scenario.size.modes[1].mass_fraction("OC"),
+            NCL = scenario.size.modes[1].mass_fraction("Na"), # FIXME: assuming 1:1 with Cl for now
+        )
+        self.coarse = self.CoarseMode(
+            DST = scenario.size.modes[2].mass_fraction("OIN"),
+            NCL = scenario.size.modes[2].mass_fraction("Na"), # FIXME: see above
+            SO4 = scenario.size.modes[2].mass_fraction("SO4"),
+            BC  = scenario.size.modes[2].mass_fraction("BC"),
+            POM = scenario.size.modes[2].mass_fraction("OC"),
+            SOA = scenario.size.modes[2].mass_fraction("OC"), # FIXME: see above
+        )
+        self.pcarbon = self.PCarbonMode(
+            POM = scenario.size.modes[3].mass_fraction("OC"),
+            BC  = scenario.size.modes[3].mass_fraction("BC"),
+        )
+
+# this type handles the mapping of AMBRS gas species to MAM4 species
+class GasMixingRatios:
+    def __init__(self,
+                 scenario: Scenario):
+        iso2 = GasSpecies.find(scenario.gases, 'SO2')
+        if iso2 == -1:
+            raise ValueError("SO2 gas not found in gas species")
+        ih2so4 = GasSpecies.find(scenario.gases, 'H2SO4')
+        if ih2so4 == -1:
+            raise ValueError("H2SO4 gas not found in gas species")
+        isoag = GasSpecies.find(scenario.gases, 'soag')
+        self.SO2 = scenario.gas_concs[iso2],
+        self.H2SO4 = scenario.gas_concs[ih2so4],
+        self.SOAG = 0.0 if isoag == -1 else scenario.gas_concs[isoag]
+
+
 class AerosolModel(BaseAerosolModel):
     def __init__(self,
                  processes: AerosolProcesses):
@@ -108,15 +184,13 @@ Parameters:
             raise TypeError('Non-modal aerosol particle size state cannot be used to create MAM4 input!')
         if len(scenario.size.modes) != 4:
             raise TypeError(f'{len(scenario.size.mode)}-mode aerosol particle size state cannot be used to create MAM4 input!')
-        iso2 = GasSpecies.find(scenario.gases, 'so2')
-        if iso2 == -1:
-            raise ValueError("SO2 gas ('so2') not found in gas species")
-        ih2so4 = GasSpecies.find(scenario.gases, 'h2so4')
-        if ih2so4 == -1:
-            raise ValueError("H2SO4 gas ('h2so4') not found in gas species")
-        isoag = GasSpecies.find(scenario.gases, 'soag')
-        if isoag == -1:
-            raise ValueError("SOAG gas ('soag') not found in gas species")
+
+        # translate the scenario's aerosol mass fractions to MAM4-ese
+        aero_mass_fracs = AerosolMassFractions(scenario)
+
+        # translate the scenario's gas mixing ratios to MAM4-ese
+        gas_mixing_ratios = GasMixingRatios(scenario)
+
         return Input(
             mam_dt = dt,
             mam_nstep = nstep,
@@ -136,30 +210,30 @@ Parameters:
             numc3 = scenario.size.modes[2].number,
             numc4 = scenario.size.modes[3].number,
 
-            mfso41 = scenario.size.modes[0].mass_fraction("so4"),
-            mfpom1 = scenario.size.modes[0].mass_fraction("pom"),
-            mfsoa1 = scenario.size.modes[0].mass_fraction("soa"),
-            mfbc1  = scenario.size.modes[0].mass_fraction("bc"),
-            mfdst1 = scenario.size.modes[0].mass_fraction("dst"),
-            mfncl1 = scenario.size.modes[0].mass_fraction("ncl"),
+            mfso41 = aero_mass_fracs.accum.SO4,
+            mfpom1 = aero_mass_fracs.accum.POM,
+            mfsoa1 = aero_mass_fracs.accum.SOA,
+            mfbc1  = aero_mass_fracs.accum.BC,
+            mfdst1 = aero_mass_fracs.accum.DST,
+            mfncl1 = aero_mass_fracs.accum.NCL,
 
-            mfso42 = scenario.size.modes[1].mass_fraction("so4"),
-            mfsoa2 = scenario.size.modes[1].mass_fraction("soa"),
-            mfncl2 = scenario.size.modes[1].mass_fraction("ncl"),
+            mfso42 = aero_mass_fracs.aitken.SO4,
+            mfsoa2 = aero_mass_fracs.aitken.SOA,
+            mfncl2 = aero_mass_fracs.aitken.NCL,
 
-            mfdst3 = scenario.size.modes[2].mass_fraction("dst"),
-            mfncl3 = scenario.size.modes[2].mass_fraction("ncl"),
-            mfso43 = scenario.size.modes[2].mass_fraction("so4"),
-            mfbc3  = scenario.size.modes[2].mass_fraction("bc"),
-            mfpom3 = scenario.size.modes[2].mass_fraction("pom"),
-            mfsoa3 = scenario.size.modes[2].mass_fraction("soa"),
+            mfdst3 = aero_mass_fracs.coarse.DST,
+            mfncl3 = aero_mass_fracs.coarse.NCL,
+            mfso43 = aero_mass_fracs.coarse.SO4,
+            mfbc3  = aero_mass_fracs.coarse.BC,
+            mfpom3 = aero_mass_fracs.coarse.POM,
+            mfsoa3 = aero_mass_fracs.coarse.SOA,
 
-            mfpom4 = scenario.size.modes[3].mass_fraction("pom"),
-            mfbc4  = scenario.size.modes[3].mass_fraction("bc"),
+            mfpom4 = aero_mass_fracs.pcarbon.POM,
+            mfbc4  = aero_mass_fracs.pcarbon.BC,
 
-            qso2 = scenario.gas_concs[iso2],
-            qh2so4 = scenario.gas_concs[ih2so4],
-            qsoag = scenario.gas_concs[isoag],
+            qso2 = gas_mixing_ratios.SO2,
+            qh2so4 = gas_mixing_ratios.H2SO4,
+            qsoag = gas_mixing_ratios.SOAG,
         )
 
     def invocation(self, exe: str, prefix: str) -> str:
