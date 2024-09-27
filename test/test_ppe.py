@@ -11,54 +11,54 @@ import unittest
 
 # relevant aerosol and gas species
 so4 = aerosol.AerosolSpecies(
-    name='so4',
+    name='SO4',
     molar_mass = 97.071, # NOTE: 1000x smaller than "molecular weight"!
     density = 1770,
     hygroscopicity = 0.507,
 )
 pom = aerosol.AerosolSpecies(
-    name='pom',
+    name='OC',
     molar_mass = 12.01,
     density = 1000,
     hygroscopicity = 0.5,
 )
 soa = aerosol.AerosolSpecies(
-    name='soa',
+    name='OC',
     molar_mass = 12.01,
     density = 1000,
     hygroscopicity = 0.5,
 )
 bc = aerosol.AerosolSpecies(
-    name='bc',
+    name='BC',
     molar_mass = 12.01,
     density = 1000,
     hygroscopicity = 0.5,
 )
 dst = aerosol.AerosolSpecies(
-    name='dst',
+    name='OIN',
     molar_mass = 135.065,
     density = 1000,
     hygroscopicity = 0.5,
 )
 ncl = aerosol.AerosolSpecies(
-    name='ncl',
+    name='Cl',
     molar_mass = 58.44,
     density = 1000,
     hygroscopicity = 0.5,
 )
 
 so2 = gas.GasSpecies(
-    name='so2',
+    name='SO2',
     molar_mass = 64.07,
 )
 h2so4 = gas.GasSpecies(
-    name='h2so4',
+    name='H2SO4',
     molar_mass = 98.079,
 )
-soag = gas.GasSpecies(
-    name='soag',
-    molar_mass = 12.01,
-)
+#soag = gas.GasSpecies(
+#    name='soag',
+#    molar_mass = 12.01,
+#)
 
 # reference pressure and height
 p0 = 101325 # [Pa]
@@ -71,7 +71,7 @@ class TestEnsemble(unittest.TestCase):
         self.n = 100
         self.ref_scenario = Scenario(
             aerosols = (so4, soa, ncl),
-            gases = (so2, h2so4, soag),
+            gases = (so2, h2so4),#, soag), FIXME: what is SOAG in MOSAIC?
             size = aerosol.AerosolModalSizeState(
                 modes = (
                     aerosol.AerosolModeState(
@@ -93,7 +93,7 @@ class TestEnsemble(unittest.TestCase):
         )
         self.ensemble = ppe.Ensemble(
             aerosols = (so4, soa, ncl),
-            gases = (so2, h2so4, soag),
+            gases = (so2, h2so4),#, soag),
             size = aerosol.AerosolModalSizePopulation(
                 modes = (
                     aerosol.AerosolModePopulation(
@@ -142,7 +142,7 @@ class TestSampling(unittest.TestCase):
         self.ensemble_spec = ppe.EnsembleSpecification(
             name = 'mam4_ensemble',
             aerosols = (so4, pom, soa, bc, dst, ncl),
-            gases = (so2, h2so4, soag),
+            gases = (so2, h2so4),#, soag),
             size = aerosol.AerosolModalSizeDistribution(
                 modes = [
                     aerosol.AerosolModeDistribution(
