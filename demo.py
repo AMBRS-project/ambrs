@@ -28,54 +28,62 @@ nstep = 1440 # number of steps [-]
 # relevant aerosol and gas species
 # FIXME: proper species and properties need to be filled in here!
 so4 = ambrs.AerosolSpecies(
-    name='so4',
+    name='SO4',
     molar_mass = 97.071, # NOTE: 1000x smaller than "molecular weight"!
     density = 1770,
     hygroscopicity = 0.507,
 )
 pom = ambrs.AerosolSpecies(
-    name='pom',
+    name='OC',
     molar_mass = 12.01,
-    density = 1000,
+    density = 1000, # wrong
     hygroscopicity = 0.5,
 )
 soa = ambrs.AerosolSpecies(
-    name='soa',
+    name='OC',
     molar_mass = 12.01,
-    density = 1000,
+    density = 1000, # wrong
     hygroscopicity = 0.5,
 )
 bc = ambrs.AerosolSpecies(
-    name='bc',
+    name='BC',
     molar_mass = 12.01,
-    density = 1000,
+    density = 1000, # wrong
     hygroscopicity = 0.5,
 )
 dst = ambrs.AerosolSpecies(
-    name='dst',
+    name='OIN',
     molar_mass = 135.065,
-    density = 1000,
+    density = 1000, # wrong
     hygroscopicity = 0.5,
 )
-ncl = ambrs.AerosolSpecies(
-    name='ncl',
-    molar_mass = 58.44,
-    density = 1000,
-    hygroscopicity = 0.5,
+na = ambrs.AerosolSpecies(
+    name='Na',
+    molar_mass = 22.99,
+    density = 1000, # wrong
+    ions_in_soln = 1,
 )
+cl = ambrs.AerosolSpecies(
+    name='Cl',
+    molar_mass = 35.45,
+    density = 1000, # wrong
+    ions_in_soln = 1,
+)
+ncl = na # FIXME: we use this as a proxy for now, assuming 1:1 stoich with Cl
 
 so2 = ambrs.GasSpecies(
-    name='so2',
+    name='SO2',
     molar_mass = 64.07,
 )
 h2so4 = ambrs.GasSpecies(
-    name='h2so4',
+    name='H2SO4',
     molar_mass = 98.079,
 )
-soag = ambrs.GasSpecies(
-    name='soag',
-    molar_mass = 12.01,
-)
+# FIXME: I can't figure out how SOAG maps to PartMC/MOSAIC
+#soag = ambrs.GasSpecies(
+#    name='soag',
+#    molar_mass = 12.01,
+#)
 
 # reference pressure and height
 p0 = 101325 # [Pa]
@@ -85,7 +93,7 @@ h0 = 500    # [m]
 spec = ambrs.EnsembleSpecification(
     name = 'demo',
     aerosols = (so4, pom, soa, bc, dst, ncl),
-    gases = (so2, h2so4, soag),
+    gases = (so2, h2so4), # FIXME: re-add soag?
     size = ambrs.AerosolModalSizeDistribution(
         modes = [
             ambrs.AerosolModeDistribution(
@@ -142,7 +150,7 @@ spec = ambrs.EnsembleSpecification(
                 ],
             ),
         ]),
-    gas_concs = tuple([stats.uniform(1e5, 1e6) for g in range(3)]),
+    gas_concs = tuple([stats.uniform(1e5, 1e6) for g in range(2)]), # FIXME: change to 3 when SOAG is re-added
     flux = stats.loguniform(1e-2*1e-9, 1e1*1e-9),
     relative_humidity = stats.uniform(0, 0.99),
     temperature = stats.uniform(240, 310),

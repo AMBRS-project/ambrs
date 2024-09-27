@@ -6,17 +6,17 @@ import numpy as np
 import unittest
 
 so4 = aerosol.AerosolSpecies(
-    name = 'so4',
+    name = 'SO4',
     density = 1000,
     molar_mass = 97.071,
 )
 soa = aerosol.AerosolSpecies(
-    name = 'soa',
+    name = 'OC',
     density = 1000,
     molar_mass = 12.01,
 )
 ncl = aerosol.AerosolSpecies(
-    name='ncl',
+    name='Cl',
     density = 1000,
     molar_mass = 58.44,
 )
@@ -35,9 +35,9 @@ class TestAerosolModeState(unittest.TestCase):
         )
 
     def test_mass_fraction(self):
-        self.assertEqual(0.4, self.mode_state.mass_fraction('so4'))
-        self.assertEqual(0.3, self.mode_state.mass_fraction('soa'))
-        self.assertEqual(0.3, self.mode_state.mass_fraction('ncl'))
+        self.assertEqual(0.4, self.mode_state.mass_fraction('SO4'))
+        self.assertEqual(0.3, self.mode_state.mass_fraction('OC'))
+        self.assertEqual(0.3, self.mode_state.mass_fraction('Cl'))
 
 class TestAerosolModePopulation(unittest.TestCase):
     """Unit tests for ambr.aerosol.AerosolModePopulation"""
