@@ -12,6 +12,8 @@ from math import log10
 import os
 import scipy.stats as stats
 
+model_install_prefix = 'path_to_bin_directory_where_models_were_installed_with_ambuilder'
+
 # log to the terminal
 logging.basicConfig(level = logging.INFO)
 
@@ -169,7 +171,7 @@ mam4_dir = os.path.join(cwd, 'mam4_runs')
 if not os.path.exists(mam4_dir):
     os.mkdir(mam4_dir)
 mam4_runner = ambrs.PoolRunner(
-    model = mam4,
+    model = model_install_prefix + mam4,
     executable = 'mam4',
     root = mam4_dir,
 )
@@ -192,7 +194,7 @@ if not os.path.exists(partmc_dir):
     os.mkdir(partmc_dir)
 partmc_runner = ambrs.PoolRunner(
     model = partmc,
-    executable = 'partmc',
+    executable = model_install_prefix + 'partmc',
     root = partmc_dir,
 )
 partmc_runner.run(partmc_inputs)
