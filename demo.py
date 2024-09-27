@@ -144,7 +144,7 @@ spec = ambrs.EnsembleSpecification(
         ]),
     gas_concs = tuple([stats.uniform(1e5, 1e6) for g in range(3)]),
     flux = stats.loguniform(1e-2*1e-9, 1e1*1e-9),
-    relative_humidity = stats.loguniform(0, 0.99),
+    relative_humidity = stats.uniform(0, 0.99),
     temperature = stats.uniform(240, 310),
     pressure = p0,
     height = h0,
