@@ -153,8 +153,8 @@ class GasMixingRatios:
         if ih2so4 == -1:
             raise ValueError("H2SO4 gas not found in gas species")
         isoag = GasSpecies.find(scenario.gases, 'soag')
-        self.SO2 = scenario.gas_concs[iso2],
-        self.H2SO4 = scenario.gas_concs[ih2so4],
+        self.SO2 = scenario.gas_concs[iso2]
+        self.H2SO4 = scenario.gas_concs[ih2so4]
         self.SOAG = 0.0 if isoag == -1 else scenario.gas_concs[isoag]
 
 
