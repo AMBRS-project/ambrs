@@ -198,10 +198,20 @@ distribution from which ensemble members are sampled."""
                          for f, mass_fraction in enumerate(mode.mass_fractions)]),
                 ) for m, mode in enumerate(specification.size.modes)]),
         )
-        # normalize mass fractions
+
+        # FIXME: laura's janky fix to set some mass fractions to zero
+        for mode in size.modes:
+            for qq in range(len(mode.mass_fractions)):
+                print(mode.mass_fractions[qq])
+                for ii in range(len(mode.mass_fractions[qq])):
+                    if np.isnan(mode.mass_fractions[qq][ii]):
+                        mode.mass_fractions[qq][ii] = 0.
+        
+        # FIXME: laura's janky fix to normalize mass fractions
         for mode in size.modes:
             factor = sum([mass_fraction for mass_fraction in mode.mass_fractions])
             mode.mass_fractions = tuple([mf/factor for mf in mode.mass_fractions])
+            
     gas_concs = []
     for g, gas_conc in enumerate(specification.gas_concs):
         gas_concs.append(gas_conc.ppf(lhd[:,-3-(num_gases-g)]))

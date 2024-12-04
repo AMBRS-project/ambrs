@@ -119,14 +119,15 @@ class AerosolMassFractions:
         self.accum = self.AccumMode(
             SO4 = scenario.size.modes[0].mass_fraction('SO4'),
             POM = scenario.size.modes[0].mass_fraction("OC"),
-            SOA = scenario.size.modes[0].mass_fraction("OC"), # FIXME: SOA and POM are the same for now(!)
+            SOA = scenario.size.modes[0].mass_fraction('MSA'), # FIXME: using MSA as a placeholder for SOA
             BC  = scenario.size.modes[0].mass_fraction("BC"),
             DST = scenario.size.modes[0].mass_fraction("OIN"),
             NCL = scenario.size.modes[0].mass_fraction("Na"), # FIXME: and "Cl"? Assuming 1:1 for now
         )
+        
         self.aitken = self.AitkenMode(
             SO4 = scenario.size.modes[1].mass_fraction("SO4"),
-            SOA = scenario.size.modes[1].mass_fraction("OC"),
+            SOA = scenario.size.modes[1].mass_fraction("MSA"), # FIXME: using MSA as a placeholder for SOA
             NCL = scenario.size.modes[1].mass_fraction("Na"), # FIXME: assuming 1:1 with Cl for now
         )
         self.coarse = self.CoarseMode(
@@ -135,12 +136,13 @@ class AerosolMassFractions:
             SO4 = scenario.size.modes[2].mass_fraction("SO4"),
             BC  = scenario.size.modes[2].mass_fraction("BC"),
             POM = scenario.size.modes[2].mass_fraction("OC"),
-            SOA = scenario.size.modes[2].mass_fraction("OC"), # FIXME: see above
+            SOA = scenario.size.modes[2].mass_fraction("MSA"), # FIXME: using MSA as a placeholder for SOA
         )
         self.pcarbon = self.PCarbonMode(
             POM = scenario.size.modes[3].mass_fraction("OC"),
             BC  = scenario.size.modes[3].mass_fraction("BC"),
         )
+        
 
 # this type handles the mapping of AMBRS gas species to MAM4 species
 class GasMixingRatios:
@@ -153,11 +155,10 @@ class GasMixingRatios:
         if ih2so4 == -1:
             raise ValueError("H2SO4 gas not found in gas species")
         isoag = GasSpecies.find(scenario.gases, 'soag')
-        self.SO2 = scenario.gas_concs[iso2],
-        self.H2SO4 = scenario.gas_concs[ih2so4],
+        self.SO2 = scenario.gas_concs[iso2]
+        self.H2SO4 = scenario.gas_concs[ih2so4]
         self.SOAG = 0.0 if isoag == -1 else scenario.gas_concs[isoag]
-
-
+    
 class AerosolModel(BaseAerosolModel):
     def __init__(self,
                  processes: AerosolProcesses):
@@ -184,13 +185,31 @@ Parameters:
             raise TypeError('Non-modal aerosol particle size state cannot be used to create MAM4 input!')
         if len(scenario.size.modes) != 4:
             raise TypeError(f'{len(scenario.size.mode)}-mode aerosol particle size state cannot be used to create MAM4 input!')
-
+        
         # translate the scenario's aerosol mass fractions to MAM4-ese
         aero_mass_fracs = AerosolMassFractions(scenario)
-
+        
         # translate the scenario's gas mixing ratios to MAM4-ese
         gas_mixing_ratios = GasMixingRatios(scenario)
+        
+        mftot1 = (
+            aero_mass_fracs.accum.SO4 + aero_mass_fracs.accum.POM + 
+            aero_mass_fracs.accum.SOA + aero_mass_fracs.accum.BC + 
+            aero_mass_fracs.accum.DST + aero_mass_fracs.accum.NCL)
 
+        mftot2 = (
+            aero_mass_fracs.aitken.SO4 + 
+            aero_mass_fracs.aitken.SOA + 
+            aero_mass_fracs.aitken.NCL)
+        
+        mftot3 = (
+            aero_mass_fracs.coarse.SO4 + aero_mass_fracs.coarse.POM + 
+            aero_mass_fracs.coarse.SOA + aero_mass_fracs.coarse.BC + 
+            aero_mass_fracs.coarse.DST + aero_mass_fracs.coarse.NCL)
+
+        mftot4 = (
+            aero_mass_fracs.pcarbon.POM + aero_mass_fracs.pcarbon.BC)
+        
         return Input(
             mam_dt = dt,
             mam_nstep = nstep,
@@ -209,33 +228,33 @@ Parameters:
             numc2 = scenario.size.modes[1].number,
             numc3 = scenario.size.modes[2].number,
             numc4 = scenario.size.modes[3].number,
+            
+            mfso41 = aero_mass_fracs.accum.SO4/mftot1,
+            mfpom1 = aero_mass_fracs.accum.POM/mftot1,
+            mfsoa1 = aero_mass_fracs.accum.SOA/mftot1,
+            mfbc1  = aero_mass_fracs.accum.BC/mftot1,
+            mfdst1 = aero_mass_fracs.accum.DST/mftot1,
+            mfncl1 = aero_mass_fracs.accum.NCL/mftot1,
 
-            mfso41 = aero_mass_fracs.accum.SO4,
-            mfpom1 = aero_mass_fracs.accum.POM,
-            mfsoa1 = aero_mass_fracs.accum.SOA,
-            mfbc1  = aero_mass_fracs.accum.BC,
-            mfdst1 = aero_mass_fracs.accum.DST,
-            mfncl1 = aero_mass_fracs.accum.NCL,
+            mfso42 = aero_mass_fracs.aitken.SO4/mftot2,
+            mfsoa2 = aero_mass_fracs.aitken.SOA/mftot2,
+            mfncl2 = aero_mass_fracs.aitken.NCL/mftot2,
+            
+            mfdst3 = aero_mass_fracs.coarse.DST/mftot3,
+            mfncl3 = aero_mass_fracs.coarse.NCL/mftot3,
+            mfso43 = aero_mass_fracs.coarse.SO4/mftot3,
+            mfbc3  = aero_mass_fracs.coarse.BC/mftot3,
+            mfpom3 = aero_mass_fracs.coarse.POM/mftot3,
+            mfsoa3 = aero_mass_fracs.coarse.SOA/mftot3,
 
-            mfso42 = aero_mass_fracs.aitken.SO4,
-            mfsoa2 = aero_mass_fracs.aitken.SOA,
-            mfncl2 = aero_mass_fracs.aitken.NCL,
-
-            mfdst3 = aero_mass_fracs.coarse.DST,
-            mfncl3 = aero_mass_fracs.coarse.NCL,
-            mfso43 = aero_mass_fracs.coarse.SO4,
-            mfbc3  = aero_mass_fracs.coarse.BC,
-            mfpom3 = aero_mass_fracs.coarse.POM,
-            mfsoa3 = aero_mass_fracs.coarse.SOA,
-
-            mfpom4 = aero_mass_fracs.pcarbon.POM,
-            mfbc4  = aero_mass_fracs.pcarbon.BC,
+            mfpom4 = aero_mass_fracs.pcarbon.POM/mftot4,
+            mfbc4  = aero_mass_fracs.pcarbon.BC/mftot4,
 
             qso2 = gas_mixing_ratios.SO2,
             qh2so4 = gas_mixing_ratios.H2SO4,
             qsoag = gas_mixing_ratios.SOAG,
         )
-
+    
     def invocation(self, exe: str, prefix: str) -> str:
         """input.invocation(exe, prefix) -> a string defining the command invoking
 the input with the given executable and input prefix, assuming that the current
@@ -299,6 +318,7 @@ working directory contains any needed input files."""
             raise OSError(f'Directory not found: {dir}')
         filename = os.path.join(dir, 'namelist')
         with open(filename, 'w') as f:
+            print(content)
             f.write(content)
 
     def read_output_files(self,

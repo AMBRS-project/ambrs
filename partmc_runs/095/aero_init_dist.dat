@@ -1,0 +1,32 @@
+mode_name accumulation
+mass_frac aero_init_comp_1.dat
+diam_type geometric
+mode_type log_normal
+num_conc 12451179951.662186
+geom_mean_diam 5.232939617170001e-08
+log10_geom_std_dev 0.2041199826559248
+
+mode_name aitken
+mass_frac aero_init_comp_2.dat
+diam_type geometric
+mode_type log_normal
+num_conc 116569755.6047905
+geom_mean_diam 2.905363409080108e-08
+log10_geom_std_dev 0.2041199826559248
+
+mode_name coarse
+mass_frac aero_init_comp_3.dat
+diam_type geometric
+mode_type log_normal
+num_conc 4119787406.6858454
+geom_mean_diam 1.8929129157922035e-06
+log10_geom_std_dev 0.25527250510330607
+
+mode_name primary_carbon
+mass_frac aero_init_comp_4.dat
+diam_type geometric
+mode_type log_normal
+num_conc 147951852.65573996
+geom_mean_diam 1.3106054170666151e-08
+log10_geom_std_dev 0.25527250510330607
+
