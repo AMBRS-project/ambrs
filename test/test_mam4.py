@@ -27,7 +27,7 @@ pom = aerosol.AerosolSpecies(
     hygroscopicity = 0.5,
 )
 soa = aerosol.AerosolSpecies(
-    name='OC',
+    name='MSA',
     molar_mass = 12.01,
     density = 1000,
     hygroscopicity = 0.5,
