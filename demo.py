@@ -27,6 +27,7 @@ nstep = 1440 # number of steps [-]
 
 # relevant aerosol and gas species
 # FIXME: proper species and properties need to be filled in here!
+# FIXME: not sure how MAM4 uses this info. I don't think PartMC actually 
 so4 = ambrs.AerosolSpecies(
     name='SO4',
     molar_mass = 97.071, # NOTE: 1000x smaller than "molecular weight"!
@@ -40,7 +41,7 @@ pom = ambrs.AerosolSpecies(
     hygroscopicity = 0.5,
 )
 soa = ambrs.AerosolSpecies(
-    name='OC',
+    name='MSA', # FIXME: applying an unused species for "SOA" placeholder; will set it to zero
     molar_mass = 12.01,
     density = 1000, # wrong
     hygroscopicity = 0.5,
@@ -98,44 +99,47 @@ spec = ambrs.EnsembleSpecification(
         modes = [
             ambrs.AerosolModeDistribution(
                 name = "accumulation",
-                species = [so4, pom, soa, bc, dst, ncl],
+               species = [so4, pom, soa, bc, dst, ncl],
+                # species = [so4, pom, bc, dst],
                 number = stats.loguniform(3e7, 2e12),
                 geom_mean_diam = stats.loguniform(0.5e-7, 1.1e-7),
                 log10_geom_std_dev = log10(1.6),
                 mass_fractions = [
                     stats.uniform(0, 1), # so4
                     stats.uniform(0, 1), # pom
-                    stats.uniform(0, 1), # soa
+                    stats.uniform(0, 0), # soa
                     stats.uniform(0, 1), # bc
                     stats.uniform(0, 1), # dst
-                    stats.uniform(0, 1), # ncl
+                    stats.uniform(0, 0), # ncl
                 ],
             ),
             ambrs.AerosolModeDistribution(
                 name = "aitken",
                 species = [so4, soa, ncl],
+                # species = [so4],
                 number = stats.loguniform(3e7, 2e12),
                 geom_mean_diam = stats.loguniform(0.5e-8, 3e-8),
                 log10_geom_std_dev = log10(1.6),
                 mass_fractions = [
                     stats.uniform(0, 1), # so4
-                    stats.uniform(0, 1), # soa
-                    stats.uniform(0, 1), # ncl
+                    stats.uniform(0, 0), # soa # FIXME: zeroing out problematic species
+                    stats.uniform(0, 0), # ncl # FIXME: zeroing out problematic species
                 ],
             ),
             ambrs.AerosolModeDistribution(
                 name = "coarse",
+                # species = [dst, so4, bc, pom],
                 species = [dst, ncl, so4, bc, pom, soa],
                 number = stats.loguniform(3e7, 2e12),
                 geom_mean_diam = stats.loguniform(1e-6, 2e-6),
                 log10_geom_std_dev = log10(1.8),
                 mass_fractions = [
                     stats.uniform(0, 1), # dst
-                    stats.uniform(0, 1), # ncl
+                    stats.uniform(0, 0), # ncl  # FIXME: zeroing out problematic species
                     stats.uniform(0, 1), # so4
                     stats.uniform(0, 1), # bc
                     stats.uniform(0, 1), # pom
-                    stats.uniform(0, 1), # soa
+                    stats.uniform(0, 0), # soa  # FIXME: zeroing out problematic species
                 ],
             ),
             ambrs.AerosolModeDistribution(
@@ -150,7 +154,8 @@ spec = ambrs.EnsembleSpecification(
                 ],
             ),
         ]),
-    gas_concs = tuple([stats.uniform(1e5, 1e6) for g in range(2)]), # FIXME: change to 3 when SOAG is re-added
+    # FIXME: we need to document units a bit better; specifying in mol/mol-air
+    gas_concs = tuple([stats.uniform(1e-10,1e-8) for g in range(2)]), # FIXME: change to 3 when SOAG is re-added
     flux = stats.loguniform(1e-2*1e-9, 1e1*1e-9),
     relative_humidity = stats.uniform(0, 0.99),
     temperature = stats.uniform(240, 310),
@@ -203,5 +208,5 @@ partmc_runner = ambrs.PoolRunner(
     executable = 'partmc',
     root = partmc_dir,
 )
-partmc_outputs = partmc_runner.run(partmc_inputs)
+#partmc_outputs = partmc_runner.run(partmc_inputs) # FIXME: rework this
 

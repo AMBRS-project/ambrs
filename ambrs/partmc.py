@@ -9,6 +9,7 @@ from .ppe import Ensemble
 from typing import Dict, Optional
 
 import os
+import numpy as np
 from dataclasses import dataclass
 
 @dataclass
@@ -199,8 +200,9 @@ class AerosolModel(BaseAerosolModel):
             do_camp_chem = False,
 
             gas_data = tuple([gas.name for gas in scenario.gases]),
-            gas_init = tuple([gas_conc for gas_conc in scenario.gas_concs]),
-
+            gas_init = tuple([gas_conc*1e9 for gas_conc in scenario.gas_concs]),
+            # FIXME: double-check that units are consistent; add unit test
+            
             aerosol_data = tuple(aero_data),
             do_fractal = False,
             aerosol_init = tuple(aero_init),
@@ -408,6 +410,7 @@ class AerosolModel(BaseAerosolModel):
         if input.gas_background:
             gas_background_species = [input.gas_background[0].time_series[1].keys()]
             gas_background_species.remove('rate')
+            # FIXME: convert background conc to ppb
             with open(os.path.join(dir, 'gas_back.dat'), 'w') as f:
                 f.write('# time (s)\n# rate (s^{-1})\n# concentrations (ppb)\n')
                 f.write('\t'.join(['time'] + [pair[0] for pair in input.gas_background]) + '\n')
@@ -485,7 +488,8 @@ class AerosolModel(BaseAerosolModel):
     def read_output_files(self,
                           input,
                           dir: str,
-                          prefix: str) -> Output:
+                          prefix: str,
+                          lnDs = np.logspace(-9,-5,1001)) -> Output:
         n_repeat = self.n_repeat
         timestep = -1 # for now, we use the last timestep
         '''
