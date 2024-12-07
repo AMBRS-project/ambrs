@@ -45,7 +45,7 @@ specific parameters (no state information)"""
             'NO3',
             'Cl',
             'NH4',
-            'MSA'
+            'MSA',
             'ARO1',
             'ARO2',
             'ALK1',
@@ -62,6 +62,7 @@ specific parameters (no state information)"""
             'BC',
             'H2O',
         ]
+        
         if self.name not in valid_aerosol_species:
             raise NameError(f'Invalid aerosol species name: {self.name}\nValid names are {valid_aerosol_species}')
         if self.molar_mass <= 0.0:
@@ -89,6 +90,7 @@ log-normal aerosol mode"""
     def mass_fraction(self, species_name: str):
         """returns the mass fraction corresponding to the given species name,
 or throws a ValueError."""
+        print(self.species)
         index = [s.name for s in self.species].index(species_name)
         return self.mass_fractions[index]
 
