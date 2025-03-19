@@ -8,7 +8,7 @@ from .gas import GasSpecies
 from .scenario import Scenario
 from .ppe import Ensemble
 
-from dataclasses import dataclass
+from dataclasses import dataclass, make_dataclass
 import netCDF4
 import numpy as np
 import os.path
@@ -19,6 +19,12 @@ class Input:
     """ambrs.mam4.Input -- an input dataclass for the MAM4 box model"""
     # all fields here are named identically to their respective namelist
     # parameters in the MAM4 box model
+
+    # scenario
+    scenario: Scenario
+
+    # CAMP mass fractions
+    mfs: list
 
     # timestepping parameters
     mam_dt: float
@@ -85,65 +91,83 @@ class Input:
 # this type handles the mapping of AMBRS aerosol species to MAM4 species
 # within all aerosol modes
 class AerosolMassFractions:
-    @dataclass
-    class AccumMode:
-        SO4: float
-        POM: float
-        SOA: float
-        BC: float
-        DST: float
-        NCL: float
+    # @dataclass
+    # class AccumMode:
+    #     SO4: float
+    #     POM: float
+    #     SOA: float
+    #     BC: float
+    #     DST: float
+    #     NCL: float
 
-    @dataclass
-    class AitkenMode:
-        SO4: float
-        SOA: float
-        NCL: float
+    # @dataclass
+    # class AitkenMode:
+    #     SO4: float
+    #     SOA: float
+    #     NCL: float
 
-    @dataclass
-    class CoarseMode:
-        DST: float
-        NCL: float
-        SO4: float
-        BC: float
-        POM: float
-        SOA: float
+    # @dataclass
+    # class CoarseMode:
+    #     DST: float
+    #     NCL: float
+    #     SO4: float
+    #     BC: float
+    #     POM: float
+    #     SOA: float
 
-    @dataclass
-    class PCarbonMode:
-        POM: float
-        BC: float
+    # @dataclass
+    # class PCarbonMode:
+    #     POM: float
+    #     BC: float
 
     def __init__(self,
                  scenario: Scenario):
+        # self.accum = self.AccumMode(
+        #     SO4 = scenario.size.modes[0].mass_fraction('ASO4'),
+        #     POM = scenario.size.modes[0].mass_fraction('APOC'),
+        #     SOA = scenario.size.modes[0].mass_fraction('SOA'), # FIXME: using MSA as a placeholder for SOA
+        #     BC  = scenario.size.modes[0].mass_fraction("AEC"),
+        #     DST = scenario.size.modes[0].mass_fraction("ASOIL"),
+        #     NCL = scenario.size.modes[0].mass_fraction("ANA"), # FIXME: and "Cl"? Assuming 1:1 for now
+        # )
+        self.AccumMode = make_dataclass('AccumMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.aerosols])
         self.accum = self.AccumMode(
-            SO4 = scenario.size.modes[0].mass_fraction('SO4'),
-            POM = scenario.size.modes[0].mass_fraction("OC"),
-            SOA = scenario.size.modes[0].mass_fraction('MSA'), # FIXME: using MSA as a placeholder for SOA
-            BC  = scenario.size.modes[0].mass_fraction("BC"),
-            DST = scenario.size.modes[0].mass_fraction("OIN"),
-            NCL = scenario.size.modes[0].mass_fraction("Na"), # FIXME: and "Cl"? Assuming 1:1 for now
+            **{p.aliases if p.aliases else p.name : scenario.size.modes[0].mass_fraction(p.name) for p in scenario.aerosols}
         )
+                
         
+        # self.aitken = self.AitkenMode(
+        #     SO4 = scenario.size.modes[1].mass_fraction("ASO4"),
+        #     SOA = scenario.size.modes[1].mass_fraction("SOA"), # FIXME: using MSA as a placeholder for SOA
+        #     NCL = scenario.size.modes[1].mass_fraction("ANA"), # FIXME: assuming 1:1 with Cl for now
+        # )
+        # self.coarse = self.CoarseMode(
+        #     DST = scenario.size.modes[2].mass_fraction("ASOIL"),
+        #     NCL = scenario.size.modes[2].mass_fraction("ANA"), # FIXME: see above
+        #     SO4 = scenario.size.modes[2].mass_fraction("ASO4"),
+        #     BC  = scenario.size.modes[2].mass_fraction("AEC"),
+        #     POM = scenario.size.modes[2].mass_fraction("APOC"),
+        #     SOA = scenario.size.modes[2].mass_fraction("SOA"), # FIXME: using MSA as a placeholder for SOA
+        # )
+        # self.pcarbon = self.PCarbonMode(
+        #     POM = scenario.size.modes[3].mass_fraction("APOC"),
+        #     BC  = scenario.size.modes[3].mass_fraction("AEC"),
+        # )
+        self.AitkenMode = make_dataclass('AitkenMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.aerosols])
         self.aitken = self.AitkenMode(
-            SO4 = scenario.size.modes[1].mass_fraction("SO4"),
-            SOA = scenario.size.modes[1].mass_fraction("MSA"), # FIXME: using MSA as a placeholder for SOA
-            NCL = scenario.size.modes[1].mass_fraction("Na"), # FIXME: assuming 1:1 with Cl for now
+            **{p.aliases if p.aliases else p.name : scenario.size.modes[1].mass_fraction(p.name) for p in scenario.aerosols}
         )
+
+        self.CoarseMode = make_dataclass('CoarseMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.aerosols])
         self.coarse = self.CoarseMode(
-            DST = scenario.size.modes[2].mass_fraction("OIN"),
-            NCL = scenario.size.modes[2].mass_fraction("Na"), # FIXME: see above
-            SO4 = scenario.size.modes[2].mass_fraction("SO4"),
-            BC  = scenario.size.modes[2].mass_fraction("BC"),
-            POM = scenario.size.modes[2].mass_fraction("OC"),
-            SOA = scenario.size.modes[2].mass_fraction("MSA"), # FIXME: using MSA as a placeholder for SOA
-        )
-        self.pcarbon = self.PCarbonMode(
-            POM = scenario.size.modes[3].mass_fraction("OC"),
-            BC  = scenario.size.modes[3].mass_fraction("BC"),
+            **{p.aliases if p.aliases else p.name : scenario.size.modes[2].mass_fraction(p.name) for p in scenario.aerosols}
         )
         
-
+        self.PCarbonMode = make_dataclass('PCarbonMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.aerosols])
+        self.pcarbon = self.PCarbonMode(
+            **{p.aliases if p.aliases else p.name : scenario.size.modes[3].mass_fraction(p.name) for p in scenario.aerosols}
+        )
+        
 # this type handles the mapping of AMBRS gas species to MAM4 species
 class GasMixingRatios:
     def __init__(self,
@@ -151,10 +175,10 @@ class GasMixingRatios:
         iso2 = GasSpecies.find(scenario.gases, 'SO2')
         if iso2 == -1:
             raise ValueError("SO2 gas not found in gas species")
-        ih2so4 = GasSpecies.find(scenario.gases, 'H2SO4')
+        ih2so4 = GasSpecies.find(scenario.gases, 'SULF')
         if ih2so4 == -1:
             raise ValueError("H2SO4 gas not found in gas species")
-        isoag = GasSpecies.find(scenario.gases, 'soag')
+        isoag = GasSpecies.find(scenario.gases, 'SOAG')
         self.SO2 = scenario.gas_concs[iso2]
         self.H2SO4 = scenario.gas_concs[ih2so4]
         self.SOAG = 0.0 if isoag == -1 else scenario.gas_concs[isoag]
@@ -191,26 +215,30 @@ Parameters:
         
         # translate the scenario's gas mixing ratios to MAM4-ese
         gas_mixing_ratios = GasMixingRatios(scenario)
-        
-        mftot1 = (
-            aero_mass_fracs.accum.SO4 + aero_mass_fracs.accum.POM + 
-            aero_mass_fracs.accum.SOA + aero_mass_fracs.accum.BC + 
-            aero_mass_fracs.accum.DST + aero_mass_fracs.accum.NCL)
 
-        mftot2 = (
-            aero_mass_fracs.aitken.SO4 + 
-            aero_mass_fracs.aitken.SOA + 
-            aero_mass_fracs.aitken.NCL)
-        
-        mftot3 = (
-            aero_mass_fracs.coarse.SO4 + aero_mass_fracs.coarse.POM + 
-            aero_mass_fracs.coarse.SOA + aero_mass_fracs.coarse.BC + 
-            aero_mass_fracs.coarse.DST + aero_mass_fracs.coarse.NCL)
+        mfs1 = {p.name : scenario.size.modes[0].mass_fraction(p.name) for p in scenario.aerosols}# if p.name in ['ASO4','AH2O','AH3OP','SOA','APOC','AEC','ANA','ASOIL','H2SO4_aq']}
+        mftot1 = sum(mfs1.values())
+        mfs1 = {p.name : mfs1[p.name]/mftot1 for p in scenario.aerosols} # if p.name in ['ASO4','AH2O','AH3OP','SOA','APOC','AEC','ANA','ASOIL','H2SO4_aq']}
 
-        mftot4 = (
-            aero_mass_fracs.pcarbon.POM + aero_mass_fracs.pcarbon.BC)
+        mfs2 = {p.name : scenario.size.modes[1].mass_fraction(p.name) for p in scenario.aerosols} # if p.name in ['ASO4','AH2O','AH3OP','SOA','ANA','H2SO4_aq']}
+        mftot2 = sum(mfs2.values())
+        mfs2 = {p.name : mfs2[p.name]/mftot2 for p in scenario.aerosols} # if p.name in ['ASO4','AH2O','AH3OP','SOA','ANA','H2SO4_aq']}
+        
+        mfs3 = {p.name : scenario.size.modes[2].mass_fraction(p.name) for p in scenario.aerosols} # if p.name in ['ASO4','AH2O','AH3OP','SOA','APOC','AEC','ANA','ASOIL','H2SO4_aq']}
+        mftot3 = sum(mfs3.values())
+        mfs3 = {p.name : mfs3[p.name]/mftot3 for p in scenario.aerosols} # if p.name in ['ASO4','AH2O','AH3OP','SOA','APOC','AEC','ANA','ASOIL','H2SO4_aq']}
+
+        mfs4 = {p.name : scenario.size.modes[3].mass_fraction(p.name) for p in scenario.aerosols} # if p.name in ['APOC','AEC','AH2O','AH3OP','H2SO4_aq']}
+        mftot4 = sum(mfs4.values())
+        mfs4 = {p.name : mfs4[p.name]/mftot4 for p in scenario.aerosols} # if p.name in ['APOC','AEC','AH2O','AH3OP','H2SO4_aq']}
+
+        mfs = [mfs1, mfs2, mfs3, mfs4]
         
         return Input(
+            scenario = scenario,
+
+            mfs = mfs,
+            
             mam_dt = dt,
             mam_nstep = nstep,
 
@@ -229,30 +257,30 @@ Parameters:
             numc3 = scenario.size.modes[2].number,
             numc4 = scenario.size.modes[3].number,
             
-            mfso41 = aero_mass_fracs.accum.SO4/mftot1,
-            mfpom1 = aero_mass_fracs.accum.POM/mftot1,
-            mfsoa1 = aero_mass_fracs.accum.SOA/mftot1,
-            mfbc1  = aero_mass_fracs.accum.BC/mftot1,
-            mfdst1 = aero_mass_fracs.accum.DST/mftot1,
-            mfncl1 = aero_mass_fracs.accum.NCL/mftot1,
+            mfso41 = np.floor(aero_mass_fracs.accum.SO4/mftot1 * 10**4) / 10**4,
+            mfpom1 = np.floor(aero_mass_fracs.accum.POM/mftot1 * 10**4) / 10**4,
+            mfsoa1 = np.floor(aero_mass_fracs.accum.SOA/mftot1 * 10**4) / 10**4,
+            mfbc1  = np.floor(aero_mass_fracs.accum.BC/mftot1 * 10**4) / 10**4,
+            mfdst1 = np.floor(aero_mass_fracs.accum.DST/mftot1 * 10**4) / 10**4,
+            mfncl1 = np.floor(aero_mass_fracs.accum.NCL/mftot1 * 10**4) / 10**4,
 
-            mfso42 = aero_mass_fracs.aitken.SO4/mftot2,
-            mfsoa2 = aero_mass_fracs.aitken.SOA/mftot2,
-            mfncl2 = aero_mass_fracs.aitken.NCL/mftot2,
+            mfso42 = np.floor(aero_mass_fracs.aitken.SO4/mftot2 * 10**4) / 10**4,
+            mfsoa2 = np.floor(aero_mass_fracs.aitken.SOA/mftot2 * 10**4) / 10**4,
+            mfncl2 = np.floor(aero_mass_fracs.aitken.NCL/mftot2 * 10**4) / 10**4,
             
-            mfdst3 = aero_mass_fracs.coarse.DST/mftot3,
-            mfncl3 = aero_mass_fracs.coarse.NCL/mftot3,
-            mfso43 = aero_mass_fracs.coarse.SO4/mftot3,
-            mfbc3  = aero_mass_fracs.coarse.BC/mftot3,
-            mfpom3 = aero_mass_fracs.coarse.POM/mftot3,
-            mfsoa3 = aero_mass_fracs.coarse.SOA/mftot3,
+            mfdst3 = np.floor(aero_mass_fracs.coarse.DST/mftot3 * 10**4) / 10**4,
+            mfncl3 = np.floor(aero_mass_fracs.coarse.NCL/mftot3 * 10**4) / 10**4,
+            mfso43 = np.floor(aero_mass_fracs.coarse.SO4/mftot3 * 10**4) / 10**4,
+            mfbc3  = np.floor(aero_mass_fracs.coarse.BC/mftot3 * 10**4) / 10**4,
+            mfpom3 = np.floor(aero_mass_fracs.coarse.POM/mftot3 * 10**4) / 10**4,
+            mfsoa3 = np.floor(aero_mass_fracs.coarse.SOA/mftot3 * 10**4) / 10**4,
 
-            mfpom4 = aero_mass_fracs.pcarbon.POM/mftot4,
-            mfbc4  = aero_mass_fracs.pcarbon.BC/mftot4,
+            mfpom4 = np.floor(aero_mass_fracs.pcarbon.POM/mftot4 * 10**4) / 10**4,
+            mfbc4  = np.floor(aero_mass_fracs.pcarbon.BC/mftot4 * 10**4) / 10**4,
 
-            qso2 = gas_mixing_ratios.SO2,
-            qh2so4 = gas_mixing_ratios.H2SO4,
-            qsoag = gas_mixing_ratios.SOAG,
+            qso2 = gas_mixing_ratios.SO2 * 1.e-06 * 64.0648 / 28.966,
+            qh2so4 = gas_mixing_ratios.H2SO4 * 1.e-06 * 98.0784 / 28.966,
+            qsoag = gas_mixing_ratios.SOAG * 1.e-06 * 12.011 / 28.966,
         )
     
     def invocation(self, exe: str, prefix: str) -> str:
@@ -319,6 +347,40 @@ working directory contains any needed input files."""
         filename = os.path.join(dir, 'namelist')
         with open(filename, 'w') as f:
             print(content)
+            f.write(content)
+
+        content = """"""
+        for mode, species, mf, dens in [('accumulation', p.name, input.mfs[0][p.name], p.density) for p in input.scenario.aerosols]: #  \
+                                        # if p.name in ['ASO4','AH2O','AH3OP','SOA','APOC','AEC','ANA','ASOIL','H2SO4_aq'] \
+                                        # else ('accumulation', p.name, 0., p.density) for p in input.scenario.aerosols]:
+            content += \
+f"""
+{mode},{species},{mf},{dens}
+"""
+        for mode, species, mf, dens in [('aitken', p.name, input.mfs[1][p.name], p.density) for p in input.scenario.aerosols]: #  \
+                                        # if p.name in ['ASO4','AH2O','AH3OP','SOA','ANA','H2SO4_aq'] \
+                                        # else ('aitken', p.name, 0., p.density) for p in input.scenario.aerosols]:
+            content += \
+f"""
+{mode},{species},{mf},{dens}
+"""
+        for mode, species, mf, dens in [('coarse', p.name, input.mfs[2][p.name], p.density) for p in input.scenario.aerosols]: #  \
+                                        # if p.name in ['ASO4','AH2O','AH3OP','SOA','APOC','AEC','ANA','ASOIL','H2SO4_aq'] \
+                                        # else ('coarse', p.name, 0., p.density) for p in input.scenario.aerosols]:
+            content += \
+f"""
+{mode},{species},{mf},{dens}
+"""
+        for mode, species, mf, dens in [('primary_carbon', p.name, input.mfs[3][p.name], p.density) for p in input.scenario.aerosols]: # \
+                                        #if p.name in ['APOC','AEC','AH2O','AH3OP','H2SO4_aq'] \
+                                        #else ('primary_carbon', p.name, 0., p.density) for p in input.scenario.aerosols]:
+            content += \
+f"""
+{mode},{species},{mf},{dens}
+"""
+        filename = os.path.join(dir, 'aero_mass_fracs.dat')
+        with open(filename, 'w') as f:
+            # print(content)
             f.write(content)
 
     def read_output_files(self,
