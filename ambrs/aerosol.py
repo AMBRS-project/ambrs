@@ -27,7 +27,7 @@ class AerosolProcesses:
     optics: bool = False
     nucleation: bool = False
 
-@dataclass(frozen=True)
+@dataclass(frozen=False) # Unfroze. Reason for frozen?
 class AerosolSpecies:
     """AerosolSpecies: the definition of an aerosol species in terms of species-
 specific parameters (no state information)"""
@@ -63,8 +63,8 @@ specific parameters (no state information)"""
             'H2O',
         ]
         
-        if self.name not in valid_aerosol_species:
-            raise NameError(f'Invalid aerosol species name: {self.name}\nValid names are {valid_aerosol_species}')
+        # if self.name not in valid_aerosol_species:
+        #     raise NameError(f'Invalid aerosol species name: {self.name}\nValid names are {valid_aerosol_species}')
         if self.molar_mass <= 0.0:
             raise ValueError(f'Non-positive molar mass: {self.molar_mass}')
         if self.density <= 0.0:

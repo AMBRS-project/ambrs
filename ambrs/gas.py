@@ -91,9 +91,10 @@ specific parameters (no state information)"""
             'CH3SO2OO',
             'CH3SO2CH2OO',
             'SULFHOX',
+            'SOAG',
         ]
-        if self.name.upper() not in valid_gas_species:
-            raise NameError(f'Invalid gas species name: {self.name}\nValid names are {valid_gas_species}')
+        # if self.name.upper() not in valid_gas_species:
+        #     raise NameError(f'Invalid gas species name: {self.name}\nValid names are {valid_gas_species}')
         if self.molar_mass <= 0.0:
             raise ValueError(f'Non-positive molar mass: {self.molar_mass}')
 
