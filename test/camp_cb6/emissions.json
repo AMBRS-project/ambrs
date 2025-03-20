@@ -1,0 +1,12 @@
+{ "camp-data" : [
+  {
+    "name" : "Emissions",
+    "type" : "MECHANISM",
+    "reactions" : [
+        {
+            "type" : "EMISSION",
+            "species" : "PCVOC"
+        }
+    ]
+  }
+]}

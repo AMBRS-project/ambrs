@@ -1,0 +1,12 @@
+{
+    "camp-files" : [
+        "/home/dquevedo/AMBRS/ambrs_mam4_cb6r5_ae7_aq/tests/single_aerosol_phase.json",
+        "/home/dquevedo/AMBRS/ambrs_mam4_cb6r5_ae7_aq/tests/partmc_aerosol_representation.json",
+        "/home/dquevedo/AMBRS/ambrs_mam4_cb6r5_ae7_aq/tests/gc_species.json",
+        "/home/dquevedo/AMBRS/ambrs_mam4_cb6r5_ae7_aq/tests/ae_species.json",
+        "/home/dquevedo/AMBRS/ambrs_mam4_cb6r5_ae7_aq/tests/nr_species.json",
+        "/home/dquevedo/AMBRS/ambrs_mam4_cb6r5_ae7_aq/tests/constants.json",
+        "/home/dquevedo/AMBRS/ambrs_mam4_cb6r5_ae7_aq/tests/other.json",
+        "/home/dquevedo/AMBRS/ambrs_mam4_cb6r5_ae7_aq/tests/modified_mechanism.json"
+    ]
+}
