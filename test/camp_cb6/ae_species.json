@@ -1,0 +1,312 @@
+{
+    "camp-data" : [
+        {
+            "name" : "ASO4",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0960,
+            "density [kg m-3]" : 1800.0000,
+            "num_ions" : 2,
+            "charge" : -2,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "ANH4",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0180,
+            "density [kg m-3]" : 1800.0000,
+            "num_ions" : 1,
+            "charge" : 1,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "ANO3",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0620,
+            "density [kg m-3]" : 1800.0000,
+            "num_ions" : 1,
+            "charge" : -1,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "ANA",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0230,
+            "density [kg m-3]" : 2200.0000,
+            "num_ions" : 1,
+            "charge" : 1,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "ACL",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0355,
+            "density [kg m-3]" : 2200.0000,
+            "num_ions" : 1,
+            "charge" : -1,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "AEC",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0120,
+            "density [kg m-3]" : 2200.0000,
+            "num_ions" : 0,
+            "charge" : 0,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "AOTHR",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.2000,
+            "density [kg m-3]" : 2200.0000,
+            "num_ions" : 0,
+            "charge" : 0,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "AFE",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0558,
+            "density [kg m-3]" : 2200.0000,
+            "num_ions" : 0,
+            "charge" : 0,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "AAL",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0270,
+            "density [kg m-3]" : 2200.0000,
+            "num_ions" : 0,
+            "charge" : 0,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "ASI",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0281,
+            "density [kg m-3]" : 2200.0000,
+            "num_ions" : 0,
+            "charge" : 0,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "ATI",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0479,
+            "density [kg m-3]" : 2200.0000,
+            "num_ions" : 0,
+            "charge" : 0,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "ACA",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0401,
+            "density [kg m-3]" : 2200.0000,
+            "num_ions" : 2,
+            "charge" : 2,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "AMG",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0243,
+            "density [kg m-3]" : 2200.0000,
+            "num_ions" : 2,
+            "charge" : 2,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "AK",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0391,
+            "density [kg m-3]" : 2200.0000,
+            "num_ions" : 1,
+            "charge" : 1,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "AMN",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0549,
+            "density [kg m-3]" : 2200.0000,
+            "num_ions" : 0,
+            "charge" : 0,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "ACORS",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1000,
+            "density [kg m-3]" : 2200.0000,
+            "num_ions" : 0,
+            "charge" : 0,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "ASOIL",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1000,
+            "density [kg m-3]" : 2600.0000,
+            "num_ions" : 0,
+            "charge" : 0,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "AORGH2O",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0180,
+            "density [kg m-3]" : 1000.0000,
+            "num_ions" : 0,
+            "charge" : 0,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "AH2O",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0180,
+            "density [kg m-3]" : 1000.0000,
+            "num_ions" : 0,
+            "charge" : 0,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "AH3OP",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0190,
+            "density [kg m-3]" : 1000.0000,
+            "num_ions" : 0,
+            "charge" : 0,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "ASEACAT",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0238,
+            "density [kg m-3]" : 2200.0000,
+            "num_ions" : 1,
+            "charge" : 1,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "APOC",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.2200,
+            "density [kg m-3]" : 1400.0000,
+            "num_ions" : 0,
+            "charge" : 0,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "APNCOM",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.2200,
+            "density [kg m-3]" : 1400.0000,
+            "num_ions" : 0,
+            "charge" : 0,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "ALVPO1",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.2180,
+            "density [kg m-3]" : 1400.0000,
+            "num_ions" : 0,
+            "charge" : 0,
+            "kappa" : 0.0500
+        },
+        {
+            "name" : "ASVPO1",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.2300,
+            "density [kg m-3]" : 1400.0000,
+            "num_ions" : 0,
+            "charge" : 0,
+            "kappa" : 0.0500
+        },
+        {
+            "name" : "ASVPO2",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.2410,
+            "density [kg m-3]" : 1400.0000,
+            "num_ions" : 0,
+            "charge" : 0,
+            "kappa" : 0.0400
+        },
+        {
+            "name" : "ASVPO3",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.2530,
+            "density [kg m-3]" : 1400.0000,
+            "num_ions" : 0,
+            "charge" : 0,
+            "kappa" : 0.0300
+        },
+        {
+            "name" : "AIVPO1",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.2660,
+            "density [kg m-3]" : 1400.0000,
+            "num_ions" : 0,
+            "charge" : 0,
+            "kappa" : 0.0300
+        }
+    ]
+}

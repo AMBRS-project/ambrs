@@ -1,0 +1,34 @@
+{
+    "camp-data" : [
+        {
+            "name" : "M",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e+00,
+            "molecular weight [kg mol-1]" : 0.029
+        },
+              {
+            "name" : "H2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-00,
+            "molecular weight [kg mol-1]" : 0.002
+        },
+              {
+            "name" : "N2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e+00,
+            "molecular weight [kg mol-1]" : 0.028
+        },
+              {
+            "name" : "O2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e+00,
+            "molecular weight [kg mol-1]" : 0.032
+        },
+              {
+            "name" : "CH4",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e+00,
+            "molecular weight [kg mol-1]" : 0.016
+        }
+    ]
+}
