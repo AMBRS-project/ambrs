@@ -168,8 +168,7 @@ class AerosolModel(BaseAerosolModel):
         if not isinstance(scenario.size, AerosolModalSizeState):
             raise TypeError('Non-modal aerosol particle size state cannot be used to create PartMC input!')
         aero_data = [AeroData(
-            species = f'{s.name}',
-            # species = s.name,
+            species = s.name,
             density = s.density,
             ions_in_soln = s.ions_in_soln,
             molecular_weight = s.molar_mass / 1000.,
@@ -177,7 +176,7 @@ class AerosolModel(BaseAerosolModel):
         ) for s in scenario.aerosols]
         aero_init = [AeroMode(
             mode_name = m.name.replace(' ', '_'),
-            mass_frac = {f'{m.species[i].name}':m.mass_fractions[i] for i in range(len(m.species))},
+            mass_frac = {m.species[i].name:m.mass_fractions[i] for i in range(len(m.species))},
             diam_type = 'geometric', # FIXME: could also be 'mobility'
             mode_type = 'log_normal', # FIXME: could also be 'exp', 'mono', 'sampled'
             num_conc = m.number,
