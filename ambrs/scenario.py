@@ -5,7 +5,7 @@ simulation scenarios.
 from dataclasses import dataclass
 from .aerosol import AerosolModalSizeState, AerosolSpecies
 from .gas import GasSpecies
-from typing import Dict
+from typing import Dict, Optional
 
 @dataclass
 class Scenario:
@@ -20,4 +20,5 @@ in terms of state information"""
     temperature: float
     pressure: float
     height: float
+    gas_emissions: Optional[list[tuple[float, dict], ...]] = None
 

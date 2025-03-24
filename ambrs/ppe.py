@@ -35,6 +35,7 @@ PPE are sampled"""
     temperature: RVFrozenDistribution
     pressure: float # <-- these are fixed per ensemble
     height: float   # <--
+    gas_emissions: Optional[list[tuple[float, dict], ...]] = None
 
 @dataclass(frozen=True)
 class Ensemble:
@@ -49,6 +50,7 @@ a specific EnsembleSpecification"""
     temperature: np.array
     pressure: float
     height: float
+    gas_emissions: Optional[list[tuple[float, dict], ...]] = None
     specification: Optional[EnsembleSpecification] = None # if used for creation
 
     def __len__(self):
@@ -70,6 +72,7 @@ a specific EnsembleSpecification"""
             temperature = self.temperature[i],
             pressure = self.pressure,
             height = self.height,
+            gas_emissions = self.gas_emissions,
         )
 
 #------------------------------------------------
@@ -127,6 +130,7 @@ specified scenarios (which must all have the same particle size representation)"
         temperature = temperature,
         pressure = scenarios[0].pressure,
         height = scenarios[0].height,
+        gas_emissions = scenarios[0].gas_emissions,
     )
 
 #-------------------------------------------------
@@ -163,6 +167,7 @@ def sample(specification: EnsembleSpecification, n: int) -> Ensemble:
         temperature = specification.temperature.rvs(n),
         pressure = specification.pressure,
         height = specification.height,
+        gas_emissions = specification.gas_emissions,
     )
 
 def lhs(specification: EnsembleSpecification,
@@ -226,6 +231,7 @@ distribution from which ensemble members are sampled."""
         temperature = specification.temperature.ppf(lhd[:,-1]),
         pressure = specification.pressure,
         height = specification.height,
+        gas_emissions = specification.gas_emissions,
     )
 
 #---------------------------

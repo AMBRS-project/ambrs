@@ -2,3 +2,8 @@
 *.pyc
 
 .DS_Store
+
+.ipynb_checkpoints/
+ambrs/.ipynb_checkpoints/
+ambrs/camp.py
+test/.ipynb_checkpoints/

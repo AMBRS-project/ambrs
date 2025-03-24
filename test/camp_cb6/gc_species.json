@@ -1,0 +1,704 @@
+{
+    "camp-data" : [
+        {
+            "name" : "NO2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0460
+        },
+        {
+            "name" : "NO",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0300
+        },
+        {
+            "name" : "O",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0160
+        },
+        {
+            "name" : "O3",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0480
+        },
+        {
+            "name" : "NO3",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0620
+        },
+        {
+            "name" : "O1D",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0160
+        },
+        {
+            "name" : "OH",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0170
+        },
+        {
+            "name" : "HO2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0330
+        },
+        {
+            "name" : "H2O2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0340
+        },
+        {
+            "name" : "N2O5",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1080
+        },
+        {
+            "name" : "HNO3",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0630
+        },
+        {
+            "name" : "HONO",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0470
+        },
+        {
+            "name" : "PNA",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0790
+        },
+        {
+            "name" : "SO2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0640,
+            "diffusion coeff [m2 s-1]" : 1.3e-5,
+            "notes" : "diff coeff from https://doi.org/10.1021/jp993622j"
+        },
+        {
+            "name" : "SULF",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0980,
+            "HLC(298K) [M Pa-1]" : 9.8692e5,
+            "HLC exp factor [K]" : 8.684E+03,
+            "diffusion coeff [m2 s-1]" : 1.260E-05,
+            "notes" : "parameters from PartMC CAMP scenario"
+        },
+        {
+            "name" : "SULRXN",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0980,
+            "HLC(298K) [M Pa-1]" : 9.8692e5,
+            "HLC exp factor [K]" : 8.684E+03,
+            "diffusion coeff [m2 s-1]" : 1.260E-05,
+            "notes" : "parameters from PartMC CAMP scenario"
+        },
+        {
+            "name" : "C2O3",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0750
+        },
+        {
+            "name" : "MEO2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0470
+        },
+        {
+            "name" : "RO2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0871
+        },
+        {
+            "name" : "PAN",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1210
+        },
+        {
+            "name" : "PACD",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0760
+        },
+        {
+            "name" : "AACD",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0600
+        },
+        {
+            "name" : "CXO3",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0890
+        },
+        {
+            "name" : "ALD2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0440
+        },
+        {
+            "name" : "XO2H",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0871
+        },
+        {
+            "name" : "PANX",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1350
+        },
+        {
+            "name" : "FORM",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0300
+        },
+        {
+            "name" : "MEPX",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0480
+        },
+        {
+            "name" : "MEOH",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0320
+        },
+        {
+            "name" : "ROOH",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0901
+        },
+        {
+            "name" : "XO2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0871
+        },
+        {
+            "name" : "XO2N",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0871
+        },
+        {
+            "name" : "XPAR",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0450
+        },
+        {
+            "name" : "XPRP",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0891
+        },
+        {
+            "name" : "NTR1",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1191
+        },
+        {
+            "name" : "NTR2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1351
+        },
+        {
+            "name" : "FACD",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0460
+        },
+        {
+            "name" : "CO",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0280
+        },
+        {
+            "name" : "HCO3",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0630
+        },
+        {
+            "name" : "ALDX",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0581
+        },
+        {
+            "name" : "GLYD",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0600
+        },
+        {
+            "name" : "GLY",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0580
+        },
+        {
+            "name" : "MGLY",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0720
+        },
+        {
+            "name" : "ETHA",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0301
+        },
+        {
+            "name" : "ETOH",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0461
+        },
+        {
+            "name" : "KET",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0721
+        },
+        {
+            "name" : "PAR",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0140
+        },
+        {
+            "name" : "ACET",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0581
+        },
+        {
+            "name" : "PRPA",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0441
+        },
+        {
+            "name" : "ROR",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0290
+        },
+        {
+            "name" : "ETHY",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0260
+        },
+        {
+            "name" : "ETH",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0280
+        },
+        {
+            "name" : "OLE",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0421
+        },
+        {
+            "name" : "IOLE",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0561
+        },
+        {
+            "name" : "ISOP",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0681
+        },
+        {
+            "name" : "ISO2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1171
+        },
+        {
+            "name" : "ISPD",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0701
+        },
+        {
+            "name" : "INTR",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1471
+        },
+        {
+            "name" : "ISPX",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1181
+        },
+        {
+            "name" : "HPLD",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1161
+        },
+        {
+            "name" : "OPO3",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1150
+        },
+        {
+            "name" : "EPOX",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1181
+        },
+        {
+            "name" : "IEPOXP",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1181
+        },
+        {
+            "name" : "EPX2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1491
+        },
+        {
+            "name" : "TERP",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1362
+        },
+        {
+            "name" : "APIN",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1362
+        },
+        {
+            "name" : "TERPNRO2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1970
+        },
+        {
+            "name" : "BENZENE",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0781
+        },
+        {
+            "name" : "CRES",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1081
+        },
+        {
+            "name" : "BZO2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1591
+        },
+        {
+            "name" : "OPEN",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0840
+        },
+        {
+            "name" : "BENZRO2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1270
+        },
+        {
+            "name" : "TOL",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0921
+        },
+        {
+            "name" : "TO2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1731
+        },
+        {
+            "name" : "TOLRO2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1410
+        },
+        {
+            "name" : "XOPN",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0981
+        },
+        {
+            "name" : "XYLMN",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1062
+        },
+        {
+            "name" : "XLO2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1871
+        },
+        {
+            "name" : "XYLRO2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1550
+        },
+        {
+            "name" : "NAPH",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1282
+        },
+        {
+            "name" : "PAHRO2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1872
+        },
+        {
+            "name" : "CRO",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1071
+        },
+        {
+            "name" : "CAT1",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1241
+        },
+        {
+            "name" : "CRON",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1531
+        },
+        {
+            "name" : "OPAN",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1610
+        },
+        {
+            "name" : "ECH4",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0160
+        },
+        {
+            "name" : "CL2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0710
+        },
+        {
+            "name" : "CL",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0355
+        },
+        {
+            "name" : "HOCL",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0525
+        },
+        {
+            "name" : "CLO",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0515
+        },
+        {
+            "name" : "FMCL",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0645
+        },
+        {
+            "name" : "HCL",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0365
+        },
+        {
+            "name" : "CLNO2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0815
+        },
+        {
+            "name" : "CLNO3",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0975
+        },
+        {
+            "name" : "SESQ",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.2040
+        },
+        {
+            "name" : "SOAALK",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1120
+        },
+        {
+            "name" : "H2NO3PIJ",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0640
+        },
+        {
+            "name" : "H2NO3PK",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0640
+        },
+        {
+            "name" : "VLVPO1",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.2180
+        },
+        {
+            "name" : "VSVPO1",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.2300
+        },
+        {
+            "name" : "VSVPO2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.2410
+        },
+        {
+            "name" : "VSVPO3",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.2530
+        },
+        {
+            "name" : "VIVPO1",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.2660
+        },
+        {
+            "name" : "PCVOC",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1700
+        },
+        {
+            "name" : "FORM_PRIMARY",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0300
+        },
+        {
+            "name" : "ALD2_PRIMARY",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0440
+        },
+        {
+            "name" : "BUTADIENE13",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0540
+        },
+        {
+            "name" : "ACROLEIN",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0561
+        },
+        {
+            "name" : "ACRO_PRIMARY",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0561
+        },
+        {
+            "name" : "TOLU",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0920
+        },
+        {
+            "name" : "HG",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.2006
+        },
+        {
+            "name" : "HGIIAER",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.2006
+        },
+        {
+            "name" : "HGIIGAS",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.2715
+        },
+        {
+            "name" : "DMS",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0620
+        },
+        {
+            "name" : "MSA",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0960
+        }
+    ]
+}

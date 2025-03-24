@@ -1,0 +1,72 @@
+{
+    "camp-data" : [
+        {
+            "name" : "H2SO4_aq",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1.0e-6,
+            "molecular weight [kg mol-1]" : 0.0980,
+            "density [kg m-3]" : 1800.0000,
+            "num_ions" : 0,
+            "kappa" : 0.65
+        },
+        {
+            "name" : "HSO4_aq",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1.0e-6,
+            "molecular weight [kg mol-1]" : 0.0970,
+            "density [kg m-3]" : 1800.0000,
+            "num_ions" : 1,
+            "kappa" : 0.0000
+        },
+        {
+            "name" : "H-HSO4",
+            "type" : "CHEM_SPEC",
+            "tracer type" : "ION_PAIR",
+            "ions" : {
+                "AH3OP" : {},
+                "HSO4_aq" : {}
+            }
+        },
+        {
+            "name" : "H-SO4",
+            "type" : "CHEM_SPEC",
+            "tracer type" : "ION_PAIR",
+            "ions" : {
+                "AH3OP" : { "qty": 1 },
+                "ASO4" : {}
+            }
+        },
+        {
+            "name" : "DUMMY",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1.0e-6,
+            "molecular weight [kg mol-1]" : 0.001
+        },
+        {
+            "name" : "H2O",
+            "type" : "CHEM_SPEC",
+            "is gas-phase water" : true,
+            "absolute integration tolerance" : 1.0e-6,
+            "molecular weight [kg mol-1]" : 0.018
+        },
+        {
+            "name" : "SOAG",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1.0e-6,
+            "molecular weight [kg mol-1]" : 0.012011,
+            "diffusion coeff [m2 s-1]" : 0.1e-04
+        },
+        {
+            "name" : "SOA",
+            "type" : "CHEM_SPEC",
+            "phase" : "AEROSOL",
+            "absolute integration tolerance" : 1.0e-6,
+            "molecular weight [kg mol-1]" : 0.012011,
+            "density [kg m-3]" : 1400.0,
+            "num_ions" : 0,
+            "kappa" : 0.1
+        }
+    ]
+}

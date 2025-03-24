@@ -1,5 +1,6 @@
 # unit tests for the ambrs.aerosol package
-
+# import sys
+# sys.path.append("/home/dquevedo/AMBRS/ambrs/ambrs") # include path where AMBRS is installed locally
 import ambrs.aerosol as aerosol
 from math import log10
 import numpy as np

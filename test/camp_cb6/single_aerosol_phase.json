@@ -1,0 +1,31 @@
+{
+    "camp-data" : [
+        {
+            "name" : "mixed",
+            "type" : "AERO_PHASE",
+            "species" : [
+                
+                "SOA",
+
+                "APOC",
+
+                "ASO4",
+
+                "H2SO4_aq",
+
+                "HSO4_aq",
+
+                "AH3OP",
+                
+                "AH2O",
+                
+                "AEC",
+
+                "ANA",
+
+                "ASOIL"
+
+            ]
+        }
+    ]
+}
