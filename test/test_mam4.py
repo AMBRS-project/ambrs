@@ -1,5 +1,6 @@
 # unit tests for the ambrs.mam4 package
-
+# import sys
+# sys.path.append("/home/dquevedo/AMBRS/ambrs/ambrs") # include path where AMBRS is installed locally
 import ambrs.aerosol as aerosol
 import ambrs.gas as gas
 import ambrs.ppe as ppe
@@ -25,12 +26,14 @@ pom = aerosol.AerosolSpecies(
     molar_mass = 12.01,
     density = 1000,
     hygroscopicity = 0.5,
+    aliases='POM',
 )
 soa = aerosol.AerosolSpecies(
     name='MSA',
     molar_mass = 12.01,
     density = 1000,
     hygroscopicity = 0.5,
+    aliases='SOA',
 )
 bc = aerosol.AerosolSpecies(
     name='BC',
@@ -43,12 +46,14 @@ dst = aerosol.AerosolSpecies(
     molar_mass = 135.065,
     density = 1000,
     hygroscopicity = 0.5,
+    aliases='DST',
 )
 ncl = aerosol.AerosolSpecies(
     name='Na',
     molar_mass = 58.44,
     density = 1000,
     hygroscopicity = 0.5,
+    aliases='NCL'
 )
 
 so2 = gas.GasSpecies(

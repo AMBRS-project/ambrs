@@ -1,5 +1,6 @@
 # unit tests for the ambrs.partmc package
-
+# import sys
+# sys.path.append("/home/dquevedo/AMBRS/ambrs/ambrs") # include path where AMBRS is installed locally
 import ambrs.aerosol as aerosol
 import ambrs.gas as gas
 import ambrs.ppe as ppe
