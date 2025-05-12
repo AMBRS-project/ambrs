@@ -278,9 +278,9 @@ Parameters:
             mfpom4 = np.floor(aero_mass_fracs.pcarbon.POM/mftot4 * 10**12) / 10**12,
             mfbc4  = np.floor(aero_mass_fracs.pcarbon.BC/mftot4 * 10**12) / 10**12,
 
-            qso2 = gas_mixing_ratios.SO2 * 1.e-06 * 64.0648 / 28.966,
-            qh2so4 = gas_mixing_ratios.H2SO4 * 1.e-06 * 98.0784 / 28.966,
-            qsoag = gas_mixing_ratios.SOAG * 1.e-06 * 12.011 / 28.966,
+            qso2 = gas_mixing_ratios.SO2 * 1.e-6 * 64.0648 / 28.966,
+            qh2so4 = gas_mixing_ratios.H2SO4 * 1.e-6 * 98.0784 / 28.966,
+            qsoag = gas_mixing_ratios.SOAG *  1.e-6 * 12.011 / 28.966,
         )
     
     def invocation(self, exe: str, prefix: str) -> str:
@@ -399,7 +399,7 @@ f'''
         content = \
 '''
 &camp_config
-    config_key = '/Users/duncancq/Research/AMBRS/aero_unit_tests/sulfate_condensation/mam4_config.json',
+    config_key = '/Users/duncancq/Research/AMBRS/aero_unit_tests/sulfate_condensation/camp_config/mam4_config.json',
 /
 &camp_mech
     mech_key = 'sulfate_condensation',
