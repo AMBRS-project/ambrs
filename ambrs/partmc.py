@@ -168,7 +168,7 @@ class AerosolModel(BaseAerosolModel):
         if not isinstance(scenario.size, AerosolModalSizeState):
             raise TypeError('Non-modal aerosol particle size state cannot be used to create PartMC input!')
         aero_data = [AeroData(
-            species = s.name,
+            species = f'core.mixed.{s.name}',
             density = s.density,
             ions_in_soln = s.ions_in_soln,
             molecular_weight = s.molar_mass / 1000.,
@@ -176,7 +176,7 @@ class AerosolModel(BaseAerosolModel):
         ) for s in scenario.aerosols]
         aero_init = [AeroMode(
             mode_name = m.name.replace(' ', '_'),
-            mass_frac = {m.species[i].name:m.mass_fractions[i] for i in range(len(m.species))},
+            mass_frac = {f'core.mixed.{m.species[i].name}':m.mass_fractions[i] for i in range(len(m.species))},
             diam_type = 'geometric', # FIXME: could also be 'mobility'
             mode_type = 'log_normal', # FIXME: could also be 'exp', 'mono', 'sampled'
             num_conc = m.number,
@@ -202,7 +202,7 @@ class AerosolModel(BaseAerosolModel):
             do_camp_chem = True,
 
             gas_data = tuple([gas.name for gas in scenario.gases]),
-            gas_init = tuple([gas_conc*1e3 for gas_conc in scenario.gas_concs]),
+            gas_init = tuple([gas_conc*1.e+3 for gas_conc in scenario.gas_concs]),
             # FIXME: double-check that units are consistent; add unit test
             
             aerosol_data = tuple(aero_data),
@@ -276,7 +276,7 @@ class AerosolModel(BaseAerosolModel):
         # chemistry
         if input.do_camp_chem:
             spec_content += 'do_camp_chem yes\n'
-            spec_content += 'camp_config /home/dquevedo/AMBRS/ambrs_mam4_cb6r5_ae7_aq/tests/partmc_config.json\n' # FIXME: path
+            spec_content += 'camp_config /Users/duncancq/Research/AMBRS/aero_unit_tests/sulfate_condensation/camp_config/partmc_config.json\n' # FIXME: path
         else:
             spec_content += 'do_camp_chem no\n'
         spec_content += '\n'
