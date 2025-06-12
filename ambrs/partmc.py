@@ -202,7 +202,7 @@ class AerosolModel(BaseAerosolModel):
             do_camp_chem = True,
 
             gas_data = tuple([gas.name for gas in scenario.gases]),
-            gas_init = tuple([gas_conc*1.e+3 for gas_conc in scenario.gas_concs]),
+            gas_init = tuple([1.e+3 * gas_conc for gas_conc in scenario.gas_concs]),
             # FIXME: double-check that units are consistent; add unit test
             
             aerosol_data = tuple(aero_data),
@@ -213,10 +213,12 @@ class AerosolModel(BaseAerosolModel):
             pressure_profile = [(0, scenario.pressure)],
             height_profile = [(0, scenario.height)],
 
+            # loss_function = 'volume',
+
             rel_humidity = scenario.relative_humidity,
             latitude = 0,       # FIXME:
             longitude = 0,      # FIXME:
-            altitude = 0,       # FIXME:
+            altitude = 3.0e+3,       # FIXME:
             start_time = 21600, # FIXME:
             start_day = 200,    # FIXME:
 
@@ -226,7 +228,7 @@ class AerosolModel(BaseAerosolModel):
             do_optical = self.processes.optics,
             do_nucleation = self.processes.nucleation,
 
-            rand_init = 42, # FIXME: uses time to initialize random seed
+            rand_init = 42, # FIXME: seed 0 uses clock to initialize random seed
             allow_doubling = True,
             allow_halving = True,
             record_removals = True,
@@ -276,7 +278,7 @@ class AerosolModel(BaseAerosolModel):
         # chemistry
         if input.do_camp_chem:
             spec_content += 'do_camp_chem yes\n'
-            spec_content += 'camp_config /Users/duncancq/Research/AMBRS/aero_unit_tests/sulfate_condensation/camp_config/partmc_config.json\n' # FIXME: path
+            spec_content += 'camp_config /Users/duncancq/Research/AMBRS/aero_unit_tests/MAM4-like/camp_config/partmc_config.json\n' # FIXME: path
         else:
             spec_content += 'do_camp_chem no\n'
         spec_content += '\n'

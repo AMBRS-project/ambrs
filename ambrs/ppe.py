@@ -36,6 +36,8 @@ PPE are sampled"""
     pressure: float # <-- these are fixed per ensemble
     height: float   # <--
     gas_emissions: Optional[list[tuple[float, dict], ...]] = None
+    soa_source : Optional[tuple[float, ...]] = None
+    soa_loss: Optional[float] = None
 
 @dataclass(frozen=True)
 class Ensemble:
@@ -51,6 +53,8 @@ a specific EnsembleSpecification"""
     pressure: float
     height: float
     gas_emissions: Optional[list[tuple[float, dict], ...]] = None
+    soa_source : Optional[tuple[float, ...]] = None
+    soa_loss: Optional[float] = None
     specification: Optional[EnsembleSpecification] = None # if used for creation
 
     def __len__(self):
@@ -73,6 +77,8 @@ a specific EnsembleSpecification"""
             pressure = self.pressure,
             height = self.height,
             gas_emissions = self.gas_emissions,
+            soa_source = self.soa_source,
+            soa_loss = self.soa_loss,
         )
 
 #------------------------------------------------
@@ -131,6 +137,8 @@ specified scenarios (which must all have the same particle size representation)"
         pressure = scenarios[0].pressure,
         height = scenarios[0].height,
         gas_emissions = scenarios[0].gas_emissions,
+        soa_source  = scenarios[0].soa_source ,
+        soa_loss = scenarios[0].soa_loss,
     )
 
 #-------------------------------------------------
@@ -168,6 +176,8 @@ def sample(specification: EnsembleSpecification, n: int) -> Ensemble:
         pressure = specification.pressure,
         height = specification.height,
         gas_emissions = specification.gas_emissions,
+        soa_source  = specification.soa_source ,
+        soa_loss = specification.soa_loss,
     )
 
 def lhs(specification: EnsembleSpecification,
@@ -232,6 +242,8 @@ distribution from which ensemble members are sampled."""
         pressure = specification.pressure,
         height = specification.height,
         gas_emissions = specification.gas_emissions,
+        soa_source  = specification.soa_source ,
+        soa_loss = specification.soa_loss,
     )
 
 #---------------------------
@@ -410,6 +422,9 @@ parameter sweeps"""
             temperature = params[index + 2],
             pressure = reference_state.pressure,
             height = reference_state.height,
+            gas_emissions = reference_state.gas_emissions,
+            soa_source = reference_state.soa_source ,
+            soa_loss = reference_state.soa_loss,
         )
         index += 3
         members.append(member)
