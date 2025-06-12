@@ -233,6 +233,8 @@ Parameters:
         mfs4 = {p.name : mfs4[p.name]/mftot4 for p in scenario.size.modes[3].species} # if p.name in ['APOC','AEC','AH2O','AH3OP','H2SO4_aq']}
 
         mfs = [mfs1, mfs2, mfs3, mfs4]
+
+        print( 'MASS FRACS', mfs )
         
         return Input(
             scenario = scenario,
@@ -280,7 +282,7 @@ Parameters:
 
             qso2 = gas_mixing_ratios.SO2 * 1.e-6 * 64.0648 / 28.966,
             qh2so4 = gas_mixing_ratios.H2SO4 * 1.e-6 * 98.0784 / 28.966,
-            qsoag = gas_mixing_ratios.SOAG *  1.e-6 * 12.011 / 28.966,
+            qsoag = gas_mixing_ratios.SOAG *  1.e-6 * 12.0109997 / 28.966,
         )
     
     def invocation(self, exe: str, prefix: str) -> str:
@@ -397,12 +399,21 @@ f'''
             f.write(content)
 
         content = \
-'''
+f'''
 &camp_config
-    config_key = '/Users/duncancq/Research/AMBRS/aero_unit_tests/sulfate_condensation/camp_config/mam4_config.json',
+    config_key = '/Users/duncancq/Research/AMBRS/aero_unit_tests/MAM4-like/camp_config/mam4_config.json',
 /
 &camp_mech
-    mech_key = 'sulfate_condensation',
+    mech_key = 'MAM4_SOA_partitioning',
+/
+&mam_emis
+    e_soa1 = {input.scenario.soa_source[0]},
+    e_soa2 = {input.scenario.soa_source[1]},
+    e_soa3 = {input.scenario.soa_source[2]},
+    e_soa4 = {input.scenario.soa_source[3]},
+/
+&mam_loss
+    soa_loss = {input.scenario.soa_loss},
 /
 '''
         filename = os.path.join(dir, 'camp_nml')
