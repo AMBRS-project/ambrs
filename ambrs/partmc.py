@@ -278,7 +278,7 @@ class AerosolModel(BaseAerosolModel):
         # chemistry
         if input.do_camp_chem:
             spec_content += 'do_camp_chem yes\n'
-            spec_content += 'camp_config /Users/duncancq/Research/AMBRS/aero_unit_tests/MAM4-like/camp_config/partmc_config.json\n' # FIXME: path
+            spec_content += 'camp_config /global/scratch/users/duncanquevedo/AMBRS/NSF_INTERN/camp_config/partmc_config.json\n' # FIXME: path
         else:
             spec_content += 'do_camp_chem no\n'
         spec_content += '\n'

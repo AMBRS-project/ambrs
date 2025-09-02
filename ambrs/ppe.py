@@ -33,7 +33,7 @@ PPE are sampled"""
     flux: RVFrozenDistribution
     relative_humidity: RVFrozenDistribution
     temperature: RVFrozenDistribution
-    pressure: float # <-- these are fixed per ensemble
+    pressure: RVFrozenDistribution #float # <-- these are fixed per ensemble # !!! FIXME: Changed from float to RV
     height: float   # <--
     gas_emissions: Optional[list[tuple[float, dict], ...]] = None
     soa_source : Optional[tuple[float, ...]] = None
@@ -50,7 +50,7 @@ a specific EnsembleSpecification"""
     flux: np.array
     relative_humidity: np.array
     temperature: np.array
-    pressure: float
+    pressure: np.array
     height: float
     gas_emissions: Optional[list[tuple[float, dict], ...]] = None
     soa_source : Optional[tuple[float, ...]] = None
@@ -74,7 +74,7 @@ a specific EnsembleSpecification"""
             flux = self.flux[i],
             relative_humidity = self.relative_humidity[i],
             temperature = self.temperature[i],
-            pressure = self.pressure,
+            pressure = self.pressure[i], # FIXME: indexed pressure like prev two vars
             height = self.height,
             gas_emissions = self.gas_emissions,
             soa_source = self.soa_source,
@@ -96,6 +96,7 @@ specified scenarios (which must all have the same particle size representation)"
     flux = np.array([scenario.flux for scenario in scenarios])
     relative_humidity = np.array([scenario.relative_humidity for scenario in scenarios])
     temperature = np.array([scenario.temperature for scenario in scenarios])
+    pressure = np.array([scenario.pressure for scenario in scenarios])
 
     # handle particle size data
     size = None
@@ -134,7 +135,7 @@ specified scenarios (which must all have the same particle size representation)"
         flux = flux,
         relative_humidity = relative_humidity,
         temperature = temperature,
-        pressure = scenarios[0].pressure,
+        pressure = pressure, #scenarios[0].pressure,
         height = scenarios[0].height,
         gas_emissions = scenarios[0].gas_emissions,
         soa_source  = scenarios[0].soa_source ,
@@ -156,7 +157,8 @@ def sample(specification: EnsembleSpecification, n: int) -> Ensemble:
                     species = mode.species,
                     number = mode.number.rvs(n),
                     geom_mean_diam = mode.geom_mean_diam.rvs(n),
-                    log10_geom_std_dev = np.array([mode.log10_geom_std_dev for i in range(n)]),
+                    # log10_geom_std_dev = np.array([mode.log10_geom_std_dev.rvs(n) for i in range(n)]),
+                    log10_geom_std_dev = mode.log10_geom_std_dev.rvs(n),
                     mass_fractions = tuple([f.rvs(n) for f in mode.mass_fractions]),
                 ) for mode in specification.size.modes]),
         )
@@ -173,7 +175,7 @@ def sample(specification: EnsembleSpecification, n: int) -> Ensemble:
         flux = specification.flux.rvs(n),
         relative_humidity = specification.relative_humidity.rvs(n),
         temperature = specification.temperature.rvs(n),
-        pressure = specification.pressure,
+        pressure = specification.pressure.rvs(n),
         height = specification.height,
         gas_emissions = specification.gas_emissions,
         soa_source  = specification.soa_source ,
@@ -189,14 +191,14 @@ generated from latin hypercube sampling applied to the given specification. The
 optional arguments are passed along to pyDOE's lhs function, which creates the
 distribution from which ensemble members are sampled."""
     num_gases = len(specification.gases)
-    n_factors = num_gases + 3 # size-independent factors: num_gases + flux + relative_humidity + temperature
+    n_factors = num_gases + 4 # size-independent factors: num_gases + flux + relative_humidity + temperature (!!!FIXME) + presssure
     lhd = None # latin hypercube distribution (created depending on particle
                # size representation)
     size = None
     if isinstance(specification.size, AerosolModalSizeDistribution):
         # count up mode-related factors
         for mode in specification.size.modes:
-            n_factors += 2 + len(mode.mass_fractions)
+            n_factors += 3 + len(mode.mass_fractions) # !!!FIXME Changed offset to 3 from 2 throughout to accommodate sigmag dist
         # lhd is a 2D array with indices (sample index, factor index)
         lhd = pyDOE.lhs(n_factors, n, criterion, iterations)
         num_species = [len(mode.mass_fractions) for mode in specification.size.modes]
@@ -205,11 +207,11 @@ distribution from which ensemble members are sampled."""
                 AerosolModePopulation(
                     name = mode.name,
                     species = mode.species,
-                    number=mode.number.ppf(lhd[:,(2+num_species[m])*m]),
-                    geom_mean_diam=mode.geom_mean_diam.ppf(lhd[:,(2+num_species[m])*m+1]),
-                    log10_geom_std_dev = np.array([mode.log10_geom_std_dev for i in range(n)]),
+                    number=mode.number.ppf(lhd[:,(3+num_species[m])*m]),
+                    geom_mean_diam=mode.geom_mean_diam.ppf(lhd[:,(3+num_species[m])*m+1]),
+                    log10_geom_std_dev=np.array(mode.log10_geom_std_dev.ppf(lhd[:,(3+num_species[m])*m+2])), # !!! FIXME: Changed np.array --> np.log10
                     mass_fractions=tuple(
-                        [mass_fraction.ppf(lhd[:,(2+num_species[m])*m+f])
+                        [mass_fraction.ppf(lhd[:,(3+num_species[m])*m+f])
                          for f, mass_fraction in enumerate(mode.mass_fractions)]),
                 ) for m, mode in enumerate(specification.size.modes)]),
         )
@@ -229,17 +231,17 @@ distribution from which ensemble members are sampled."""
             
     gas_concs = []
     for g, gas_conc in enumerate(specification.gas_concs):
-        gas_concs.append(gas_conc.ppf(lhd[:,-3-(num_gases-g)]))
+        gas_concs.append(gas_conc.ppf(lhd[:,-4-(num_gases-g)]))
     return Ensemble(
         aerosols = specification.aerosols,
         gases = specification.gases,
         specification = specification,
         size = size,
         gas_concs = tuple(gas_concs),
-        flux = specification.flux.ppf(lhd[:,-3]),
-        relative_humidity = specification.relative_humidity.ppf(lhd[:,-2]),
-        temperature = specification.temperature.ppf(lhd[:,-1]),
-        pressure = specification.pressure,
+        flux = specification.flux.ppf(lhd[:,-4]), # !!!FIXME Following indices shifted down by 1 to accommodate pressure
+        relative_humidity = specification.relative_humidity.ppf(lhd[:,-3]),
+        temperature = specification.temperature.ppf(lhd[:,-2]),
+        pressure = specification.pressure.ppf(lhd[:,-1]),
         height = specification.height,
         gas_emissions = specification.gas_emissions,
         soa_source  = specification.soa_source ,
