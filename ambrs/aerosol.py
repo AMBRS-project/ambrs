@@ -102,7 +102,7 @@ log-normal aerosol mode (distribution only--no state information)"""
     species: tuple[AerosolSpecies, ...]
     number: RVFrozenDistribution                     # modal number concentration distribution
     geom_mean_diam: RVFrozenDistribution             # geometric mean diameter distribution
-    log10_geom_std_dev: float                        # mode-specific logarithmic diameter std dev
+    log10_geom_std_dev: RVFrozenDistribution #float                        # mode-specific logarithmic diameter std dev # FIXME: changed to RV
     mass_fractions: tuple[RVFrozenDistribution, ...] # species mass fraction distributions
 
 @dataclass
