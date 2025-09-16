@@ -12,14 +12,32 @@ from math import log10
 import os
 import scipy.stats as stats
 
+
 # log to the terminal
 logging.basicConfig(level = logging.INFO)
 
 # aerosol processes under consideration
 processes = ambrs.AerosolProcesses(
-    coagulation = True,
+    coagulation = False,
     condensation = True,
+    # gas_phase_chemistry=True,
+    # aqueous_chemistry=True
 )
+
+# ensemble_name = 'ensemble_01'
+# ensemble_dir = '/Users/fier887/Downloads/' + ensemble_name + '/'
+# if not os.path.exists(ensemble_dir):
+#     os.mkdir(ensemble_dir)
+
+# partmc_dir = ensemble_dir + 'partmc_runs'
+# mam4_dir = ensemble_dir + 'mam4_runs'
+
+partmc_dir = 'partmc_runs'
+mam4_dir = 'mam4_runs'
+ensemble_name = 'test'
+
+n = 1
+n_part = 10000
 
 # simulation parameters
 dt    = 60   # time step size [s]
@@ -30,47 +48,103 @@ nstep = 1440 # number of steps [-]
 # FIXME: not sure how MAM4 uses this info. I don't think PartMC actually 
 so4 = ambrs.AerosolSpecies(
     name='SO4',
-    molar_mass = 97.071, # NOTE: 1000x smaller than "molecular weight"!
-    density = 1770,
-    hygroscopicity = 0.507,
+    molar_mass = 96., # NOTE: 1000x smaller than "molecular weight"!
+    density = 1800.,
+    hygroscopicity = 0.65,
 )
 pom = ambrs.AerosolSpecies(
     name='OC',
     molar_mass = 12.01,
-    density = 1000, # wrong
-    hygroscopicity = 0.5,
+    density = 1000., # from PartMC
+    hygroscopicity = 0.001,
 )
 soa = ambrs.AerosolSpecies(
     name='MSA', # FIXME: applying an unused species for "SOA" placeholder; will set it to zero
-    molar_mass = 12.01,
-    density = 1000, # wrong
-    hygroscopicity = 0.5,
+    molar_mass = 40.,
+    density = 2600., # from PartMC
+    hygroscopicity = 0.53
 )
 bc = ambrs.AerosolSpecies(
     name='BC',
     molar_mass = 12.01,
-    density = 1000, # wrong
-    hygroscopicity = 0.5,
+    density = 1800., # from PartMC
+    hygroscopicity = 0.,
 )
 dst = ambrs.AerosolSpecies(
     name='OIN',
     molar_mass = 135.065,
-    density = 1000, # wrong
-    hygroscopicity = 0.5,
+    density = 2600., # from PartMC
+    hygroscopicity = 0.1,
 )
 na = ambrs.AerosolSpecies(
     name='Na',
-    molar_mass = 22.99,
-    density = 1000, # wrong
-    ions_in_soln = 1,
+    molar_mass = 23,
+    density = 2200, # from PartMC
+    hygroscopicity = 0.53,
 )
 cl = ambrs.AerosolSpecies(
     name='Cl',
-    molar_mass = 35.45,
+    molar_mass = 35.5,
+    density = 2200, # wrong
+    hygroscopicity = 0.53
+)
+ncl = na # FIXME: we use this as a proxy for now, assuming 1:1 stoich with Cl
+h2o = ambrs.AerosolSpecies(
+    name='H2O',
+    molar_mass = 18.,
     density = 1000, # wrong
     ions_in_soln = 1,
 )
-ncl = na # FIXME: we use this as a proxy for now, assuming 1:1 stoich with Cl
+
+# so4 = ambrs.AerosolSpecies(
+#     name='SO4',
+#     molar_mass = 97.071, # NOTE: 1000x smaller than "molecular weight"!
+#     density = 1770,
+#     hygroscopicity = 0.507,
+# )
+# pom = ambrs.AerosolSpecies(
+#     name='OC',
+#     molar_mass = 12.01,
+#     density = 1000, # wrong
+#     hygroscopicity = 0.5,
+# )
+# soa = ambrs.AerosolSpecies(
+#     name='MSA', # FIXME: applying an unused species for "SOA" placeholder; will set it to zero
+#     molar_mass = 12.01,
+#     density = 1000, # wrong
+#     hygroscopicity = 0.5,
+# )
+# bc = ambrs.AerosolSpecies(
+#     name='BC',
+#     molar_mass = 12.01,
+#     density = 1000, # wrong
+#     hygroscopicity = 0.5,
+# )
+# dst = ambrs.AerosolSpecies(
+#     name='OIN',
+#     molar_mass = 135.065,
+#     density = 1000, # wrong
+#     hygroscopicity = 0.5,
+# )
+# na = ambrs.AerosolSpecies(
+#     name='Na',
+#     molar_mass = 22.99,
+#     density = 1000, # wrong
+#     ions_in_soln = 1,
+# )
+# cl = ambrs.AerosolSpecies(
+#     name='Cl',
+#     molar_mass = 35.45,
+#     density = 1000, # wrong
+#     ions_in_soln = 1,
+# )
+# h2o = ambrs.AerosolSpecies(
+#     name='H2O',
+#     molar_mass = 18.,
+#     density = 1000, # wrong
+#     ions_in_soln = 1,
+# )
+# ncl = na # FIXME: we use this as a proxy for now, assuming 1:1 stoich with Cl
 
 so2 = ambrs.GasSpecies(
     name='SO2',
@@ -92,8 +166,8 @@ h0 = 500    # [m]
 
 # specify distributions sampled for the ensemble
 spec = ambrs.EnsembleSpecification(
-    name = 'demo',
-    aerosols = (so4, pom, soa, bc, dst, ncl),
+    name = ensemble_name,
+    aerosols = (so4, pom, soa, bc, dst, ncl, h2o),
     gases = (so2, h2so4), # FIXME: re-add soag?
     size = ambrs.AerosolModalSizeDistribution(
         modes = [
@@ -106,16 +180,18 @@ spec = ambrs.EnsembleSpecification(
                 log10_geom_std_dev = log10(1.6),
                 mass_fractions = [
                     stats.uniform(0, 1), # so4
-                    stats.uniform(0, 1), # pom
+                    # stats.uniform(0, 1), # so4
+                    stats.uniform(0, 0), # pom
                     stats.uniform(0, 0), # soa
-                    stats.uniform(0, 1), # bc
-                    stats.uniform(0, 1), # dst
+                    stats.uniform(0, 0), # bc
+                    stats.uniform(0, 0), # dst
                     stats.uniform(0, 0), # ncl
+                    # stats.uniform(0, 0), # h2o
                 ],
             ),
             ambrs.AerosolModeDistribution(
                 name = "aitken",
-                species = [so4, soa, ncl],
+                species = [so4, soa, ncl],#, h2o],
                 # species = [so4],
                 number = stats.loguniform(3e7, 2e12),
                 geom_mean_diam = stats.loguniform(0.5e-8, 3e-8),
@@ -124,33 +200,36 @@ spec = ambrs.EnsembleSpecification(
                     stats.uniform(0, 1), # so4
                     stats.uniform(0, 0), # soa # FIXME: zeroing out problematic species
                     stats.uniform(0, 0), # ncl # FIXME: zeroing out problematic species
+                    # stats.uniform(0, 0), # ncl # FIXME: zeroing out problematic species
                 ],
             ),
             ambrs.AerosolModeDistribution(
                 name = "coarse",
                 # species = [dst, so4, bc, pom],
-                species = [dst, ncl, so4, bc, pom, soa],
+                species = [dst, ncl, so4, bc, pom, soa],#, h2o],
                 number = stats.loguniform(3e7, 2e12),
                 geom_mean_diam = stats.loguniform(1e-6, 2e-6),
                 log10_geom_std_dev = log10(1.8),
                 mass_fractions = [
-                    stats.uniform(0, 1), # dst
+                    stats.uniform(0, 0), # dst
                     stats.uniform(0, 0), # ncl  # FIXME: zeroing out problematic species
                     stats.uniform(0, 1), # so4
-                    stats.uniform(0, 1), # bc
-                    stats.uniform(0, 1), # pom
+                    stats.uniform(0, 0), # bc
+                    stats.uniform(0, 0), # pom
                     stats.uniform(0, 0), # soa  # FIXME: zeroing out problematic species
+                    # stats.uniform(0, 0), # h2o # FIXME: zeroing out problematic species
                 ],
             ),
             ambrs.AerosolModeDistribution(
                 name = "primary carbon",
-                species = [pom, bc],
+                species = [pom, bc],#, h2o],
                 number = stats.loguniform(3e7, 2e12),
                 geom_mean_diam = stats.loguniform(1e-8, 6e-8),
                 log10_geom_std_dev = log10(1.8),
                 mass_fractions = [
-                    stats.uniform(0, 1), # pom
-                    stats.uniform(0, 1), # bc
+                    stats.uniform(0, 0), # pom
+                    stats.uniform(0, 0), # bc
+                    # stats.uniform(0, 0), # h2o # FIXME: zeroing out problematic species
                 ],
             ),
         ]),
@@ -166,7 +245,7 @@ spec = ambrs.EnsembleSpecification(
 cwd = os.getcwd()
 
 # create an ensemble using latin hypercube sampling
-n = 100
+
 ensemble = ambrs.lhs(specification = spec, n = n)
 
 # run a MAM4 ensemble
@@ -178,7 +257,6 @@ mam4_inputs = mam4.create_inputs(
     dt = dt,
     nstep = nstep
 )
-mam4_dir = os.path.join(cwd, 'mam4_runs')
 if not os.path.exists(mam4_dir):
     os.mkdir(mam4_dir)
 mam4_runner = ambrs.PoolRunner(
@@ -186,13 +264,16 @@ mam4_runner = ambrs.PoolRunner(
     executable = 'mam4',
     root = mam4_dir,
 )
-mam_outputs = mam4_runner.run(mam4_inputs)
+
+# fixme: output processing is now a separate step
+mam4_runner.run(mam4_inputs)
+# mam_outputs = mam4_runner.run(mam4_inputs)
 
 # run a PartMC ensemble
 partmc = ambrs.partmc.AerosolModel(
     processes = processes,
     run_type = 'particle',
-    n_part = 1000,
+    n_part = n_part,
     n_repeat = 1,
 )
 partmc_inputs = partmc.create_inputs(
@@ -200,13 +281,65 @@ partmc_inputs = partmc.create_inputs(
     dt = dt,
     nstep = nstep
 )
-partmc_dir = os.path.join(cwd, 'partmc_runs')
+
+# partmc_dir = os.path.join(cwd, 'partmc_runs')
 if not os.path.exists(partmc_dir):
     os.mkdir(partmc_dir)
+
 partmc_runner = ambrs.PoolRunner(
     model = partmc,
     executable = 'partmc',
     root = partmc_dir,
 )
-#partmc_outputs = partmc_runner.run(partmc_inputs) # FIXME: rework this
 
+# fixme: output processing is now a separate step
+partmc_runner.run(partmc_inputs) # FIXME: rework this
+
+import math
+import PyParticle
+# partmc_outputs = partmc_runner.run(partmc_inputs) # FIXME: rework this
+num_inputs = len(partmc_inputs)
+max_num_digits = math.floor(math.log10(num_inputs)) + 1
+
+# fixme: probably more elegant way to do this
+# fixme: only looking at final step right now, shoudl be made more flexible
+
+mam4_outputs = []
+partmc_outputs = []
+for ii,(partmc_input,mam4_input) in enumerate(zip(partmc_inputs,mam4_inputs)):
+    num_digits = math.floor(math.log10(ii+1)) + 1
+    formatted_index = '0' * (max_num_digits - num_digits) + f'{ii+1}'
+    scenario_name = formatted_index
+    
+    # fixme: assuming 1 repeat right now -- "0001" in next line
+    # partmc_output_filename = partmc_dir + '/' + scenario_name + '/out/' + scenario_name + '_0001_' + str(nstep).zfill(8) + '.nc'
+    partmc_dir_onescenario = partmc_dir + '/' + scenario_name + '/'
+    partmc_population_settings = {
+        'partmc_dir': partmc_dir_onescenario,
+        'timestep': nstep,
+        'repeat': 1
+        }
+    partmc_population = PyParticle.builder.partmc.build(partmc_population_settings)
+    partmc_output = ambrs.Output(
+        input=partmc_input, model='partmc', 
+        population_settings=partmc_population_settings, 
+        population=partmc_population)
+    
+    mam4_output_filename = mam4_dir + '/' + scenario_name + '/mam_output.nc'
+    mam4_population_settings = {
+        'output_filename': mam4_output_filename,
+        'timestep':nstep-1,
+        'GSD':[1.6,1.6,1.8,1.3],
+        'D_min':1e-9,
+        'D_max':1e-4,
+        'N_bins':int(100)} #fixme: put in the correct GSD values!
+    mam4_population = PyParticle.builder.mam4.build(mam4_population_settings)
+    mam4_output = ambrs.Output(
+        input=mam4_input, model='mam4', 
+        population_settings=mam4_population_settings, 
+        population=mam4_population)
+    
+    partmc_outputs.append(partmc_output)
+    mam4_outputs.append(mam4_output)
+    
+    
