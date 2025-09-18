@@ -12,6 +12,7 @@ https://doi.org/10.1016/j.jaerosci.2024.106388
 import os
 import logging
 from math import log10
+from pathlib import Path
 
 import numpy as np
 import scipy.stats as stats
@@ -192,158 +193,17 @@ else:
 # If visualization-only, build PartMC and MAM4 outputs using the repository
 # retrieval functions and draw a PyParticle grid comparing scenarios.
 if VIS_ONLY:
-    from pathlib import Path
-    import warnings
+    # Delegate visualization to ambrs.viz so this logic can be reused.
+    from ambrs.viz import visualize_ensemble
 
-    # PyParticle helpers
-    from PyParticle.viz.grids import make_grid_scenarios_models
-    # optional, used for a small demo compute later
-    from PyParticle.analysis import compute_variable
-
-    # repository retrieval helpers
-    from ambrs.partmc import retrieve_model_state as retrieve_partmc
-    from ambrs.mam4 import retrieve_model_state as retrieve_mam4
-    timestep_to_plot = 1 # nstep
-    # assemble output lists using the existing retrieval functions
-    partmc_outputs = []
-    mam4_outputs = []
-    for scenario_name in scenario_names:
-        partmc_output = retrieve_partmc(
-            scenario_name=scenario_name,
-            scenario=ensemble.member(int(scenario_name)),
-            timestep=timestep_to_plot,  # timestep used when creating populations; keep consistent with run
-            repeat_num=1,
-            species_modifications={},
-            ensemble_output_dir=partmc_dir,
-        )
-        partmc_outputs.append(partmc_output)
-
-        mam4_output = retrieve_mam4(
-            scenario_name=scenario_name,
-            scenario=ensemble.member(int(scenario_name)),
-            timestep=timestep_to_plot,
-            repeat_num=1,
-            species_modifications={},
-            ensemble_output_dir=mam4_dir,
-        )
-        mam4_outputs.append(mam4_output)
-
-    # Build simple config dicts that carry the retrieved outputs to the
-    # model_cfg_builders used by make_grid_scenarios_models. We do not
-    # fabricate data; if retrieve_* raised, execution will already have
-    # terminated.
-    scenario_cfgs = []
-    for sid, (p_out, m_out) in zip(scenario_names, zip(partmc_outputs, mam4_outputs)):
-        scenario_cfgs.append({
-            "scenario_name": sid,
-            "partmc_output": p_out,
-            "mam4_output": m_out,
-        })
-
-    # variable list and small defaults for var_cfg mapping
-    variables = ["dNdlnD", "frac_ccn"]
-
-    def _var_cfg_for(v):
-        if v == "dNdlnD":
-            return {"wetsize": True, "N_bins": 40, "D_min": 1e-8, "D_max": 2e-6}
-        if v in ("frac_ccn", "Nccn"):
-            return {"s_eval": np.logspace(-2, 1, 40)}
-        return {}
-
-    var_cfg_mapping = {v: _var_cfg_for(v) for v in variables}
-
-    # Builders that return the already-retrieved PyParticle population objects
-    def partmc_builder(cfg):
-        pop = cfg["partmc_output"].particle_population
-        # best-effort provenance marker
-        try:
-            pop.origin = "PartMC"
-        except Exception:
-            pass
-        return pop
-
-    def mam4_builder(cfg):
-        pop = cfg["mam4_output"].particle_population
-        try:
-            pop.origin = "MAM4"
-        except Exception:
-            pass
-        return pop
-
-    # Suppress a known benign surface-tension warning from hygroscopic growth
-    warnings.filterwarnings(
-        "ignore",
-        message="Surface tension not implemented",
-        category=UserWarning,
-        module="PyParticle",
+    # Use the same defaults as the inlined code: timestep 1 and repository
+    # reports directory.
+    out = visualize_ensemble(
+        ensemble=ensemble,
+        partmc_dir=partmc_dir,
+        mam4_dir=mam4_dir,
+        scenario_names=scenario_names,
+        timestep_to_plot=1,
+        out_dir=(Path(__file__).resolve().parent / "reports"),
     )
-
-    # Create output directory for figure
-    repo_root = Path(__file__).resolve().parent
-    out_dir = repo_root / "reports"
-    out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / "out_grid_partmc_mam4.png"
-
-    # Call PyParticle grid helper. Any exceptions should surface so the
-    # user can see missing-files / API mismatches (no fallbacks).
-    fig, axes = make_grid_scenarios_models(
-        scenario_cfgs,
-        variables,
-        model_cfg_builders=[partmc_builder, mam4_builder],
-        var_cfg=var_cfg_mapping,
-        figsize=(4 * len(variables), 3 * len(scenario_cfgs)),
-    )
-
-    fig.suptitle("PartMC vs MAM4 scenario comparison")
-    fig.tight_layout()
-    fig.savefig(out_path, dpi=180)
-    print(f"Wrote: {out_path}")
-
-    # -------------------------
-    # Range-bar ensemble summary
-    # -------------------------
-    import pandas as pd
-    from ambrs.visualization.input_ranges import plot_range_bars
-
-    metrics = []
-    s_target = 0.01
-    for idx, p_out in enumerate(partmc_outputs):
-        try:
-            sd = compute_variable(population=p_out.particle_population, varname="dNdlnD", var_cfg={"N_bins": 40})
-            dNdlnD = sd.get("dNdlnD") if isinstance(sd, dict) else sd
-            total_N = float(dNdlnD.sum())
-        except Exception as e:
-            total_N = float('nan')
-            print(f"Warning computing dNdlnD for scenario {scenario_names[idx]}: {e}")
-
-        try:
-            nccn = compute_variable(population=p_out.particle_population, varname="Nccn", var_cfg={"s_eval": [s_target]})
-            Nccn_val = float(nccn.get("Nccn")[0]) if (isinstance(nccn, dict) and "Nccn" in nccn) else float('nan')
-        except Exception as e:
-            Nccn_val = float('nan')
-            print(f"Warning computing Nccn for scenario {scenario_names[idx]}: {e}")
-
-        metrics.append({"scenario": scenario_names[idx], "total_N": total_N, "Nccn_1pct": Nccn_val})
-
-    # Build DataFrame in long format and drop NaNs
-    rows = []
-    for i, m in enumerate(metrics):
-        rows.append({"variable": "total_N", "value": m["total_N"], "sample": i})
-        rows.append({"variable": "Nccn_1pct", "value": m["Nccn_1pct"], "sample": i})
-    df_metrics = pd.DataFrame(rows)
-    before = len(df_metrics)
-    df_metrics = df_metrics.dropna(subset=["value"]).reset_index(drop=True)
-    dropped = before - len(df_metrics)
-    if dropped:
-        print(f"Dropped {dropped} metric entries with NaN values before plotting range bars")
-
-    if df_metrics.empty:
-        print("No valid metric data available for range-bars; skipping.")
-    else:
-        present_samples = sorted(df_metrics['sample'].unique().tolist())
-        highlight_colors = {s: f"C{ii % 10}" for ii, s in enumerate(present_samples)}
-        fig_rb = plot_range_bars(df_metrics, ["total_N", "Nccn_1pct"], var_col="variable", value_col="value",
-                                 highlight_idx=present_samples, highlight_colors=highlight_colors, figsize=(8, 4))
-        out_rb = out_dir / "out_range_bars.png"
-        fig_rb.savefig(out_rb, dpi=180)
-        print(f"Wrote range-bars: {out_rb}")
+    print(f"Wrote visualization outputs: {out}")
