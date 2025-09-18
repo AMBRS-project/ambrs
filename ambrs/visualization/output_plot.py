@@ -50,6 +50,37 @@ def _step_xy_from_bins(edges, y):
     y_step = np.repeat(y, 2)
     return x_step, y_step
 
+def build_comparison_dfs(varname, var_config, partmc_outputs, mam4_outputs, scenario_names=None):
+    """
+    Build comparison DataFrames for CCN and optical properties using a var_config dictionary.
+    var_config is passed to Output.compute_variable().
+
+    Parameters
+    ----------
+    partmc_outputs, mam4_outputs : list[Output]
+        Lists of Output objects for each model.
+    var_config : dict
+        Configuration for variable computation, e.g., {'varname':'Nccn', 's_eval':[0.05,0.1,...]}
+    scenario_names : list[str], optional
+        Scenario labels; inferred from Output.scenario_name if None.
+    
+    Returns
+    -------
+    df
+    """
+    
+    model_lists = [('partmc', partmc_outputs), ('mam4', mam4_outputs)]
+    df = pd.DataFrame({'x': [], 'w': [], 'g': []})
+    for model_label, outputs in model_lists:
+        for idx, out in enumerate(outputs):
+            scen_label = getattr(out, 'scenario_name', None) or (scenario_names[idx] if scenario_names else f'{model_label}:{idx}')
+            df['x'] = scen_label
+            df['w'] = out.compute_variable(varname, var_config)[varname]
+            df['g'] = model_label
+            df['varname'] = varname #var_config['name'] 
+    
+    return df
+
 def build_sizedist_df(
         outputs, group_type='scenario', # could also be timesteps
         wetsize = True, normalize=True, method = 'hist', 
@@ -495,6 +526,105 @@ def plot_ridge(
         plt.savefig(save_name, dpi=300, transparent=True)
     return g
 
+def plot_dots(
+    df,
+    ax=None,
+    color_map=None,
+    marker='o',
+    size=50,
+    alpha=0.8,
+    edgecolor='black'
+):
+    """
+    Dot-style plot aligned with ridge rows.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Must contain columns ['x','w','g','row'] where 'row' is a numeric
+        row index used for vertical positioning. The y-position of each
+        point is computed as row + w (so w acts as a vertical offset).
+    ax : matplotlib.axes.Axes, optional
+        Axis to draw on. If None, uses plt.gca().
+    color_map : dict, optional
+        Mapping group name -> color. If None, uses the matplotlib color cycle.
+    marker : str, optional
+        Marker style, default 'o'.
+    size : float, optional
+        Marker size for scatter (points), default 50.
+    alpha : float, optional
+        Marker transparency, default 0.8.
+    edgecolor : color, optional
+        Marker edge color when using open markers, default 'black'.
+
+    Returns
+    -------
+    ax : matplotlib.axes.Axes
+        Axis with the plotted dots.
+    """
+    if ax is None:
+        ax = plt.gca()
+
+    # Validate input
+    required = {'x', 'w', 'g'}
+    if not required.issubset(set(df.columns)):
+        raise ValueError("df must contain columns 'x', 'w', and 'g'")
+
+    # If no explicit numeric row provided, map groups to integer rows
+    if 'row' not in df.columns:
+        groups = list(pd.Categorical(df['g']).categories)
+        row_map = {g: i for i, g in enumerate(groups[::-1])}  # top-to-bottom
+        df = df.copy()
+        df['row'] = df['g'].map(row_map)
+
+    groups = df['g'].unique().tolist()
+
+    # Build default color map if not provided
+    if color_map is None:
+        cycle = plt.rcParams.get('axes.prop_cycle').by_key().get('color', None)
+        if cycle is None:
+            # fallback to seaborn
+            palette = sns.color_palette(n_colors=len(groups))
+            colors = [palette[i % len(palette)] for i in range(len(groups))]
+        else:
+            colors = [cycle[i % len(cycle)] for i in range(len(groups))]
+        color_map = dict(zip(groups, colors))
+
+    # Plot each group as a separate scatter series
+    for g in groups:
+        sub = df[df['g'] == g]
+        if sub.empty:
+            continue
+        x = sub['x'].to_numpy()
+        w = sub['w'].to_numpy()
+        row_idx = sub['row'].to_numpy()
+        y = row_idx + w
+
+        color = color_map.get(g, None)
+
+        # If user requested an open marker by specifying color 'none' or None,
+        # draw marker with facecolors='none' and edgecolors=edgecolor
+        if isinstance(color, str) and color.lower() in ('none', 'none'):
+            sc = ax.scatter(x, y, s=size, marker=marker, facecolors='none',
+                            edgecolors=edgecolor, alpha=alpha, zorder=3)
+        elif color is None:
+            sc = ax.scatter(x, y, s=size, marker=marker, facecolors='none',
+                            edgecolors=edgecolor, alpha=alpha, zorder=3)
+        else:
+            # Filled marker
+            sc = ax.scatter(x, y, s=size, marker=marker, c=[color],
+                            edgecolors=edgecolor, alpha=alpha, zorder=3)
+
+    # Aesthetics: hide y-axis ticks/labels to match ridge-style
+    ax.set_yticks([])
+    ax.set_ylabel("")
+
+    # Keep x-axis label (units should be set by caller)
+    ax.tick_params(axis='both', which='major', labelsize=10)
+
+    return ax
+
+
 # -------------------------------
 # Your box plot stays as-is
 # -------------------------------
@@ -635,9 +765,6 @@ def plot_ensemble_state(
             ensemble_output_dir = mam4_dir)        
         mam4_outputs.append(mam4_output)
     
-    # wetsize = True
-    # normalize = True 
-    # build dataframes for ridge plots
     
     D_min_overall, D_max_overall = get_Dlims(partmc_outputs + mam4_outputs,wetsize=True)
     if not D_min: # is None
@@ -675,62 +802,65 @@ def plot_ensemble_state(
         as_bar=as_bar
     )
 
+def plot_ensemble_dots(
+        partmc_dir, mam4_dir, scenario_names, ensemble,
+        varname, var_config,
+        timestep=1, repeat_num=1, species_modifications={},
+        as_ccn=True, as_optics=True,
+        figsize=(12,5), dpi=300, save_name=None,
+        # pass-through to plot_dots
+        color_map=None, marker='o', size=50, alpha=0.8, edgecolor='black'):
+    """
+    Build CCN/optics comparison DataFrames for an ensemble and draw dot plots.
 
-# wetsize=True
-# D_min, D_max = get_Dlims(partmc_outputs + mam4_outputs, wetsize=wetsize)
-# df_partmc = build_sizedist_df(partmc_outputs, group_type='scenario',N_bins=100,D_min=D_min, D_max=D_max, wetsize=True)
-# df_mam4 = build_sizedist_df(mam4_outputs, group_type='scenario',N_bins=100,D_min=D_min, D_max=D_max,wetsize=True)
-# plot_ridge(df_partmc, df_mam4)
+    Retrieves PartMC and MAM4 outputs for the listed scenarios, builds
+    comparison DataFrames via `build_comparison_dfs`, and plots CCN (left)
+    and optics (right) dot panels using `plot_dots`.
+    """
+    import matplotlib.pyplot as plt
+    import seaborn as sns
 
-# Colors/outlines you already use
-# ridge_colors = ['#175873','#2b7c85','#87aca3']
-# polluted_col = [0.9, 0.9, 0.9]
-# outline_colors = ['w','w','w',polluted_col,polluted_col,polluted_col,'w','w','w',polluted_col,polluted_col,polluted_col]
+    # Retrieve outputs
+    partmc_outputs = []
+    mam4_outputs = []
+    for scenario_name in scenario_names:
+        partmc_output = retrieve_partmc(
+            scenario_name=scenario_name,
+            scenario=ensemble.member(int(scenario_name)),
+            timestep=timestep,
+            repeat_num=repeat_num,
+            species_modifications=species_modifications,
+            ensemble_output_dir=partmc_dir
+        )
+        partmc_outputs.append(partmc_output)
 
-# # EXP ridge: model A (fill) vs model B (line)
-# g_exp = plot_ridge(
-#     model_fill_csv="../Data/EXP_Size_Distributions_data.csv",    # e.g., PartMC
-#     model_line_csv="../Data/SAM_Size_Distributions_data.csv",  # e.g., MAM4 (same x, same columns)
-#     particle_sizes=[50,100,250],
-#     user_colors=ridge_colors,
-#     outline_color=outline_colors,
-#     show_size_label=True,
-#     xlim=(0.2,40.), ylim=(0.,0.9),
-#     normalize_mode="sum_dx",          # integrate to 1 using ∑ w ΔlnD (your original)
-#     line_kwargs=dict(lw=2, ls='--', alpha=1.0),
-#     save_name="fig1_ridgeEXP.png"
-# )
-# g_exp.fig.set_size_inches(2.,6.)
+        mam4_output = retrieve_mam4(
+            scenario_name=scenario_name,
+            scenario=ensemble.member(int(scenario_name)),
+            timestep=timestep,
+            repeat_num=repeat_num,
+            species_modifications=species_modifications,
+            ensemble_output_dir=mam4_dir
+        )
+        mam4_outputs.append(mam4_output)
 
-# # SAM ridge
-# g_sam = plot_ridge_two_models(
-#     model_fill_csv="../Data/SAM_Size_Distributions_data.csv",
-#     model_line_csv="../Data/SAM_Size_Distributions_model2.csv",
-#     particle_sizes=[50,100,250],
-#     user_colors=ridge_colors,
-#     outline_color=outline_colors,
-#     show_size_label=False,
-#     xlim=(0.2,40.), ylim=(0.,0.9),
-#     vline_x=0.5,
-#     normalize_mode="sum_dx",
-#     save_name="fig1_ridgeSAM.png"
-# )
-# g_sam.fig.set_size_inches(2.,6.)
+    # Build comparison dfs using var_config
+    df = build_comparison_dfs(
+        varname, var_config, partmc_outputs, mam4_outputs, scenario_names=scenario_names
+    )
+    
+    # Prepare figure
+    n_panels = 1 if (as_ccn and not as_optics) or (as_optics and not as_ccn) else 2
+    fig, ax = plt.subplots(1, 1, figsize=figsize, dpi=dpi)
+    gvals = df['g'].unique().tolist()
+    local_cmap = color_map or dict(zip(gvals, sns.color_palette(n_colors=len(gvals))))
+    plot_dots(df, ax=ax, color_map=local_cmap, marker=marker,
+              size=size, alpha=alpha, edgecolor=edgecolor)
+    
+    plt.tight_layout()
+    if save_name:
+        fig.savefig(save_name, dpi=dpi, transparent=True)
+    
+    return fig, ax, df
 
-# Box plot stays the same
-# df = pd.read_csv("../Data/SAM_SSW_dataset.csv")
-# fig_box, ax_box = plot_box(
-#     df=df,
-#     value_col='Supersaturation Value',
-#     size_col='Aerosol Size',
-#     particle_sizes=[50,100,250],
-#     user_palette=ridge_colors,
-#     xlabel='Supersaturation [%]',
-#     show_labels=False,
-#     fig_width=1.5, fig_height=6.,
-#     save_name='fig1_supersaturation.png',
-#     axis_fontsize=11,
-#     tick_fontsize=10,
-#     outline_color=outline_colors,
-#     grid_style='none',
-# )
+    

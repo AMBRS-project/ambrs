@@ -56,8 +56,10 @@ def plot_range_bars(
         ax.hlines(0.5, vmin, vmax, linewidth=3, color='0.4')
 
         # --- strip of all samples
+        # default background sample dots are grey so highlighted scenarios
+        # (drawn later) stand out visually
         ax.scatter(vals, np.full_like(vals, 0.5),
-                   s=40, facecolor="black", edgecolor="white", lw=0.7, alpha=0.2, zorder=2)
+                   s=40, facecolor="0.6", edgecolor="white", lw=0.7, alpha=0.6, zorder=2)
 
         # --- highlight selected scenarios
         if highlight_idx is not None:

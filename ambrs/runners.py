@@ -10,6 +10,9 @@ import os
 import subprocess
 from typing import Any
 
+import numpy as np
+import timeit
+
 logger = logging.getLogger(__name__)
 
 class PoolRunner:
@@ -40,7 +43,7 @@ Optional parameters:
         self.root = root
         self.num_processes = num_processes if num_processes else multiprocessing.cpu_count()
         self.scenario_name = scenario_name
-
+        
         if not os.path.exists(self.root):
             raise OSError(f"root path '{self.root}' does not exist!")
 
@@ -81,13 +84,13 @@ runner's root directory, generating a directory for each of the scenarios"""
         if found_dir:
             logger.warning(f'{self.model.name}: one or more existing scenario directories found. Overwriting contents...')
         logger.info(f'{self.model.name}: finished generating scenario input.')
-
+        
         # now run scenarios in parallel
         pool = multiprocessing.dummy.Pool(self.num_processes)
         logger.info(f'{self.model.name}: running {num_inputs} inputs ({self.num_processes} parallel processes)')
-
+        
         error_occurred = False
-
+        
         # this function is called with a list of completed processes by pool.map_async
         def callback(completed_processes) -> None:
             if not all([p.returncode == 0 for p in completed_processes]):
@@ -97,24 +100,30 @@ runner's root directory, generating a directory for each of the scenarios"""
         def run_scenario(args) -> subprocess.CompletedProcess:
             f_stdout = open(os.path.join(args['dir'], 'stdout.log'), 'w')
             f_stderr = open(os.path.join(args['dir'], 'stderr.log'), 'w')
-            return subprocess.run(args['command'].split(),
+            f_timer = open(os.path.join(args['dir'], 'timer.log'), 'w')
+            start_time = timeit.default_timer()
+            subprocess_output = subprocess.run(args['command'].split(),
                 close_fds = True,
                 cwd = args['dir'],
                 stdout = f_stdout,
                 stderr = f_stderr,
             )
-
+            stop_time = timeit.default_timer()
+            elapsed_time = stop_time - start_time
+            f_timer.write(str(elapsed_time))
+            return subprocess_output
+        
         results = pool.map_async(run_scenario, args, callback = callback)
         results.wait()
-
+        
         logger.info(f'{self.model.name}: completed runs.')
         if error_occurred:
             logger.error('f{self.model.name}: At least one run failed.')
-
+        
         # gather model output
-        outputs = []
-        for i, input in enumerate(inputs):
-            scenario_name = self.scenario_name.format(index = formatted_index)
-            output = self.model.read_output_files(input, args[i]['dir'], scenario_name)
-            outputs.append(output)
-        return outputs
+        # outputs = []
+        # for i, input in enumerate(inputs):
+        #     scenario_name = self.scenario_name.format(index = formatted_index)
+        #     output = self.model.read_output_files(input, args[i]['dir'], scenario_name)
+        #     outputs.append(output)
+        # return outputs

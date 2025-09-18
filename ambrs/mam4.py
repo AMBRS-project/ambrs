@@ -4,12 +4,16 @@ from .aerosol import AerosolProcesses, AerosolModalSizePopulation, \
                      AerosolModalSizeState
 from .aerosol_model import BaseAerosolModel
 from .analysis import Output
-from .gas import GasSpecies
+from .gas import GasSpecies, build_gas_mixture
+
 from .scenario import Scenario
 from .ppe import Ensemble
 
+
+# fixme: put this in wrapper? load wrapper with .aerosol? 
+from PyParticle import build_population
 from dataclasses import dataclass
-import netCDF4
+from netCDF4 import Dataset
 import numpy as np
 import os.path
 import scipy.stats
@@ -228,7 +232,6 @@ Parameters:
             numc2 = scenario.size.modes[1].number,
             numc3 = scenario.size.modes[2].number,
             numc4 = scenario.size.modes[3].number,
-            
             mfso41 = aero_mass_fracs.accum.SO4/mftot1,
             mfpom1 = aero_mass_fracs.accum.POM/mftot1,
             mfsoa1 = aero_mass_fracs.accum.SOA/mftot1,
@@ -318,35 +321,190 @@ working directory contains any needed input files."""
             raise OSError(f'Directory not found: {dir}')
         filename = os.path.join(dir, 'namelist')
         with open(filename, 'w') as f:
-            print(content)
             f.write(content)
+    
+    # def retrieve_model_state(
+    #         self, 
+    #         scenario_name: str, 
+    #         timestep: int, 
+    #         # t_eval: float, 
+    #         # model_times: np.array,
+    #         # fixme: remove this next entry? quick fix for now
+    #         repeat_num: int=1, # option for Partmc; set to 1 for MAM4
+    #         species_modifications: dict={},
+    #         ensemble_output_dir: str='mam4_runs') -> Output: # data structure that allows species modifications in post-processing (e.g., treat some organics as light-absorbing)
+        
+        
+    #     scenario = self.scenario
+        
+    #     # model_times = np.linspace(0., input.t_max, int(input.t_max/input.t_output + 1))
+    #     # if t_eval not in model_times:
+    #     #    raise ValueError('t_eval = ' + str(t_eval) + ' not in model_times.')# ' t_max = ' + str(self.t_max) + '; t_output = ' + str(self.t_output))
+        
+    #     # timestep, = np.where(model_times == t_eval)
+    #     # timestep += 1
+        
+    #     output_filename = ensemble_output_dir + '/' + scenario_name + '/mam_output.nc'
+    #     currnc = Dataset(output_filename)
+        
+    #     mam4_population_cfg = {
+    #         'type':'mam4',
+    #         'output_filename': output_filename,
+    #         'timestep':timestep,
+    #         'GSD':[1.6,1.6,1.8,1.3], #fixme: put in the correct GSD values!
+    #         'D_min':1e-9, #fixme: option for +/- sigmas
+    #         'D_max':1e-4,
+    #         'N_bins':int(100),
+    #         'T':scenario.temperature,
+    #         'p':scenario.pressure}
+        
+    #     particle_population = build_population(mam4_population_cfg)
+    #     gas_cfg = {'H2SO4':currnc.variables['h2so4_gas'][timestep]}        
+    #     gas_mixture = build_gas_mixture(gas_cfg)
+        
+    #     thermodynamics = { 
+    #         'T':currnc.variables['temperature'],
+    #         'p':currnc.variables['pressure'],
+    #         'RH':currnc.variables['relative_humidity']}
+        
+    #     # fixme: update model state
+    #     return Output(
+    #         model_name='mam4',
+    #         scenario_name=scenario_name, 
+    #         scenario=self.scenario,
+    #         # time=t_eval,
+    #         timestep=timestep,
+    #         particle_population=particle_population,
+    #         gas_mixture=gas_mixture,
+    #         thermodynamics=thermodynamics,
+    #
+    
+def get_mam_input(
+        varname,
+        mam_input='../mam_refactor-main/standalone/tests/smoke_test.nl'):
+    f_input = open(mam_input,'r')
+    input_lines = f_input.readlines()
+    yep = 0
+    for oneline in input_lines:
+        if varname in oneline:
+        # if oneline.startswith(varname):
+            yep += 1 
+            idx1,=np.where([hi == '=' for hi in oneline])
+            idx2,=np.where([hi == ',' for hi in oneline])
+            vardat = float(''.join([oneline[ii] for ii in range(idx1[0]+1,idx2[0])]))
+    if yep == 0:
+        print(varname,'is not a MAM input parameter')
+    elif yep > 1:
+        print('more than one line in ', mam_input, 'starts with', varname)
+    return vardat
 
-    def read_output_files(self,
-                          input,
-                          dir: str,
-                          prefix: str) -> Output:
-        # FIXME: we can parameterize our output processing to adjust the number
-        # FIXME: of bins, etc (but not till things are more settled)
-        num_modes = 4
-        timestep = -1 # FIXME: for now, we analyze only the most recent timestep
-
-        output_file = os.path.join(dir, 'mam_output.nc')
-        nc_output = netCDF4.Dataset(output_file)
-
-        # bin particles in each mode
-        bins = np.logspace(-10, -5, 1000)
-        lnDs = np.log(bins)
-        Ns = nc_output['num_aer'][:,timestep]        # particle numbers
-        mus = np.log(nc_output['dgn_a'][:,timestep]) # log of mean geometric diameters
-        sigmas = [1.8, 1.6, 1.8, 1.6] # geometric diameter stddevs (hardwired into MAM4)
-        dNdlnD_by_mode = np.zeros([num_modes, len(lnDs)])
-        for k, (N, mu, sigma) in enumerate(zip(Ns,mus,sigmas)):
-            dNdlnD_by_mode[k,:] = N * scipy.stats.norm(loc=mu, scale=sigma).pdf(lnDs)
-
-        # FIXME: computing CCN seems a little complicated for now, but we'll get back to it
-        return Output(
-            model = self.name,
-            input = input,
-            bins = bins,
-            dNdlnD = np.sum(dNdlnD_by_mode, axis=0),
+def retrieve_model_state(
+        scenario_name: str, 
+        scenario: Scenario, 
+        timestep: int, 
+        # t_eval: float, 
+        # model_times: np.array,
+        # fixme: remove this next entry? quick fix for now
+        repeat_num: int=1, # option for Partmc; set to 1 for MAM4
+        species_modifications: dict={},
+        ensemble_output_dir: str='mam4_runs', 
+        N_bins:int = 1000) -> Output: # data structure that allows species modifications in post-processing (e.g., treat some organics as light-absorbing)
+    
+    # GSDs:list = [1.6,1.6,1.2,1.6]
+    GMDs = []
+    GSDs = []
+    Ns = []
+    aero_spec_names = []
+    aero_spec_fracs = []
+    for mode in scenario.size.modes:
+        GMDs.append(mode.geom_mean_diam)
+        GSDs.append(10.**mode.log10_geom_std_dev)
+        Ns.append(mode.number)
+        aero_spec_names_onemode = []
+        aero_spec_fracs.append(mode.mass_fractions)
+        for one_spec in scenario.size.modes[0].species:
+            aero_spec_names_onemode.append(one_spec.name)
+        aero_spec_names.append(aero_spec_names_onemode)
+    
+    if timestep == 0:
+        raise ValueError('timestep=0 is invalid. Specify timestep = 1 for initial conditions')
+    elif timestep == 1:
+        scenario_dir = ensemble_output_dir + '/' + scenario_name + '/'
+        # mam_input = scenario_dir + 'mam_input.nl'
+        mam_input = scenario_dir + 'namelist'
+        Ns = np.zeros([len(GSDs)])
+        for kk in range(len(Ns)):
+            Ns[kk] = get_mam_input(
+                'numc' + str(kk+1),
+                mam_input=mam_input)
+        
+        # mus=np.loadtxt(scenario_dir+'mode_mus.txt')
+        binned_lognormal_cfg = {
+            'type': 'binned_lognormals',
+            'D_min':1e-9, #fixme: option for +/- sigmas
+            'D_max':1e-4,
+            'N_bins': N_bins,
+            'N': Ns,
+            'GMD': GMDs,
+            'GSD': GSDs,
+            'aero_spec_names': aero_spec_names,
+            'aero_spec_fracs': aero_spec_fracs,
+            }
+        particle_population = build_population(binned_lognormal_cfg)
+        
+        gas_cfg = {
+            'H2SO4':get_mam_input(
+                    'qh2so4',
+                    mam_input=mam_input),
+            'SO2':get_mam_input(
+                    'qso2',
+                    mam_input=mam_input),
+            'units':'kg_per_kg'}
+            
+                   # currnc.variables['h2so4_gas'][timestep]}
+        # gas_cfg['units'] = 'kg_per_kg' # todo: double-check
+        gas_mixture = build_gas_mixture(gas_cfg)
+        
+        thermodynamics = { 
+            'T':scenario.temperature,
+            'p':scenario.temperature,
+            'RH':scenario.relative_humidity}
+        
+    else:
+        output_filename = ensemble_output_dir + '/' + scenario_name + '/mam_output.nc'
+        currnc = Dataset(output_filename)
+        timestep = timestep - 1
+        mam4_population_cfg = {
+            'type':'mam4',
+            'output_filename': output_filename,
+            'timestep':timestep,
+            'GSD':GSDs, #fixme: put in the correct GSD values!
+            'D_min':1e-9, #fixme: option for +/- sigmas
+            'D_max':1e-4,
+            'N_bins':N_bins,
+            'T':scenario.temperature,
+            'p':scenario.pressure}
+        
+        particle_population = build_population(mam4_population_cfg)
+        gas_cfg = {'H2SO4':currnc.variables['h2so4_gas'][timestep]}        
+        # gas_cfg = {'SO2':currnc.variables['so2_gas'][timestep]}
+        # gas_cfg = {'SOAG':currnc.variables['soa_gas'][timestep]}
+        gas_cfg['units'] = 'kg_per_kg' # todo: double-check
+        gas_mixture = build_gas_mixture(gas_cfg)
+        
+        thermodynamics = { 
+            'T':scenario.temperature,
+            'p':scenario.temperature,
+            'RH':scenario.relative_humidity}
+        
+    # fixme: update model state
+    return Output(
+        model_name='mam4',
+        scenario_name=scenario_name, 
+        scenario=scenario,
+        # time=t_eval,
+        timestep=timestep,
+        particle_population=particle_population,
+        gas_mixture=gas_mixture,
+        thermodynamics=thermodynamics,
         )
