@@ -202,7 +202,6 @@ distribution from which ensemble members are sampled."""
         # FIXME: laura's janky fix to set some mass fractions to zero
         for mode in size.modes:
             for qq in range(len(mode.mass_fractions)):
-                print(mode.mass_fractions[qq])
                 for ii in range(len(mode.mass_fractions[qq])):
                     if np.isnan(mode.mass_fractions[qq][ii]):
                         mode.mass_fractions[qq][ii] = 0.

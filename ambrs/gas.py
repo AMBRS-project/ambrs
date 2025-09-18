@@ -1,7 +1,8 @@
 """ambrs.gas - Gas species related data types"""
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Tuple
+import numpy as np
 
 @dataclass(frozen=True)
 class GasSpecies:
@@ -10,7 +11,7 @@ specific parameters (no state information)"""
     name: str          # name of the species
     molar_mass: float  # [g/mol]
     aliases: Optional[tuple[str, ...]] = None # tuple of alternative species names
-
+    
     def __post_init__(self): # checks initialized fields
         # check the name of the species
         valid_gas_species = [
@@ -108,3 +109,50 @@ match any given aliases"""
                (species.aliases and species_name in species.aliases):
                 return s
         return -1
+
+@dataclass 
+class GasMixture:
+    species: Tuple[GasSpecies, ...]
+    mole_ratio: np.ndarray 
+    
+    # fixme: maybe remove the following
+    def _add_gas(self,GasSpec,mole_ratio):
+        if GasSpec.name not in [spec.name for spec in self.species]:
+            self.species.append(GasSpec)
+            idx, = -1
+            self.mole_ratio = np.append(self.mole_ratio, 0.)
+        else:
+            idx, = np.where([GasSpec.name==spec.name for spec in self.species])
+        self.mole_ratio[idx] = mole_ratio
+        
+    def _add_H2O_from_RH(self,RH):
+        mole_ratio_h2o = RH # fixme: need T. 
+        H2O = GasSpecies(name='H2O',molar_mass=18.)
+        self._add_gas(H2O,mole_ratio_h2o)
+
+def build_gas_mixture(gas_cfg: dict) -> GasMixture:
+    # fixme: need automated way to populate defaults.
+    
+    # fixme: for now, just have SO2 and H2SO4
+    so2 = GasSpecies(
+        name='SO2',
+        molar_mass = 64.07,
+    )
+    h2so4 = GasSpecies(
+        name='H2SO4',
+        molar_mass = 98.079,
+    )
+    
+    # todo: make this into a gas species?
+    molar_mass_dry_air = 28.97
+    
+    species = [so2,h2so4]
+    if gas_cfg['units'] == 'ppb':
+        mole_ratio = np.array([gas_cfg.get('SO2',0.),gas_cfg.get('H2SO4',0.)])/1e9
+    elif gas_cfg['units'] == 'ratio':
+        mole_ratio = np.array([gas_cfg.get('SO2',0.),gas_cfg.get('H2SO4',0.)])
+    elif gas_cfg['units'] == 'kg_per_kg':
+        mole_ratio = np.array([
+            gas_cfg.get('SO2',0.)*molar_mass_dry_air/so2.molar_mass,
+            gas_cfg.get('H2SO4',0.)*molar_mass_dry_air/h2so4.molar_mass])
+    return GasMixture(species=species,mole_ratio=mole_ratio)
