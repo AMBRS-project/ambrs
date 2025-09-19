@@ -140,12 +140,16 @@ class Input:
     aero_emissions: Optional[AerosolModeTimeSeries] = None  # aerosol emissions time series
     aero_background: Optional[AerosolModeTimeSeries] = None # aerosol background time series
 
+    # CAMP configuration
+    camp_config: Optional[str] = None
+
 class AerosolModel(BaseAerosolModel):
     def __init__(self,
                  processes: AerosolProcesses,
                  run_type = 'particle',
                  n_part = None,
-                 n_repeat = 0):
+                 n_repeat = 0,
+                 camp_config = None):
         BaseAerosolModel.__init__(self, 'partmc', processes)
         if run_type not in ['particle']:
             raise ValueError(f'Unsupported run_type: {run_type}')
@@ -156,6 +160,7 @@ class AerosolModel(BaseAerosolModel):
         self.run_type = run_type
         self.n_part = n_part
         self.n_repeat = n_repeat
+        self.camp_config = camp_config
 
     def create_input(self,
                      scenario: Scenario,
@@ -234,7 +239,9 @@ class AerosolModel(BaseAerosolModel):
             record_removals = True,
             do_parallel = False,
 
-            gas_emissions = scenario.gas_emissions
+            gas_emissions = scenario.gas_emissions,
+
+            camp_config = self.camp_config,
         )
 
     def invocation(self,
@@ -278,7 +285,7 @@ class AerosolModel(BaseAerosolModel):
         # chemistry
         if input.do_camp_chem:
             spec_content += 'do_camp_chem yes\n'
-            spec_content += 'camp_config /global/scratch/users/duncanquevedo/AMBRS/NSF_INTERN/camp_config/partmc_config.json\n' # FIXME: path
+            spec_content += f'camp_config {input.camp_config}\n' # FIXME: path
         else:
             spec_content += 'do_camp_chem no\n'
         spec_content += '\n'
