@@ -1,0 +1,19 @@
+{
+    "camp-data" : [
+        {
+            "type" : "RELATIVE_TOLERANCE",
+            "value" : 1.0e-10
+        },
+        {
+            "name" : "MAM4_H2SO4_emission",
+            "type" : "MECHANISM",
+            "reactions" : [
+                {
+                    "type" : "EMISSION",
+                    "species" : "H2SO4",
+                    "base rate" : 2.44E-10
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,26 @@
+{
+    "camp-data" : [
+        {
+            "type" : "RELATIVE_TOLERANCE",
+            "value" : 1.0e-10
+        },
+        {
+            "name" : "MAM4_SO4_partitioning",
+            "type" : "MECHANISM",
+            "reactions" : [
+                {
+                    "type" : "SIMPOL_PHASE_TRANSFER",
+                    "gas-phase species" : "H2SO4",
+                    "aerosol phase" : "mixed",
+                    "aerosol-phase species" : "SO4",
+                    "B" : [ 0.0, -5.8808, 0.0, 0.0 ]
+                },
+                {
+                    "type" : "EMISSION",
+                    "species" : "H2SO4",
+                    "base rate" : 2.44E-10
+                }
+            ]
+        }
+    ]
+}
