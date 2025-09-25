@@ -27,7 +27,7 @@ logging.basicConfig(level=logging.INFO)
 # -----------------------------------------------------------
 # Run configuration
 # -----------------------------------------------------------
-ensemble_name = "1h_5k"
+ensemble_name = "1h_1k"
 root_dir = os.path.join("/Users/fier887/Downloads/ambrs_runs", ensemble_name)
 
 partmc_dir = os.path.join(root_dir, "partmc_runs")
@@ -37,7 +37,7 @@ for d in [root_dir, partmc_dir, mam4_dir]:
     os.makedirs(d, exist_ok=True)
 
 n = 5        # number of ensemble members
-n_part = 5000  # PartMC particles per run
+n_part = 1000  # PartMC particles per run
 
 dt = 60      # timestep [s]
 nstep = 60   # 60 min run
@@ -190,20 +190,102 @@ else:
     logging.info('AMBRS_VIS_ONLY set: skipping PartMC model execution')
 
 
+# -----------------------------------------------------------
+# Visualization
+# -----------------------------------------------------------
+from PyParticle.viz.style import StyleManager, Theme
+from PyParticle.viz.builder import build_plotter
+import matplotlib.pyplot as plt
+import numpy as np
+
+mgr = StyleManager(Theme(), deterministic=True)
+
+scenario_name = '1'
+timestep_to_plot = 1
+partmc_output = ambrs.partmc.retrieve_model_state(
+    scenario_name=scenario_name,
+    scenario=ensemble.member(int(scenario_name) - 1),
+    timestep=timestep_to_plot,
+    repeat_num=1,
+    species_modifications={},
+    ensemble_output_dir=partmc_dir,
+)
+mam4_output = ambrs.mam4.retrieve_model_state(
+    scenario_name=scenario_name,
+    scenario=ensemble.member(int(scenario_name) - 1),
+    timestep=timestep_to_plot,
+    repeat_num=1,
+    species_modifications={},
+    ensemble_output_dir=mam4_dir,
+)
+
+# Lines
+series = [
+    {"key": "partmc", "population": partmc_output.particle_population, "label": "PartMC"},
+    {"key": "mam4", "population": mam4_output.particle_population, "label": "MAM4"},
+]
+
+# Build line styles after series is known
+line_styles = mgr.plan("line", [s["key"] for s in series])
+
+fig, ax = plt.subplots()
+for s in series:
+    cfg = {
+        "varname": "dNdlnD",
+        "var_cfg": {"D": np.logspace(-9, -5, 50)},
+        "style": line_styles[s["key"]],
+    }
+
+    # cfg = { 
+    #     "varname": "frac_ccn",
+    #     "var_cfg": {"s_eval": np.logspace(-2, 2, 50)},  # simple case: single x
+    #     "style": line_styles[s["key"]],
+    # }
+
+    # cfg = { 
+    #     "varname": "b_scat",
+    #     "var_cfg": {"wvl_grid": [550e-9], "rh_grid": np.linspace(0.,100.,21)},  # simple case: single x
+    #     "style": line_styles[s["key"]],
+    # }
+
+
+    # cfg = { 
+    #     "varname": "b_scat",
+    #     "var_cfg": {"wvl_grid": np.linspace(350e-9,1050e-9,29), "rh_grid": [0.]},  # simple case: single x
+    #     "style": line_styles[s["key"]],
+    # }
+
+
+    # cfg = {
+    #     "varname": "b_scat",
+        # explicit var_cfg: wavelength grid and RH grid so returned variables are arrays
+        # "var_cfg": {"wvl_grid": np.linspace(350e-9, 1050e-9, 29), "rh_grid": [0.]},
+    #     "style": line_styles[s["key"]],
+    # }
+    plotter = build_plotter("state_line", cfg)
+    plotter.plot(s["population"], ax, label=s["label"])
+ax.set_xscale('log'); 
+ax.legend(); fig.tight_layout()
+out_dir = Path(__file__).resolve().parent / "reports"
+out_dir.mkdir(parents=True, exist_ok=True)
+fname = out_dir / ("s" + scenario_name + '_t' + str(timestep_to_plot) + '_' + str(cfg.get('varname')) + '.png')
+fig.savefig(fname)
+
+
 # If visualization-only, build PartMC and MAM4 outputs using the repository
 # retrieval functions and draw a PyParticle grid comparing scenarios.
-if VIS_ONLY:
-    # Delegate visualization to ambrs.viz so this logic can be reused.
-    from ambrs.viz import visualize_ensemble
-
-    # Use the same defaults as the inlined code: timestep 1 and repository
-    # reports directory.
-    out = visualize_ensemble(
-        ensemble=ensemble,
-        partmc_dir=partmc_dir,
-        mam4_dir=mam4_dir,
-        scenario_names=scenario_names,
-        timestep_to_plot=1,
-        out_dir=(Path(__file__).resolve().parent / "reports"),
-    )
-    print(f"Wrote visualization outputs: {out}")
+# if VIS_ONLY:
+#     # Delegate visualization to ambrs.viz so this logic can be reused.
+#     #from ambrs.viz_new_new import visualize_ensemble
+#     from ambrs.viz import visualize_ensemble
+#     # Use the same defaults as the inlined code: timestep 1 and repository
+#     # reports directory.
+#     out = visualize_ensemble(
+#         ensemble=ensemble,
+#         partmc_dir=partmc_dir,
+#         mam4_dir=mam4_dir,
+#         scenario_names=scenario_names,
+#         timestep_to_plot=1,
+#         out_dir=(Path(__file__).resolve().parent / "reports"),
+#     )
+#     print(f"Wrote visualization outputs: {out}")
