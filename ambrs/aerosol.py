@@ -90,7 +90,6 @@ log-normal aerosol mode"""
     def mass_fraction(self, species_name: str):
         """returns the mass fraction corresponding to the given species name,
 or throws a ValueError."""
-        print([s.name for s in self.species])
         index = [s.name for s in self.species].index(species_name)
         return self.mass_fractions[index]
 

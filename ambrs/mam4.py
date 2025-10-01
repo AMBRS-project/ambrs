@@ -323,61 +323,6 @@ working directory contains any needed input files."""
         with open(filename, 'w') as f:
             f.write(content)
     
-    # def retrieve_model_state(
-    #         self, 
-    #         scenario_name: str, 
-    #         timestep: int, 
-    #         # t_eval: float, 
-    #         # model_times: np.array,
-    #         # fixme: remove this next entry? quick fix for now
-    #         repeat_num: int=1, # option for Partmc; set to 1 for MAM4
-    #         species_modifications: dict={},
-    #         ensemble_output_dir: str='mam4_runs') -> Output: # data structure that allows species modifications in post-processing (e.g., treat some organics as light-absorbing)
-        
-        
-    #     scenario = self.scenario
-        
-    #     # model_times = np.linspace(0., input.t_max, int(input.t_max/input.t_output + 1))
-    #     # if t_eval not in model_times:
-    #     #    raise ValueError('t_eval = ' + str(t_eval) + ' not in model_times.')# ' t_max = ' + str(self.t_max) + '; t_output = ' + str(self.t_output))
-        
-    #     # timestep, = np.where(model_times == t_eval)
-    #     # timestep += 1
-        
-    #     output_filename = ensemble_output_dir + '/' + scenario_name + '/mam_output.nc'
-    #     currnc = Dataset(output_filename)
-        
-    #     mam4_population_cfg = {
-    #         'type':'mam4',
-    #         'output_filename': output_filename,
-    #         'timestep':timestep,
-    #         'GSD':[1.6,1.6,1.8,1.3], #fixme: put in the correct GSD values!
-    #         'D_min':1e-9, #fixme: option for +/- sigmas
-    #         'D_max':1e-4,
-    #         'N_bins':int(100),
-    #         'T':scenario.temperature,
-    #         'p':scenario.pressure}
-        
-    #     particle_population = build_population(mam4_population_cfg)
-    #     gas_cfg = {'H2SO4':currnc.variables['h2so4_gas'][timestep]}        
-    #     gas_mixture = build_gas_mixture(gas_cfg)
-        
-    #     thermodynamics = { 
-    #         'T':currnc.variables['temperature'],
-    #         'p':currnc.variables['pressure'],
-    #         'RH':currnc.variables['relative_humidity']}
-        
-    #     # fixme: update model state
-    #     return Output(
-    #         model_name='mam4',
-    #         scenario_name=scenario_name, 
-    #         scenario=self.scenario,
-    #         # time=t_eval,
-    #         timestep=timestep,
-    #         particle_population=particle_population,
-    #         gas_mixture=gas_mixture,
-    #         thermodynamics=thermodynamics,
-    #
     
 def get_mam_input(
         varname,
@@ -387,7 +332,6 @@ def get_mam_input(
     yep = 0
     for oneline in input_lines:
         if varname in oneline:
-        # if oneline.startswith(varname):
             yep += 1 
             idx1,=np.where([hi == '=' for hi in oneline])
             idx2,=np.where([hi == ',' for hi in oneline])
@@ -410,7 +354,6 @@ def retrieve_model_state(
         ensemble_output_dir: str='mam4_runs', 
         N_bins:int = 1000) -> Output: # data structure that allows species modifications in post-processing (e.g., treat some organics as light-absorbing)
     
-    # GSDs:list = [1.6,1.6,1.2,1.6]
     GMDs = []
     GSDs = []
     Ns = []
@@ -438,7 +381,7 @@ def retrieve_model_state(
                 'numc' + str(kk+1),
                 mam_input=mam_input)
         
-        # mus=np.loadtxt(scenario_dir+'mode_mus.txt')
+        
         binned_lognormal_cfg = {
             'type': 'binned_lognormals',
             'D_min':1e-9, #fixme: option for +/- sigmas
@@ -460,9 +403,6 @@ def retrieve_model_state(
                     'qso2',
                     mam_input=mam_input),
             'units':'kg_per_kg'}
-            
-                   # currnc.variables['h2so4_gas'][timestep]}
-        # gas_cfg['units'] = 'kg_per_kg' # todo: double-check
         gas_mixture = build_gas_mixture(gas_cfg)
         
         thermodynamics = { 
@@ -473,10 +413,11 @@ def retrieve_model_state(
     else:
         output_filename = ensemble_output_dir + '/' + scenario_name + '/mam_output.nc'
         currnc = Dataset(output_filename)
-        timestep = timestep - 1
+        timestep = timestep - 2
         mam4_population_cfg = {
             'type':'mam4',
-            'output_filename': output_filename,
+            'mam4_dir': ensemble_output_dir + '/' + scenario_name + '/',
+            #'output_filename': output_filename,
             'timestep':timestep,
             'GSD':GSDs, #fixme: put in the correct GSD values!
             'D_min':1e-9, #fixme: option for +/- sigmas
