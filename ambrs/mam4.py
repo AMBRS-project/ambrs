@@ -368,10 +368,10 @@ working directory contains any needed input files."""
     sigmag4      = {10**input.scenario.size.modes[3].log10_geom_std_dev}
 /
 &camp_config
-    config_key   = {input.camp_config},
+    config_key   = "{input.camp_config}",
 /
 &camp_mech
-    mech_key     = {input.camp_mech},
+    mech_key     = "{input.camp_mech}",
 /
 """
         if not os.path.exists(dir):
