@@ -11,7 +11,7 @@ from .ppe import Ensemble
 
 
 # fixme: put this in wrapper? load wrapper with .aerosol? 
-from PyParticle import build_population
+from pyparticle import build_population
 from dataclasses import dataclass
 from netCDF4 import Dataset
 import numpy as np
@@ -147,6 +147,9 @@ class AerosolMassFractions:
             BC  = scenario.size.modes[3].mass_fraction("BC"),
         )
         
+AIR_MW   = 28.9647   # g/mol, dry air
+H2SO4_MW = 98.079    # g/mol
+SO2_MW   = 64.066    # g/mol
 
 # this type handles the mapping of AMBRS gas species to MAM4 species
 class GasMixingRatios:
@@ -159,8 +162,8 @@ class GasMixingRatios:
         if ih2so4 == -1:
             raise ValueError("H2SO4 gas not found in gas species")
         isoag = GasSpecies.find(scenario.gases, 'soag')
-        self.SO2 = scenario.gas_concs[iso2]
-        self.H2SO4 = scenario.gas_concs[ih2so4]
+        self.SO2 = scenario.gas_concs[iso2] * SO2_MW / AIR_MW
+        self.H2SO4 = scenario.gas_concs[ih2so4] * H2SO4_MW / AIR_MW
         self.SOAG = 0.0 if isoag == -1 else scenario.gas_concs[isoag]
     
 class AerosolModel(BaseAerosolModel):
@@ -396,13 +399,13 @@ def retrieve_model_state(
         particle_population = build_population(binned_lognormal_cfg)
         
         gas_cfg = {
-            'H2SO4':get_mam_input(
+            'H2SO4':1e9*get_mam_input(
                     'qh2so4',
                     mam_input=mam_input),
             'SO2':get_mam_input(
                     'qso2',
                     mam_input=mam_input),
-            'units':'kg_per_kg'}
+            'units':'ppb'}
         gas_mixture = build_gas_mixture(gas_cfg)
         
         thermodynamics = { 
@@ -420,7 +423,7 @@ def retrieve_model_state(
             #'output_filename': output_filename,
             'timestep':timestep,
             'GSD':GSDs, #fixme: put in the correct GSD values!
-            'D_min':1e-9, #fixme: option for +/- sigmas
+            'D_min':1e-10, #fixme: option for +/- sigmas
             'D_max':1e-4,
             'N_bins':N_bins,
             'T':scenario.temperature,

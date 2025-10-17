@@ -8,8 +8,7 @@ from .scenario import Scenario
 from .ppe import Ensemble
 from typing import Dict, Optional
 from warnings import warn
-# todo: PyParticle wrapper?
-from PyParticle import build_population
+from pyparticle import build_population
 from .gas import build_gas_mixture
 
 
@@ -136,7 +135,7 @@ class Input:
     # TODO: fractal-specific fields??
 
     # process-specific fields`
-    coag_kernel: Optional[str] = None # coagulation kernel name
+    coag_kernel: Optional[str] = 'brown' # coagulation kernel name
 
     # emissions fields
     gas_emissions: Optional[DictTimeSeries] = None # gas emissions time series

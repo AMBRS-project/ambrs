@@ -87,7 +87,7 @@ specified scenarios (which must all have the same particle size representation)"
     flux = np.array([scenario.flux for scenario in scenarios])
     relative_humidity = np.array([scenario.relative_humidity for scenario in scenarios])
     temperature = np.array([scenario.temperature for scenario in scenarios])
-
+    
     # handle particle size data
     size = None
     if isinstance(scenarios[0].size, AerosolModalSizeState):

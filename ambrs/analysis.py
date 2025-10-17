@@ -7,30 +7,12 @@ import scipy.stats
 import pandas as pd
 from typing import Optional, Dict, List
 
-# PyParticle public API
-from PyParticle import ParticlePopulation  # type: ignore
-from PyParticle.optics.builder import build_optical_population  # type: ignore
-from PyParticle import analysis as ppa  # type: ignore
+from pyparticle import ParticlePopulation  # type: ignore
+from pyparticle.optics.builder import build_optical_population  # type: ignore
+from pyparticle import analysis as ppa  # type: ignore
 
 from .gas import GasMixture
 from .scenario import Scenario
-
-###############################################################################
-# NOTE FOR DEVELOPERS
-# --------------------
-# This module previously contained bespoke implementations of size distribution,
-# CCN, and optical coefficient calculations. Those routines have been removed
-# in favor of delegating all scientific variable computation to
-# PyParticle.analysis.compute_variable ("ppa.compute_variable").
-#
-# Contracts relied upon here:
-#   ppa.compute_variable(population, varname, var_cfg) -> dict with:
-#       - one or more axis arrays (e.g. 'D', 's', 'wvls', 'rh_grid')
-#       - a main data array under key = varname (e.g. 'dNdlnD','Nccn','b_ext')
-# Any failure (missing files, unknown variable) should raise a clear exception;
-# we DO NOT fabricate fallback data.
-###############################################################################
-
 
 @dataclass
 class Output:
@@ -46,7 +28,7 @@ class Output:
     species_modifications: dict = None
     # diagnostics: Optional(dict)
     def compute_variable(self, varname: str, var_cfg: Optional[Dict] = None) -> Dict:
-        """Delegate variable computation to PyParticle.analysis.
+        """Delegate variable computation to pyparticle.analysis.
 
         Parameters
         ----------

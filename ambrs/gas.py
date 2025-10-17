@@ -149,7 +149,7 @@ def build_gas_mixture(gas_cfg: dict) -> GasMixture:
     species = [so2,h2so4]
     if gas_cfg['units'] == 'ppb':
         mole_ratio = np.array([gas_cfg.get('SO2',0.),gas_cfg.get('H2SO4',0.)])/1e9
-    elif gas_cfg['units'] == 'ratio':
+    elif gas_cfg['units'] == 'ratio' or gas_cfg['units'] == 'mole_ratio' or gas_cfg['units'] == 'mol_ratio':
         mole_ratio = np.array([gas_cfg.get('SO2',0.),gas_cfg.get('H2SO4',0.)])
     elif gas_cfg['units'] == 'kg_per_kg':
         mole_ratio = np.array([
