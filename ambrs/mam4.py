@@ -399,13 +399,13 @@ def retrieve_model_state(
         particle_population = build_population(binned_lognormal_cfg)
         
         gas_cfg = {
-            'H2SO4':1e9*get_mam_input(
+            'H2SO4':get_mam_input(
                     'qh2so4',
                     mam_input=mam_input),
             'SO2':get_mam_input(
                     'qso2',
                     mam_input=mam_input),
-            'units':'ppb'}
+            'units':'kg_per_kg'}
         gas_mixture = build_gas_mixture(gas_cfg)
         
         thermodynamics = { 
