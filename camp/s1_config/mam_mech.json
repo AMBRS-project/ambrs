@@ -11,7 +11,7 @@
                 {
                     "type" : "EMISSION",
                     "species" : "H2SO4",
-                    "base rate" : 2.44E-10
+                    "base rate" : 5.428819333822298e-8
                 }
             ]
         }
