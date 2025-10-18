@@ -8,7 +8,7 @@ scale factors for each random variable.
 
 import numpy as np
 import pyDOE
-import scipy.stats
+import scipy.stats as stats
 import itertools # for cartesian products of parameter sweeps
 
 from dataclasses import dataclass
@@ -219,7 +219,7 @@ distribution from which ensemble members are sampled."""
         # FIXME: laura's janky fix to set some mass fractions to zero
         for mode in size.modes:
             for qq in range(len(mode.mass_fractions)):
-                print(mode.mass_fractions[qq])
+                #print(mode.mass_fractions[qq])
                 for ii in range(len(mode.mass_fractions[qq])):
                     if np.isnan(mode.mass_fractions[qq][ii]):
                         mode.mass_fractions[qq][ii] = 0.
@@ -432,3 +432,19 @@ parameter sweeps"""
         members.append(member)
 
     return ensemble_from_scenarios(members)
+
+class constvar(stats.rv_continuous):
+    '''
+    Constant "random variable" to fix parameter if perturbation is not desired
+    '''
+    def __init__(self, c):
+        self.c = c
+        self.a = c
+        self.b = c
+        self.loc = 0.
+        self.scale = 1.
+        self.badvalue = np.nan
+    def _parse_args(self, *args, **kwds):
+        return args, self.loc, self.scale
+    def _ppf(self, q):
+        return self.c

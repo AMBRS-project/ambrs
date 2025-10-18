@@ -378,7 +378,7 @@ working directory contains any needed input files."""
             raise OSError(f'Directory not found: {dir}')
         filename = os.path.join(dir, 'namelist')
         with open(filename, 'w') as f:
-            print(content)
+            #print(content)
             f.write(content)
 
 #         content = """"""

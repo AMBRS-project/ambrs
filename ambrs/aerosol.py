@@ -90,7 +90,7 @@ log-normal aerosol mode"""
     def mass_fraction(self, species_name: str):
         """returns the mass fraction corresponding to the given species name,
 or throws a ValueError."""
-        print(self.species)
+        #print(self.species)
         index = [s.name for s in self.species].index(species_name)
         return self.mass_fractions[index]
 
@@ -166,3 +166,16 @@ modal particle size distribution"""
 population member"""
         return AerosolModalSizeState(
             modes = tuple([mode.member(i) for mode in self.modes]))
+    
+
+#----------------------------------------
+# Aerosol Conversion Utility Functions
+#----------------------------------------
+
+def vol_to_num(v, Dgn, sigmag):
+    '''
+    Convert volume concentration to number concentration based on lognormal mode statistics.
+    '''
+    # n = 6*m / (np.pi * rho * Dgn**3 * np.exp(4.5 * np.log(sigmag)**2))
+    n = v / (Dgn**3 * (np.pi / 6.0) * np.exp(4.5*(np.log(sigmag))**2))
+    return n
