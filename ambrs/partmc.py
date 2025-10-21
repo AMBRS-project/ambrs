@@ -10,7 +10,7 @@ from typing import Dict, Optional
 from warnings import warn
 from pyparticle import build_population
 from .gas import build_gas_mixture
-
+from .camp import CampConfig
 
 import os
 import numpy as np
@@ -146,10 +146,14 @@ class Input:
 class AerosolModel(BaseAerosolModel):
     def __init__(self,
                  processes: AerosolProcesses,
+                 # FIXME: LMF add: better way to handle this?
+                 camp: Optional[CampConfig] = None, 
                  run_type = 'particle',
                  n_part = None,
                  n_repeat = 0):
         BaseAerosolModel.__init__(self, 'partmc', processes)
+        self.camp = camp
+
         if run_type not in ['particle']:
             raise ValueError(f'Unsupported run_type: {run_type}')
         if not n_part or n_part < 1:
@@ -202,8 +206,9 @@ class AerosolModel(BaseAerosolModel):
             del_t = dt,
             t_output = dt, # setting t_output = dt for now, which I believe is how MAM4 works.
             t_progress = dt, # reporting progress at every time step for now. 
-
-            do_camp_chem = False,
+            
+            # FIXME: LMF addition
+            do_camp_chem = (self.camp is not None),
 
             gas_data = tuple([gas.name for gas in scenario.gases]),
             gas_init = tuple([gas_conc*1e9 for gas_conc in scenario.gas_concs]),
@@ -278,9 +283,27 @@ class AerosolModel(BaseAerosolModel):
         # chemistry
         if input.do_camp_chem:
             spec_content += 'do_camp_chem yes\n'
+            # build CAMP config files under <dir>/camp and add the required line
+            from pathlib import Path
+            gases = list(input.gas_data) if input.gas_data else None
+            camp_files_json = self.camp.write_for_model(Path(dir), model_name="partmc", gases=gases)
+            rel_camp_path = os.path.relpath(camp_files_json, start=dir)
+            spec_content += f'camp_config {rel_camp_path}\n'
         else:
             spec_content += 'do_camp_chem no\n'
         spec_content += '\n'
+
+        # if input.do_camp_chem:
+        #     spec_content += 'do_camp_chem yes\n'
+            
+        #     # build CAMP config files under <dir>/camp and add the required line
+        #     from pathlib import Path
+        #     gases = list(input.gas_data) if input.gas_data else None
+        #     camp_files_json = self.camp.write_for_model(Path(dir), model_name="partmc", gases=gases)
+        #     spec_content += f'camp_config {rel_camp_path}\n'
+        # else:
+        #     spec_content += 'do_camp_chem no\n'
+        # spec_content += '\n'
 
         # gas data
         spec_content += 'gas_data gas_data.dat\ngas_init gas_init.dat\n'
