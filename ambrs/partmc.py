@@ -7,10 +7,15 @@ from .analysis import Output
 from .scenario import Scenario
 from .ppe import Ensemble
 from typing import Dict, Optional
+from warnings import warn
+from pyparticle import build_population
+from .gas import build_gas_mixture
+from .camp import CampConfig
 
 import os
 import numpy as np
 from dataclasses import dataclass
+from netCDF4 import Dataset
 
 @dataclass
 class AeroData:
@@ -130,7 +135,7 @@ class Input:
     # TODO: fractal-specific fields??
 
     # process-specific fields`
-    coag_kernel: Optional[str] = None # coagulation kernel name
+    coag_kernel: Optional[str] = 'brown' # coagulation kernel name
 
     # emissions fields
     gas_emissions: Optional[DictTimeSeries] = None # gas emissions time series
@@ -141,10 +146,14 @@ class Input:
 class AerosolModel(BaseAerosolModel):
     def __init__(self,
                  processes: AerosolProcesses,
+                 # FIXME: LMF add: better way to handle this?
+                 camp: Optional[CampConfig] = None, 
                  run_type = 'particle',
                  n_part = None,
                  n_repeat = 0):
         BaseAerosolModel.__init__(self, 'partmc', processes)
+        self.camp = camp
+
         if run_type not in ['particle']:
             raise ValueError(f'Unsupported run_type: {run_type}')
         if not n_part or n_part < 1:
@@ -181,6 +190,7 @@ class AerosolModel(BaseAerosolModel):
             geom_mean_diam = m.geom_mean_diam,
             log10_geom_std_dev = m.log10_geom_std_dev,
         ) for m in scenario.size.modes]
+        
         return Input(
             run_type = self.run_type,
             n_part = self.n_part,
@@ -196,8 +206,9 @@ class AerosolModel(BaseAerosolModel):
             del_t = dt,
             t_output = dt, # setting t_output = dt for now, which I believe is how MAM4 works.
             t_progress = dt, # reporting progress at every time step for now. 
-
-            do_camp_chem = False,
+            
+            # FIXME: LMF addition
+            do_camp_chem = (self.camp is not None),
 
             gas_data = tuple([gas.name for gas in scenario.gases]),
             gas_init = tuple([gas_conc*1e9 for gas_conc in scenario.gas_concs]),
@@ -206,7 +217,7 @@ class AerosolModel(BaseAerosolModel):
             aerosol_data = tuple(aero_data),
             do_fractal = False,
             aerosol_init = tuple(aero_init),
-
+            
             temp_profile = [(0, scenario.temperature)],
             pressure_profile = [(0, scenario.pressure)],
             height_profile = [(0, scenario.height)],
@@ -220,14 +231,14 @@ class AerosolModel(BaseAerosolModel):
 
             do_coagulation = self.processes.coagulation,
             do_condensation = False, # this is cloud condensation, not for aerosols
-            do_mosaic = False,
+            do_mosaic = self.processes.condensation,
             do_optical = self.processes.optics,
             do_nucleation = self.processes.nucleation,
 
             rand_init = 0, # FIXME: uses time to initialize random seed
             allow_doubling = False,
             allow_halving = False,
-            record_removals = False,
+            record_removals = True,
             do_parallel = False,
         )
 
@@ -272,9 +283,27 @@ class AerosolModel(BaseAerosolModel):
         # chemistry
         if input.do_camp_chem:
             spec_content += 'do_camp_chem yes\n'
+            # build CAMP config files under <dir>/camp and add the required line
+            from pathlib import Path
+            gases = list(input.gas_data) if input.gas_data else None
+            camp_files_json = self.camp.write_for_model(Path(dir), model_name="partmc", gases=gases)
+            rel_camp_path = os.path.relpath(camp_files_json, start=dir)
+            spec_content += f'camp_config {rel_camp_path}\n'
         else:
             spec_content += 'do_camp_chem no\n'
         spec_content += '\n'
+
+        # if input.do_camp_chem:
+        #     spec_content += 'do_camp_chem yes\n'
+            
+        #     # build CAMP config files under <dir>/camp and add the required line
+        #     from pathlib import Path
+        #     gases = list(input.gas_data) if input.gas_data else None
+        #     camp_files_json = self.camp.write_for_model(Path(dir), model_name="partmc", gases=gases)
+        #     spec_content += f'camp_config {rel_camp_path}\n'
+        # else:
+        #     spec_content += 'do_camp_chem no\n'
+        # spec_content += '\n'
 
         # gas data
         spec_content += 'gas_data gas_data.dat\ngas_init gas_init.dat\n'
@@ -387,12 +416,14 @@ class AerosolModel(BaseAerosolModel):
             f.write('\t'.join(['height'] + [str(pair[1]) for pair in input.height_profile]))
 
         # gas_emit.dat
-        if input.gas_emissions:
+        if False: #input.gas_emissions:
             gas_emission_species = [input.gas_emissions[0].time_series[1].keys()]
             gas_emission_species.remove('rate')
             with open(os.path.join(dir, 'gas_emit.dat'), 'w') as f:
                 f.write('# time (s)\n# rate = scaling parameter\n# emissions (mol m^{-2} s^{-1})\n')
                 f.write('\t'.join(['time'] + [pair[0] for pair in input.gas_emissions]) + '\n')
+                # FIXME: setting dilution rate = 0
+                # f.write('rate\t0.0\n')
                 f.write('\t'.join(['rate'] + [pair[1]['rate'] for pair in input.gas_emissions]) + '\n')
                 f.write('\t'.join([species_name] + [emit.pair[1][species_name] \
                                   for species_name in gas_emission_species \
@@ -401,19 +432,21 @@ class AerosolModel(BaseAerosolModel):
             # write a gas emissions file with zero data
             with open(os.path.join(dir, 'gas_emit.dat'), 'w') as f:
                 f.write('# time (s)\n# rate = scaling parameter\n# emissions (mol m^{-2} s^{-1})\n')
-                f.write('time\t0.0\n')
-                f.write('rate\t1.0\n')
+                f.write('time\t0\n')
+                # FIXME: setting dilution rate = 0
+                f.write('rate\t0.0\n')
                 for gas in input.gas_data:
                     f.write(f'{gas}\t0.0\n')
 
         # gas_back.dat
-        if input.gas_background:
+        if False: #input.gas_background:
             gas_background_species = [input.gas_background[0].time_series[1].keys()]
             gas_background_species.remove('rate')
             # FIXME: convert background conc to ppb
             with open(os.path.join(dir, 'gas_back.dat'), 'w') as f:
                 f.write('# time (s)\n# rate (s^{-1})\n# concentrations (ppb)\n')
                 f.write('\t'.join(['time'] + [pair[0] for pair in input.gas_background]) + '\n')
+                # f.write('rate\t0.0\n')
                 f.write('\t'.join(['rate'] + [pair[1]['rate'] for pair in input.gas_background]) + '\n')
                 f.write('\t'.join([species_name] + [pair[1][species_name] \
                                   for species_name in gas_background_species \
@@ -422,17 +455,19 @@ class AerosolModel(BaseAerosolModel):
             # write a gas background file with zero data
             with open(os.path.join(dir, 'gas_back.dat'), 'w') as f:
                 f.write('# time (s)\n# rate = scaling parameter\n# emissions (mol m^{-2} s^{-1})\n')
-                f.write('time\t0.0\n')
-                f.write('rate\t1.0\n')
+                f.write('time\t0\n')
+                # f.write('rate\t1.0\n')
+                f.write('rate\t0.0\n')
                 for gas in input.gas_data:
                     f.write(f'{gas}\t0.0\n')
 
         # aero_emit.dat, aero_emit_dist_*.dat, aero_emit_comp_*.dat
-        if input.aero_emissions:
+        if False: #input.aero_emissions:
             with open(os.path.join(dir, 'aero_emit.dat'), 'w') as f:
                 f.write('# time (s)\n# rate (s^{-1})\n# aerosol distribution filename\n')
                 f.write('\t'.join(['time'] + [time_series[0] for time_series in input.aero_emissions]) + '\n')
                 f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in input.aero_emissions]) + '\n')
+                # f.write('rate\t0.0\n')
                 f.write('\t'.join(['dist'] + [f'aero_emit_dist_{i+1}.dat' for i in range(len(input.aero_emissions))]))
             for i, time_series in enumerate(input.aero_emissions):
                 input._write_aero_modes(dir, f'aero_emit_dist_{i+1}', input.aero_emissions)
@@ -440,16 +475,17 @@ class AerosolModel(BaseAerosolModel):
             # write a zero-scaled aerosol emissions file
             with open(os.path.join(dir, 'aero_emit.dat'), 'w') as f:
                 f.write('# time (s)\n# rate (s^{-1})\n# aerosol distribution filename\n')
-                f.write('time\t0.0\n')
+                f.write('time\t0\n')
                 f.write('rate\t0.0\n')
                 f.write('dist\taero_init_dist.dat\n')
 
         # aero_back.dat, aero_back_dist.dat, aero_back_comp.dat
-        if input.aero_background:
+        if False: #input.aero_background:
             with open(os.path.join(dir, 'aero_back.dat'), 'w') as f:
                 f.write('# time (s)\n# rate (s^{-1})\n# aerosol distribution filename\n')
                 f.write('\t'.join(['time'] + [time_series[0] for time_series in input.aero_background]) + '\n')
-                f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in input.aero_background]) + '\n')
+                # f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in input.aero_background]) + '\n')
+                f.write('rate\t0.0\n')
                 f.write('\t'.join(['dist'] + [f'aero_emit_dist_{i+1}.dat' for i in range(len(input.aero_background))]))
             for i, time_series in enumerate(input.aero_background):
                 input._write_aero_modes(dir, f'aero_back_dist_{i+1}', input.aero_background)
@@ -457,7 +493,7 @@ class AerosolModel(BaseAerosolModel):
             # write a zero-scaled aerosol background file
             with open(os.path.join(dir, 'aero_back.dat'), 'w') as f:
                 f.write('# time (s)\n# rate (s^{-1})\n# aerosol distribution filename\n')
-                f.write('time\t0.0\n')
+                f.write('time\t0\n')
                 f.write('rate\t0.0\n')
                 f.write('dist\taero_init_dist.dat\n')
 
@@ -484,42 +520,151 @@ class AerosolModel(BaseAerosolModel):
                 f.write('#\tproportion\n')
                 for species, mass_frac in mode.mass_frac.items():
                     f.write(f'{species}\t{mass_frac}\n')
+    
+#     def retrieve_model_state(
+#             self, 
+#             scenario_name: str, 
+#             timestep: int, 
+#             # t_eval: float, 
+#             # model_times: np.array,
+#             repeat_num: int=1, # number of PartMC repeat, set to 1 if scenario just run once
+#             species_modifications: dict={},
+#             ensemble_output_dir: str='partmc_runs') -> Output: # data structure that allows species modifications in post-processing (e.g., treat some organics as light-absorbing)
+        
+#         # model_times = np.linspace(0., input.t_max, int(input.t_max/input.t_output + 1))
+#         # if t_eval not in model_times:
+#         #    raise ValueError('t_eval = ' + str(t_eval) + ' not in model_times.')# ' t_max = ' + str(self.t_max) + '; t_output = ' + str(self.t_output))
+        
+#         # timestep, = np.where(model_times == t_eval)
+#         # timestep += 1
+        
+#         partmc_dir = ensemble_output_dir + scenario_name 
+#         partmc_population_cfg = {
+#             'type':'partmc',
+#             'partmc_dir': partmc_dir,
+#             'timestep':timestep,
+#             'repeat':repeat_num, # number of PartMC repeat, if run multiple times
+#             'species_modifications':species_modifications}
+#         particle_population = build_population(partmc_population_cfg)
+        
+#         ncfilename = self.get_ncfile(
+#             scenario_name, timestep, 
+#             ensemble_output_dir=ensemble_output_dir, 
+#             repeat_num=repeat_num)
+#         currnc = Dataset(ncfilename)
+        
+#         gas_names = currnc.variables['gas_species'].names.split(',')
+#         gas_mixing_ratios_ppb = currnc.variables['gas_mixing_ratio']
+        
+#         gas_cfg = {}
+#         for gas_name, mixing_ratio_ppb in zip(gas_names,gas_mixing_ratios_ppb):
+#             gas_cfg[gas_name] = mixing_ratio_ppb/1e9 # mol trace gas/mol dry air
+#         gas_mixture = build_gas_mixture(gas_cfg)
+        
+#         thermodynamics = { 
+#             'T':currnc.variables['temperature'],
+#             'p':currnc.variables['pressure'],
+#             'RH':currnc.variables['relative_humidity']}
+        
+#         return Output(
+#             model_name='partmc',
+#             scenario_name=scenario_name, 
+#             scenario=self.scenario,
+#             # time=t_eval,
+#             timestep=timestep,
+#             particle_population=particle_population,
+#             gas_mixture=gas_mixture,
+#             thermodynamics=thermodynamics,
+#             )
+    
+#     def get_ncfile(self, scenario_name, timestep, ensemble_output_dir='partmc_runs', repeat_num=1):
+#         """helper function that returns the filename corresponding to the given
+# timestep and ensemble index, given the directory in which it resides"""
+#         # fixme: make this a Path rather than a string?
+#         output_dir = ensemble_output_dir + '/' +  scenario_name + '/out'
+#         full_prefix = scenario_name + '_' + str(int(repeat_num)).zfill(4)
+#         ncfiles = [f for f in os.listdir(output_dir) if f.startswith(full_prefix) and f.endswith('.nc')]
+#         if len(ncfiles) == 0:
+#             raise OSError(f'No NetCDF output found for ensemble number {repeat_num} in {dir}!')
+#         if timestep == -1: # return the most recent output file
+#             ncfiles.sort()
+#             return ncfiles[-1]
+#         else:
+#             ncfilename = full_prefix + str(int(timestep)).zfill(8) + '.nc'
+#             if ncfilename in ncfiles:
+#                 return ncfilename
+#             else:
+#                 raise OSError(f'No NetCDF output found for repeat number {repeat_num} and timestep {timestep} in {dir}!')
 
-    def read_output_files(self,
-                          input,
-                          dir: str,
-                          prefix: str,
-                          lnDs = np.logspace(-9,-5,1001)) -> Output:
-        n_repeat = self.n_repeat
-        timestep = -1 # for now, we use the last timestep
-        '''
-        dNdlnD_repeat = np.zeros([len(lnDs), n_repeat])
-        for i, repeat in enumerate(range(1, n_repeat+1)):
-            output_file = self.get_ncfile(dir, prefix, timestep, repeat)
-            # FIXME: we need something equivalent to get_partmc_dsd_onefile here,
-            # FIXME: and that's a lot of code. Also: Where do we get lnDs?
-            dNdlnD_repeats[:,ii] = get_partmc_dsd_onefile(lnDs,output_file,density_type=density_type)
-        ''' 
-        return Output(
-            model = self.name,
-            input = input,
-            dNdlnD = np.zeros([len(lnDs)]),
+
+
+def retrieve_model_state(
+        scenario_name: str, 
+        scenario: Scenario,
+        timestep: int, 
+        # t_eval: float, 
+        # model_times: np.array,
+        repeat_num: int=1, # number of PartMC repeat, set to 1 if scenario just run once
+        species_modifications: dict={},
+        ensemble_output_dir: str='partmc_runs') -> Output: # data structure that allows species modifications in post-processing (e.g., treat some organics as light-absorbing)
+    
+    partmc_dir = ensemble_output_dir + '/' + scenario_name 
+    partmc_population_cfg = {
+        'type':'partmc',
+        'partmc_dir': partmc_dir,
+        'timestep':timestep,
+        'repeat':repeat_num, # number of PartMC repeat, if run multiple times
+        'species_modifications':species_modifications}
+    
+    particle_population = build_population(partmc_population_cfg)
+
+    ncfilename = get_ncfile(
+        scenario_name, timestep, 
+        ensemble_output_dir=ensemble_output_dir, 
+        repeat_num=repeat_num)
+    currnc = Dataset(partmc_dir + '/out/' + ncfilename)
+    
+    gas_names = currnc.variables['gas_species'].names.split(',')
+    gas_mixing_ratios_ppb = currnc.variables['gas_mixing_ratio']
+    
+    gas_cfg = {}
+    for gas_name, mixing_ratio_ppb in zip(gas_names,gas_mixing_ratios_ppb):
+        gas_cfg[gas_name] = mixing_ratio_ppb # mol trace gas/mol dry air
+    gas_cfg['units'] = 'ppb'
+    gas_mixture = build_gas_mixture(gas_cfg)
+    
+    thermodynamics = { 
+        'T':currnc.variables['temperature'][:],
+        'p':currnc.variables['pressure'][:],
+        'RH':currnc.variables['relative_humidity'][:]}
+
+    return Output(
+        'partmc',
+        scenario_name=scenario_name, 
+        scenario=scenario,
+        # time=t_eval,
+        timestep=timestep,
+        particle_population=particle_population,
+        gas_mixture=gas_mixture,
+        thermodynamics=thermodynamics,
         )
-
-    def get_ncfile(self, dir, prefix, timestep, ensemble_number=1):
-        """helper function that returns the filename corresponding to the given
+    
+def get_ncfile(scenario_name, timestep, ensemble_output_dir='partmc_runs', repeat_num=1):
+    """helper function that returns the filename corresponding to the given
 timestep and ensemble index, given the directory in which it resides"""
-        output_dir = os.path.join(dir, 'out')
-        full_prefix = prefix + '_' + str(int(ensemble_number)).zfill(4)
-        ncfiles = [f for f in os.listdir(output_dir) if f.startswith(full_prefix) and f.endswith('.nc')]
-        if len(ncfiles) == 0:
-            raise OSError(f'No NetCDF output found for ensemble number {ensemble_number} in {dir}!')
-        if timestep == -1: # return the most recent output file
-            ncfiles.sort()
-            return ncfiles[-1]
+    # fixme: make this a Path rather than a string?
+    output_dir = ensemble_output_dir + '/' +  scenario_name + '/out'
+    full_prefix = scenario_name + '_' + str(int(repeat_num)).zfill(4)
+    ncfiles = [f for f in os.listdir(output_dir) if f.startswith(full_prefix) and f.endswith('.nc')]
+    
+    if len(ncfiles) == 0:
+        raise OSError(f'No NetCDF output found for ensemble number {repeat_num} in {dir}!')
+    if timestep == -1: # return the most recent output file
+        ncfiles.sort()
+        return ncfiles[-1]
+    else:
+        ncfilename = full_prefix + '_' + str(int(timestep)).zfill(8) + '.nc'
+        if ncfilename in ncfiles:
+            return ncfilename
         else:
-            ncfile = full_prefix + str(int(timestep)).zfill(8) + '.nc'
-            if ncfile in ncfiles:
-                return ncfile
-            else:
-                raise OSError(f'No NetCDF output found for ensemble number {ensemble_number} and timestep {timestep} in {dir}!')
+            raise OSError(f'No NetCDF output found for repeat number {repeat_num} and timestep {timestep} in {dir}!')
