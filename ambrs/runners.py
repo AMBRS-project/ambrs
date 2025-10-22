@@ -75,12 +75,16 @@ runner's root directory, generating a directory for each of the scenarios"""
 
             # write input files and define commands
             self.model.write_input_files(input, dir, scenario_name)
-            command = self.model.invocation(self.executable, scenario_name)
             dir = os.path.join(self.root, scenario_name)
-            args.append({
-                'command': command,
-                'dir': dir
-            })
+            # FIXME: LMF addition; double-check
+            # command = self.model.invocation(self.executable, scenario_name)
+            cmd = self.model.invocation(self.executable, scenario_name)
+            if isinstance(cmd, tuple):
+                command, env = cmd
+            else:
+                command, env = cmd, None
+            args.append({"command": command, "dir": dir, "env": env})
+
         if found_dir:
             logger.warning(f'{self.model.name}: one or more existing scenario directories found. Overwriting contents...')
         logger.info(f'{self.model.name}: finished generating scenario input.')
@@ -93,6 +97,7 @@ runner's root directory, generating a directory for each of the scenarios"""
         
         # this function is called with a list of completed processes by pool.map_async
         def callback(completed_processes) -> None:
+            
             if not all([p.returncode == 0 for p in completed_processes]):
                 error_occurred = True
 
@@ -101,12 +106,19 @@ runner's root directory, generating a directory for each of the scenarios"""
             f_stdout = open(os.path.join(args['dir'], 'stdout.log'), 'w')
             f_stderr = open(os.path.join(args['dir'], 'stderr.log'), 'w')
             f_timer = open(os.path.join(args['dir'], 'timer.log'), 'w')
+            
+            # FIXME: LMF addition; double-check
+            env = _augment_env_for_camp(os.environ.copy())
+
             start_time = timeit.default_timer()
             subprocess_output = subprocess.run(args['command'].split(),
                 close_fds = True,
                 cwd = args['dir'],
                 stdout = f_stdout,
                 stderr = f_stderr,
+                # FIXME: LMF addition; double-check
+                # env=args.get('env', None)
+                #env=env,
             )
             stop_time = timeit.default_timer()
             elapsed_time = stop_time - start_time
@@ -127,3 +139,23 @@ runner's root directory, generating a directory for each of the scenarios"""
         #     output = self.model.read_output_files(input, args[i]['dir'], scenario_name)
         #     outputs.append(output)
         # return outputs
+
+# FIXME: LMF addition; double-check
+def _augment_env_for_camp(env: dict) -> dict:
+    """Prepend the conda env's lib/ to the dynamic loader search path.
+    - macOS: DYLD_FALLBACK_LIBRARY_PATH (preferred on modern macOS)
+    - Linux: LD_LIBRARY_PATH
+    """
+    env = dict(env)  # copy
+    conda_prefix = os.environ.get("CONDA_PREFIX", "")
+    conda_lib = Path(conda_prefix) / "lib"
+    if conda_lib.exists():
+        if sys.platform == "darwin":
+            key = "DYLD_FALLBACK_LIBRARY_PATH"
+        elif sys.platform.startswith("linux"):
+            key = "LD_LIBRARY_PATH"
+        else:
+            return env  # no-op on Windows
+        current = env.get(key, "")
+        env[key] = f"{conda_lib}:{current}" if current else str(conda_lib)
+    return env

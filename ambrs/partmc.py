@@ -280,19 +280,26 @@ class AerosolModel(BaseAerosolModel):
         spec_content += f't_max {input.t_max}\ndel_t {input.del_t}\nt_output {input.t_output}\nt_progress {input.t_progress}\n'
         spec_content += '\n'
 
+
         # chemistry
         if input.do_camp_chem:
             spec_content += 'do_camp_chem yes\n'
             # build CAMP config files under <dir>/camp and add the required line
-            from pathlib import Path
-            gases = list(input.gas_data) if input.gas_data else None
-            camp_files_json = self.camp.write_for_model(Path(dir), model_name="partmc", gases=gases)
-            rel_camp_path = os.path.relpath(camp_files_json, start=dir)
-            spec_content += f'camp_config {rel_camp_path}\n'
+            camp_list_path = self.camp.write_common_files(dir)
+            spec_content += f'camp_config {camp_list_path}\n'
         else:
             spec_content += 'do_camp_chem no\n'
         spec_content += '\n'
 
+        # FIXME: alternative?
+        # if self.camp is not None:
+        #     file_list_path = self.camp.write_common_files(dir)  # <scenario_dir>/camp/camp_file_list.json
+        #     # PartMC expects a *path* in the .spec:
+        #     camp_config_line = f'camp_config {file_list_path}\n'
+        #     self._camp_env = self.camp.runtime_env()
+
+        # # Append the camp_config line if needed
+        # spec_content += camp_config_line
         # if input.do_camp_chem:
         #     spec_content += 'do_camp_chem yes\n'
             
