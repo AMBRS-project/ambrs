@@ -323,8 +323,9 @@ working directory contains any needed input files."""
         # --- CAMP integration (model-agnostic, no env tricks needed) ---
         if self.camp is not None:
             # Create/refresh <dir>/camp/* and get ABS path to .../camp_file_list.json
-            camp_list_path = self.camp.write_common_files(dir)
-
+            # camp_list_path = self.camp.write_common_files(dir)
+            camp_list_path = self.camp.write_for_model(dir, model_name="mam4")
+            
             # Tell the MAM box driver where to find the CAMP config via namelist
             camp_block = f"""
 &camp_input

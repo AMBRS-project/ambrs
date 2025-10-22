@@ -1,236 +1,306 @@
-# ambrs/camp.py
+"""
+ambrs.camp -- generalized CAMP config builder (mechanisms & files)
+
+Goals:
+- Common files (species, aerosol phases) shared by models.
+- Model-specific files (aerosol representation + mechanism).
+- Produce per-scenario file list: camp/camp_files.json.
+- Provide runtime env (CAMP_FILE_LIST + DYLD/LD paths) automatically.
+
+Example mechanism here:
+  * H2SO4 (gas) -> SO4 (aerosol) via first-order sink (rate k [s^-1])
+  * SOAG partitioning to SOA via SIMPOL parameters
+
+This is an example; the public API is generic enough to plug other species/reactions.
+"""
+
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
+from typing import Iterable, Mapping, Optional, Union
 import json
 import os
+import sys
+
+
+def _ensure_dir(p: Union[str, Path]) -> Path:
+    p = Path(p).resolve()
+    p.mkdir(parents=True, exist_ok=True)
+    return p
+
+
+@dataclass
+class MechanismTemplate:
+    """Generic holder for a small set of reactions; today we expose a focused
+    H2SO4 + SOAG example but keep the shape extensible."""
+    # First-order H2SO4 -> SO4 rate [s^-1]; None disables
+    h2so4_first_order_k: Optional[float] = None
+
+    # SIMPOL (SOAG -> SOA) parameters
+    simpol_B: Optional[list[float]] = None
+    simpol_Nstar: Optional[float] = None
+
+    # phases/species names used inside CAMP
+    gas_h2so4: str = "H2SO4"
+    aer_so4: str = "SO4"
+    gas_soag: str = "SOAG"
+    aer_soa: str = "SOA"
+    aerosol_phase_name: str = "mixed"
+
+    def is_empty(self) -> bool:
+        return (self.h2so4_first_order_k is None) and (self.simpol_B is None or self.simpol_Nstar is None)
+
 
 @dataclass
 class CampConfig:
-    """
-    Common CAMP configuration made once and reused by MAM4 and PartMC writers.
+    """Builder for CAMP configs."""
+    # Optional explicit path to lib dir (otherwise we auto-detect).
+    lib_dir: Optional[Union[str, Path]] = None
 
-    Parameters
-    ----------
-    lib_dir : Optional[str]
-        Directory that contains libcamp.* (for macOS DYLD issues and Linux LD).
-        If None, we won't set any library env vars.
-    enable_h2so4_condensation : bool
-        If True, include a simple first-order H2SO4 gas sink in the CAMP mechanism.
-        This is a *placeholder* condensation scheme (gas -> sink).
-        Leave False if your model (MAM gas-aerosol or PartMC-MOSAIC) will handle condensation.
-    h2so4_cond_rate_s_inv : float
-        The first-order rate constant [s^-1] used when enable_h2so4_condensation is True.
-        Pick a timescale ~ 30 min => 5.6e-4 s^-1, 1 hour => ~2.8e-4 s^-1, etc.
-    """
-    lib_dir: Optional[str] = None
-    enable_h2so4_condensation: bool = True
-    h2so4_cond_rate_s_inv: float = 2.8e-4  # ~1 h timescale by default
+    # Mechanism sources. Choose ONE of:
+    #  (a) template: MechanismTemplate
+    #  (b) files: explicit list of config files (absolute or relative)
+    #  (c) directory: a directory containing JSON files to list
+    template: Optional[MechanismTemplate] = None
+    files: Optional[Iterable[Union[str, Path]]] = None
+    directory: Optional[Union[str, Path]] = None
 
-    # --- internal, filled by write_common_files ---
-    _file_list_path: Optional[Path] = None
+    # Internal cache: set per scenario when we write
+    _last_camp_files_json: Optional[Path] = field(default=None, init=False, repr=False)
 
-    def write_common_files(self, scenario_dir: str) -> Path:
-        """Create <scenario_dir>/camp/* CAMP files and return absolute path to camp_file_list.json."""
-        camp_dir = Path(scenario_dir).resolve() / "camp"
-        camp_dir.mkdir(parents=True, exist_ok=True)
+    # -------------------
+    # Public entry points
+    # -------------------
 
-        # 1) species.json – keep it minimal for now
-        species = {
-            "camp-data": [
-                # GAS species used by the simple mechanism (only H2SO4 required here)
-                {"type": "CHEM_SPEC", "name": "H2SO4", "phase": "GAS", "molecular weight": 0.098079},
-                # If we later move to true phase-transfer, we’ll deposit into an aerosol species:
-                {"type": "CHEM_SPEC", "name": "H2SO4_sink", "phase": "AEROSOL",
-                 "molecular weight": 0.098079, "density": 1830.0},
-            ]
-        }
-        (camp_dir / "species.json").write_text(json.dumps(species, indent=2))
+    def write_for_model(self, run_dir: Union[str, Path], model_name: str) -> Path:
+        """Create <run_dir>/camp/* and return the file-list JSON path."""
+        run_dir = Path(run_dir)
+        camp_dir = _ensure_dir(run_dir / "camp")
 
-        # 2) aero_phase.json – trivial; present to be future-proof if we upgrade to HL/SIMPOL
-        aero_phase = {
-            "camp-data": [
-                {"type": "AERO_PHASE", "name": "default_phase", "species": ["H2SO4_sink"]}
-            ]
-        }
-        (camp_dir / "aero_phase.json").write_text(json.dumps(aero_phase, indent=2))
+        # Case: files/dir provided verbatim
+        if self.files or self.directory:
+            files = []
+            if self.files:
+                files.extend([str(Path(f)) for f in self.files])
+            if self.directory:
+                d = Path(self.directory)
+                files.extend([str(p.resolve()) for p in sorted(d.glob("*.json"))])
+            out = {"camp-files": files}
+            camp_files_json = camp_dir / "camp_files.json"
+            camp_files_json.write_text(json.dumps(out, indent=2))
+            self._last_camp_files_json = camp_files_json
+            return camp_files_json
 
-        # 3) mechanism.json – simple H2SO4 first-order loss (gas -> sink)
-        # CAMP Arrhenius input: reactants/products as mappings; A is s^-1 for unimolecular
-        mech_reactions = []
-        if self.enable_h2so4_condensation and self.h2so4_cond_rate_s_inv > 0.0:
-            mech_reactions.append({
-                "type": "ARRHENIUS",
-                "A": float(self.h2so4_cond_rate_s_inv),  # s^-1
-                "reactants": {"H2SO4": {}},
-                # put the mass into an inert sink species to make the budget obvious
-                "products": {"H2SO4_sink": {"yield": 1.0}}
-            })
-        mechanism = {"camp-data": [{"type": "MECHANISM", "name": "ambrs_mechanism",
-                                    "reactions": mech_reactions}]}
-        (camp_dir / "mechanism.json").write_text(json.dumps(mechanism, indent=2))
+        # Case: build from a template (today: H2SO4 + SOAG example)
+        tmpl = self.template or MechanismTemplate()
+        # 1) species.json  2) aerosol_phases.json  3) aero_rep.json  4) mechanism.json
+        species = self._species_block(tmpl)
+        (camp_dir / "species.json").write_text(json.dumps({"camp-data": species}, indent=2))
 
-        # 4) file list – ABSOLUTE paths (fixes 'Cannot file file: species.json')
-        file_list = {
-            "camp-files": [
-                str((camp_dir / "species.json").resolve()),
-                str((camp_dir / "aero_phase.json").resolve()),
-                str((camp_dir / "mechanism.json").resolve()),
-            ]
-        }
-        file_list_path = (camp_dir / "camp_file_list.json")
-        file_list_path.write_text(json.dumps(file_list, indent=2))
+        phases = self._aerosol_phases_block(tmpl)
+        (camp_dir / "aerosol_phases.json").write_text(json.dumps({"camp-data": phases}, indent=2))
 
-        self._file_list_path = file_list_path.resolve()
-        return self._file_list_path
+        aero_rep = self._aero_rep_block(model_name, tmpl)
+        rep_name = "mam4_aerosol_representation.json" if model_name.lower().startswith("mam") else "partmc_aerosol_representation.json"
+        (camp_dir / rep_name).write_text(json.dumps({"camp-data": [aero_rep]}, indent=2))
 
-    def runtime_env(self) -> dict:
+        mech = self._mechanism_block(model_name, tmpl)
+        mech_name = "mam_mech.json" if model_name.lower().startswith("mam") else "pmc_mech.json"
+        (camp_dir / mech_name).write_text(json.dumps({"camp-data": mech}, indent=2))
+
+        # File list
+        file_list = [
+            str((camp_dir / "aerosol_phases.json").resolve()),
+            str((camp_dir / rep_name).resolve()),
+            str((camp_dir / "species.json").resolve()),
+            str((camp_dir / mech_name).resolve()),
+        ]
+        camp_files_json = camp_dir / "camp_files.json"
+        camp_files_json.write_text(json.dumps({"camp-files": file_list}, indent=2))
+        self._last_camp_files_json = camp_files_json
+        return camp_files_json
+
+    def runtime_env(self, run_dir: Optional[Union[str, Path]] = None) -> dict:
+        """Environment variables for subprocess:
+           - CAMP_FILE_LIST points to camp_files.json (if we wrote one).
+           - DYLD_FALLBACK_LIBRARY_PATH / LD_LIBRARY_PATH points to libcamp.
         """
-        Environment vars to make the model find CAMP config and libraries.
+        env = {}
 
-        Returns env dict you can pass to subprocess.run(env=...).
-        Always include CAMP_FILE_LIST when available; add DYLD/LD paths if lib_dir provided.
-        """
-        env = os.environ.copy()
-        if self._file_list_path is not None:
-            env["CAMP_FILE_LIST"] = str(self._file_list_path)
-        if self.lib_dir:
-            lib_path = str(Path(self.lib_dir).resolve())
-            # macOS
-            env["DYLD_LIBRARY_PATH"] = f"{lib_path}:{env.get('DYLD_LIBRARY_PATH','')}".rstrip(":")
-            # Linux
-            env["LD_LIBRARY_PATH"] = f"{lib_path}:{env.get('LD_LIBRARY_PATH','')}".rstrip(":")
+        # CAMP file list
+        camp_file = None
+        if self._last_camp_files_json and self._last_camp_files_json.exists():
+            camp_file = self._last_camp_files_json
+        elif run_dir:
+            candidate = Path(run_dir) / "camp" / "camp_files.json"
+            if candidate.exists():
+                camp_file = candidate
+        if camp_file:
+            env["CAMP_FILE_LIST"] = str(camp_file.resolve())
+
+        # Shared library path
+        lib_dir = self._detect_lib_dir()
+        if lib_dir:
+            lib_dir = str(Path(lib_dir).resolve())
+            if sys.platform == "darwin":
+                key = "DYLD_FALLBACK_LIBRARY_PATH"
+            elif sys.platform.startswith("linux"):
+                key = "LD_LIBRARY_PATH"
+            else:
+                key = None
+            if key:
+                current = os.environ.get(key, "")
+                env[key] = f"{lib_dir}:{current}" if current else lib_dir
+
         return env
 
+    # -------------------
+    # Builders
+    # -------------------
 
-# # ambrs/camp.py
-# from __future__ import annotations
-# from dataclasses import dataclass, field
-# from pathlib import Path
-# import json
-# from typing import Iterable, Optional
+    def _detect_lib_dir(self) -> Optional[Path]:
+        if self.lib_dir:
+            return Path(self.lib_dir)
+        # Best-effort: CONDA_PREFIX/lib
+        conda = os.environ.get("CONDA_PREFIX")
+        if conda:
+            cand = Path(conda) / "lib"
+            if cand.exists():
+                return cand
+        # Nothing else reliable without probing binaries
+        return None
 
-# @dataclass
-# class CampConfig:
-#     """
-#     Builds CAMP config files for a scenario and returns the path to the top-level
-#     file-list JSON that CAMP expects.
+    def _species_block(self, tmpl: MechanismTemplate) -> list[dict]:
+        """Minimal but sufficient set for H2SO4 + SOAG example, using CAMP schema
+        keys as in the attached configs: 'molecular weight [kg mol-1]', etc."""
+        out = []
 
-#     Design:
-#       - COMMON files (shared by MAM4 & PartMC): species, mechanism stub, solver.
-#       - MODEL-specific override (optional): empty by default, but gives each model
-#         its own hook without "crazy" config sprawl.
-#       - A file-list JSON (`camp_files.json`) that lists all of the above in order.
+        # Gas species
+        out.append({
+            "name": tmpl.gas_soag,
+            "type": "CHEM_SPEC",
+            "absolute integration tolerance": 1.0e-6,
+            "molecular weight [kg mol-1]": 0.012011,      # placeholder (matches example config)
+            "diffusion coeff [m2 s-1]": 9.517e-6
+        })
+        out.append({
+            "name": tmpl.gas_h2so4,
+            "type": "CHEM_SPEC",
+            "absolute integration tolerance": 1.0e-6,
+            "molecular weight [kg mol-1]": 0.098
+        })
 
-#     You can pass an explicit list of gas species; otherwise we’ll generate a
-#     minimal superset that works for the demo (SO2, H2SO4, and a placeholder SOAG).
-#     """
-#     mechanism_name: str = "ambrs_mech"
-#     rel_tol: float = 1.0e-6
-#     abs_tol_ppm: float = 0.0      # 0 lets CAMP choose defaults
-#     gas_species: Optional[Iterable[str]] = None
+        # Aerosol species (SOA & SO4)
+        out.append({
+            "name": tmpl.aer_soa,
+            "type": "CHEM_SPEC",
+            "phase": "AEROSOL",
+            "absolute integration tolerance": 1.0e-6,
+            "molecular weight [kg mol-1]": 0.012011,
+            "density [kg m-3]": 1000.0,
+            "num_ions": 0,
+            "charge": 0,
+            "kappa": 0.14
+        })
+        out.append({
+            "name": tmpl.aer_so4,
+            "type": "CHEM_SPEC",
+            "phase": "AEROSOL",
+            "absolute integration tolerance": 1.0e-6,
+            "molecular weight [kg mol-1]": 0.11510734,   # consistent with example
+            "density [kg m-3]": 1770.0,
+            "num_ions": 2,
+            "charge": -2,
+            "kappa": 0.0
+        })
+        return out
 
-#     # internal cache for last produced file-list (per directory/model)
-#     _last_files: dict[tuple[Path, str], Path] = field(default_factory=dict, init=False, repr=False)
+    def _aerosol_phases_block(self, tmpl: MechanismTemplate) -> list[dict]:
+        return [{
+            "name": tmpl.aerosol_phase_name,
+            "type": "AERO_PHASE",
+            "species": [tmpl.aer_so4, tmpl.aer_soa]
+        }]
 
-#     def _species_list(self, user_gases: Optional[Iterable[str]]) -> list[str]:
-#         if user_gases:
-#             return sorted({g for g in user_gases})
-#         # conservative default superset that matches the demo & keeps CAMP happy
-#         return ["SO2", "H2SO4", "SOAG"]
+    def _aero_rep_block(self, model_name: str, tmpl: MechanismTemplate) -> dict:
+        if model_name.lower().startswith("mam"):
+            return {
+                "name": "MAM4",
+                "type": "AERO_REP_MODAL_BINNED_MASS",
+                "modes/bins": {
+                    "accumulation    ": {
+                        "type": "MODAL",
+                        "phases": [tmpl.aerosol_phase_name],
+                        "shape": "LOG_NORMAL",
+                        "geometric mean diameter [m]": 1.1e-7,
+                        "geometric standard deviation": 1.8
+                    },
+                    "aitken          ": {
+                        "type": "MODAL",
+                        "phases": [tmpl.aerosol_phase_name],
+                        "shape": "LOG_NORMAL",
+                        "geometric mean diameter [m]": 2.6e-8,
+                        "geometric standard deviation": 1.6
+                    },
+                    "coarse          ": {
+                        "type": "MODAL",
+                        "phases": [tmpl.aerosol_phase_name],
+                        "shape": "LOG_NORMAL",
+                        "geometric mean diameter [m]": 2e-6,
+                        "geometric standard deviation": 1.8
+                    },
+                    "primary_carbon  ": {
+                        "type": "MODAL",
+                        "phases": [tmpl.aerosol_phase_name],
+                        "shape": "LOG_NORMAL",
+                        "geometric mean diameter [m]": 5e-8,
+                        "geometric standard deviation": 1.6
+                    }
+                }
+            }
+        else:
+            # PartMC
+            return {
+                "name": "PartMC single particle",
+                "type": "AERO_REP_SINGLE_PARTICLE",
+                "layers": [{
+                    "name": "core", "covers": "none", "phases": [tmpl.aerosol_phase_name]
+                }],
+                "maximum computational particles": 2000  # safe default; PartMC itself sets actual n_part
+            }
 
-#     def write_common_files(self, camp_dir: Path, gases: Optional[Iterable[str]] = None) -> dict[str, Path]:
-#         """
-#         Writes common CAMP files (species, mechanism stub with no reactions,
-#         and solver tolerances). Returns their paths.
-#         """
-#         camp_dir.mkdir(parents=True, exist_ok=True)
+    def _mechanism_block(self, model_name: str, tmpl: MechanismTemplate) -> list[dict]:
+        mech: list[dict] = [{"type": "RELATIVE_TOLERANCE", "value": 1.0e-10}]
 
-#         species = self._species_list(gases)
-#         # 1) species.json
-#         species_json = {
-#             "camp-data": [
-#                 {"type": "CHEM_SPEC", "name": s, "phase": "gas"} for s in species
-#             ]
-#         }
+        # SOAG partitioning via SIMPOL (works in both MAM & PartMC)
+        if tmpl.simpol_B is not None and tmpl.simpol_Nstar is not None:
+            mech.append({
+                "name": "SOAG_partitioning",
+                "type": "MECHANISM",
+                "reactions": [{
+                    "type": "SIMPOL_PHASE_TRANSFER",
+                    "gas-phase species": tmpl.gas_soag,
+                    "aerosol phase": tmpl.aerosol_phase_name,
+                    "aerosol-phase species": tmpl.aer_soa,
+                    "B": tmpl.simpol_B,          # [B0, B1, B2, B3] like example configs
+                    "N star": tmpl.simpol_Nstar
+                }]
+            })
 
-#         # 2) mechanism.json (stub: zero reactions -> identity chemistry; safe default)
-#         mech_json = {
-#             "camp-data": [
-#                 {
-#                     "type": "MECHANISM",
-#                     "name": self.mechanism_name,
-#                     "reactions": []  # You can add reactions later without changing ambrs.
-#                 }
-#             ]
-#         }
+        # H2SO4 gas -> SO4 aerosol as first-order transfer (simple sink)
+        if tmpl.h2so4_first_order_k is not None:
+            mech.append({
+                "name": "H2SO4_condensation",
+                "type": "MECHANISM",
+                "reactions": [{
+                    # This reaction type is the simple, explicit first-order pathway:
+                    # gas H2SO4 is removed with rate k and mass is added to aerosol SO4.
+                    "type": "FIRST_ORDER_PHASE_TRANSFER",
+                    "gas-phase species": tmpl.gas_h2so4,
+                    "aerosol phase": tmpl.aerosol_phase_name,
+                    "aerosol-phase species": tmpl.aer_so4,
+                    "k [s-1]": tmpl.h2so4_first_order_k
+                }]
+            })
 
-#         # 3) solver.json (tolerances, OK if host model ignores some fields)
-#         solver_json = {
-#             "camp-data": [
-#                 {"type": "SOLVER", "name": "default",
-#                  "rel_tol": self.rel_tol,
-#                  # CAMP uses ppm for gas-state by default; abs_tol array is optional
-#                  "abs_tol": self.abs_tol_ppm}
-#             ]
-#         }
-
-#         files = {
-#             "species": camp_dir / "species.json",
-#             "mechanism": camp_dir / "mechanism.json",
-#             "solver": camp_dir / "solver.json",
-#         }
-#         with files["species"].open("w") as f:
-#             json.dump(species_json, f, indent=2)
-#         with files["mechanism"].open("w") as f:
-#             json.dump(mech_json, f, indent=2)
-#         with files["solver"].open("w") as f:
-#             json.dump(solver_json, f, indent=2)
-
-#         return files
-
-#     def write_for_model(self, root_dir: Path, model_name: str, gases: Optional[Iterable[str]] = None) -> Path:
-#         """
-#         Creates (if needed) the full CAMP config for `model_name` under
-#         <root_dir>/camp/, returning the path to 'camp_files.json' (file-list).
-
-#         This file-list is what both PartMC and MAM4 pass to CAMP.
-#         """
-#         key = (root_dir.resolve(), model_name)
-#         if key in self._last_files:
-#             return self._last_files[key]
-
-#         camp_dir = (root_dir / "camp")
-#         common = self.write_common_files(camp_dir, gases)
-
-#         # Optional model-specific override hook (empty; safe to include).
-#         override = camp_dir / f"{model_name}_override.json"
-#         if not override.exists():
-#             with override.open("w") as f:
-#                 json.dump({"camp-data": []}, f, indent=2)
-
-#         # File-list JSON that CAMP expects: { "camp-files": [ ... ] }
-#         file_list = camp_dir / "camp_files.json"
-#         # file_list_json = {
-#         #     "camp-files": [
-#         #         str(common["species"].name),
-#         #         str(common["mechanism"].name),
-#         #         str(common["solver"].name),
-#         #         str(override.name),
-#         #     ]
-#         # }
-#         file_list_json = {
-#             "camp-files": [
-#                 str(common["species"].resolve()),
-#                 str(common["mechanism"].resolve()),
-#                 str(common["solver"].resolve()),
-#                 str(override.resolve()),
-#             ]
-#         }
-#         with file_list.open("w") as f:
-#             json.dump(file_list_json, f, indent=2)
-
-#         # cache and return a *relative* path usable in input files
-#         self._last_files[key] = file_list
-#         return file_list
+        return mech

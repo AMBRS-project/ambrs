@@ -47,9 +47,109 @@ Optional parameters:
         if not os.path.exists(self.root):
             raise OSError(f"root path '{self.root}' does not exist!")
 
+#     def run(self, inputs: list[Any]) -> list[analysis.Output]:
+#         """runner.run(inputs) -> runs a list of scenario inputs within the
+# runner's root directory, generating a directory for each of the scenarios"""
+#         if not isinstance(inputs, list):
+#             raise TypeError('inputs must be a list of scenario inputs')
+
+#         # prep scenarios to run
+#         num_inputs = len(inputs)
+#         max_num_digits = math.floor(math.log10(num_inputs)) + 1
+#         logger.info(f'{self.model.name}: generating input for {num_inputs} scenarios...')
+#         found_dir = False
+#         args = []
+#         for i, input in enumerate(inputs):
+
+#             # zero-pad the 1-based scenario index
+#             num_digits = math.floor(math.log10(i+1)) + 1
+#             formatted_index = '0' * (max_num_digits - num_digits) + f'{i+1}'
+#             scenario_name = self.scenario_name.format(index = formatted_index)
+
+#             # make the scenario directory if needed
+#             dir = os.path.join(self.root, scenario_name)
+#             if os.path.exists(dir):
+#                 found_dir = True
+#             else:
+#                 os.mkdir(dir)
+
+#             # write input files and define commands
+#             self.model.write_input_files(input, dir, scenario_name)
+#             dir = os.path.join(self.root, scenario_name)
+#             # FIXME: LMF addition; double-check
+#             # command = self.model.invocation(self.executable, scenario_name)
+#             cmd = self.model.invocation(self.executable, scenario_name)
+#             if isinstance(cmd, tuple):
+#                 command, env = cmd
+#             else:
+#                 command, env = cmd, None
+#             args.append({"command": command, "dir": dir, "env": env})
+
+#         if found_dir:
+#             logger.warning(f'{self.model.name}: one or more existing scenario directories found. Overwriting contents...')
+#         logger.info(f'{self.model.name}: finished generating scenario input.')
+        
+#         # now run scenarios in parallel
+#         pool = multiprocessing.dummy.Pool(self.num_processes)
+#         logger.info(f'{self.model.name}: running {num_inputs} inputs ({self.num_processes} parallel processes)')
+        
+#         error_occurred = False
+        
+#         # this function is called with a list of completed processes by pool.map_async
+#         def callback(completed_processes) -> None:
+            
+#             if not all([p.returncode == 0 for p in completed_processes]):
+#                 error_occurred = True
+
+#         # this function is called with one of a mapped set of arguments by pool.map_async
+#         def run_scenario(args) -> subprocess.CompletedProcess:
+#             f_stdout = open(os.path.join(args['dir'], 'stdout.log'), 'w')
+#             f_stderr = open(os.path.join(args['dir'], 'stderr.log'), 'w')
+#             f_timer = open(os.path.join(args['dir'], 'timer.log'), 'w')
+            
+#             # FIXME: LMF addition; double-check
+#             # env = _augment_env_for_camp(os.environ.copy())
+            
+#             env = None
+#             if hasattr(self.model, "camp") and self.model.camp:
+#                 env = self.model.camp.runtime_env()
+#             args.append({"command": command, "dir": dir, "env": env})
+
+#             start_time = timeit.default_timer()
+#             subprocess_output = subprocess.run(args['command'].split(),
+#                 close_fds = True,
+#                 cwd = args['dir'],
+#                 stdout = f_stdout,
+#                 stderr = f_stderr,
+#                 # FIXME: LMF addition; double-check
+#                 env=(args.get('env') or os.environ), 
+#                 # env=args.get('env', None)
+#                 #env=env,
+#             )
+#             stop_time = timeit.default_timer()
+#             elapsed_time = stop_time - start_time
+#             f_timer.write(str(elapsed_time))
+#             return subprocess_output
+        
+#         results = pool.map_async(run_scenario, args, callback = callback)
+#         results.wait()
+        
+#         logger.info(f'{self.model.name}: completed runs.')
+#         if error_occurred:
+#             logger.error('f{self.model.name}: At least one run failed.')
+        
+#         # gather model output
+#         # outputs = []
+#         # for i, input in enumerate(inputs):
+#         #     scenario_name = self.scenario_name.format(index = formatted_index)
+#         #     output = self.model.read_output_files(input, args[i]['dir'], scenario_name)
+#         #     outputs.append(output)
+#         # return outputs
+
+    # FIXME: LMF revised run to correct her mistakes
     def run(self, inputs: list[Any]) -> list[analysis.Output]:
         """runner.run(inputs) -> runs a list of scenario inputs within the
-runner's root directory, generating a directory for each of the scenarios"""
+        runner's root directory, generating a directory for each of the scenarios"""
         if not isinstance(inputs, list):
             raise TypeError('inputs must be a list of scenario inputs')
 
@@ -58,13 +158,13 @@ runner's root directory, generating a directory for each of the scenarios"""
         max_num_digits = math.floor(math.log10(num_inputs)) + 1
         logger.info(f'{self.model.name}: generating input for {num_inputs} scenarios...')
         found_dir = False
-        args = []
-        for i, input in enumerate(inputs):
+        args: list[dict] = []
 
+        for i, input in enumerate(inputs):
             # zero-pad the 1-based scenario index
             num_digits = math.floor(math.log10(i+1)) + 1
             formatted_index = '0' * (max_num_digits - num_digits) + f'{i+1}'
-            scenario_name = self.scenario_name.format(index = formatted_index)
+            scenario_name = self.scenario_name.format(index=formatted_index)
 
             # make the scenario directory if needed
             dir = os.path.join(self.root, scenario_name)
@@ -73,89 +173,85 @@ runner's root directory, generating a directory for each of the scenarios"""
             else:
                 os.mkdir(dir)
 
-            # write input files and define commands
+            # write input files
             self.model.write_input_files(input, dir, scenario_name)
-            dir = os.path.join(self.root, scenario_name)
-            # FIXME: LMF addition; double-check
-            # command = self.model.invocation(self.executable, scenario_name)
+
+            # build the command & environment once, here
             cmd = self.model.invocation(self.executable, scenario_name)
             if isinstance(cmd, tuple):
-                command, env = cmd
+                command, env_from_model = cmd
             else:
-                command, env = cmd, None
-            args.append({"command": command, "dir": dir, "env": env})
+                command, env_from_model = cmd, None
+
+            # If the model carries a CAMP config, merge its runtime env
+            run_env = dict(os.environ)
+            if hasattr(self.model, "camp") and self.model.camp:
+                camp_env = self.model.camp.runtime_env(run_dir=dir)  # sets CAMP_FILE_LIST + DYLD/LD paths
+                run_env.update(camp_env)
+
+            if env_from_model:
+                run_env.update(env_from_model)
+
+            args.append({"command": command, "dir": dir, "env": run_env})
 
         if found_dir:
             logger.warning(f'{self.model.name}: one or more existing scenario directories found. Overwriting contents...')
         logger.info(f'{self.model.name}: finished generating scenario input.')
-        
-        # now run scenarios in parallel
+
+        # run scenarios in parallel
         pool = multiprocessing.dummy.Pool(self.num_processes)
         logger.info(f'{self.model.name}: running {num_inputs} inputs ({self.num_processes} parallel processes)')
-        
-        error_occurred = False
-        
-        # this function is called with a list of completed processes by pool.map_async
+
+        error_flag = {"any_error": False}  # avoid Python closure scoping trap
+
         def callback(completed_processes) -> None:
-            
             if not all([p.returncode == 0 for p in completed_processes]):
-                error_occurred = True
+                error_flag["any_error"] = True
 
-        # this function is called with one of a mapped set of arguments by pool.map_async
-        def run_scenario(args) -> subprocess.CompletedProcess:
-            f_stdout = open(os.path.join(args['dir'], 'stdout.log'), 'w')
-            f_stderr = open(os.path.join(args['dir'], 'stderr.log'), 'w')
-            f_timer = open(os.path.join(args['dir'], 'timer.log'), 'w')
-            
-            # FIXME: LMF addition; double-check
-            env = _augment_env_for_camp(os.environ.copy())
-
+        def run_scenario(one: dict) -> subprocess.CompletedProcess:
+            f_stdout = open(os.path.join(one['dir'], 'stdout.log'), 'w')
+            f_stderr = open(os.path.join(one['dir'], 'stderr.log'), 'w')
+            f_timer  = open(os.path.join(one['dir'], 'timer.log'), 'w')
             start_time = timeit.default_timer()
-            subprocess_output = subprocess.run(args['command'].split(),
-                close_fds = True,
-                cwd = args['dir'],
-                stdout = f_stdout,
-                stderr = f_stderr,
-                # FIXME: LMF addition; double-check
-                # env=args.get('env', None)
-                #env=env,
-            )
-            stop_time = timeit.default_timer()
-            elapsed_time = stop_time - start_time
-            f_timer.write(str(elapsed_time))
-            return subprocess_output
-        
-        results = pool.map_async(run_scenario, args, callback = callback)
-        results.wait()
-        
-        logger.info(f'{self.model.name}: completed runs.')
-        if error_occurred:
-            logger.error('f{self.model.name}: At least one run failed.')
-        
-        # gather model output
-        # outputs = []
-        # for i, input in enumerate(inputs):
-        #     scenario_name = self.scenario_name.format(index = formatted_index)
-        #     output = self.model.read_output_files(input, args[i]['dir'], scenario_name)
-        #     outputs.append(output)
-        # return outputs
+            try:
+                cp = subprocess.run(one['command'].split(),
+                                    close_fds=True,
+                                    cwd=one['dir'],
+                                    stdout=f_stdout,
+                                    stderr=f_stderr,
+                                    env=one['env'])
+            finally:
+                stop_time = timeit.default_timer()
+                f_timer.write(str(stop_time - start_time))
+            return cp
 
-# FIXME: LMF addition; double-check
-def _augment_env_for_camp(env: dict) -> dict:
-    """Prepend the conda env's lib/ to the dynamic loader search path.
-    - macOS: DYLD_FALLBACK_LIBRARY_PATH (preferred on modern macOS)
-    - Linux: LD_LIBRARY_PATH
-    """
-    env = dict(env)  # copy
-    conda_prefix = os.environ.get("CONDA_PREFIX", "")
-    conda_lib = Path(conda_prefix) / "lib"
-    if conda_lib.exists():
-        if sys.platform == "darwin":
-            key = "DYLD_FALLBACK_LIBRARY_PATH"
-        elif sys.platform.startswith("linux"):
-            key = "LD_LIBRARY_PATH"
-        else:
-            return env  # no-op on Windows
-        current = env.get(key, "")
-        env[key] = f"{conda_lib}:{current}" if current else str(conda_lib)
-    return env
+        results = pool.map_async(run_scenario, args, callback=callback)
+        results.wait()
+
+        logger.info(f'{self.model.name}: completed runs.')
+        if error_flag["any_error"]:
+            logger.error(f'{self.model.name}: At least one run failed.')
+
+        # (Optionally: gather output here)
+        return []
+
+
+# # FIXME: LMF addition; double-check
+# def _augment_env_for_camp(env: dict) -> dict:
+#     """Prepend the conda env's lib/ to the dynamic loader search path.
+#     - macOS: DYLD_FALLBACK_LIBRARY_PATH (preferred on modern macOS)
+#     - Linux: LD_LIBRARY_PATH
+#     """
+#     env = dict(env)  # copy
+#     conda_prefix = os.environ.get("CONDA_PREFIX", "")
+#     conda_lib = Path(conda_prefix) / "lib"
+#     if conda_lib.exists():
+#         if sys.platform == "darwin":
+#             key = "DYLD_FALLBACK_LIBRARY_PATH"
+#         elif sys.platform.startswith("linux"):
+#             key = "LD_LIBRARY_PATH"
+#         else:
+#             return env  # no-op on Windows
+#         current = env.get(key, "")
+#         env[key] = f"{conda_lib}:{current}" if current else str(conda_lib)
+#     return env
