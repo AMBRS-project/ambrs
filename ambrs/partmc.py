@@ -285,8 +285,12 @@ class AerosolModel(BaseAerosolModel):
         if input.do_camp_chem:
             spec_content += 'do_camp_chem yes\n'
             # build CAMP config files under <dir>/camp and add the required line
-            camp_list_path = self.camp.write_common_files(dir)
-            spec_content += f'camp_config {camp_list_path}\n'
+            # camp_list_path = self.camp.write_common_files(dir)
+            camp_list_path = self.camp.write_for_model(dir, model_name="partmc")
+            rel = os.path.relpath(camp_list_path, start=dir)
+            # FIXME: check path correctness?
+            spec_content += f'camp_config {rel}\n'
+            # spec_content += f'camp_config {camp_list_path}\n'
         else:
             spec_content += 'do_camp_chem no\n'
         spec_content += '\n'
