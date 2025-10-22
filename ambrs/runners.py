@@ -148,92 +148,79 @@ Optional parameters:
 
     # FIXME: LMF revised run to correct her mistakes
     def run(self, inputs: list[Any]) -> list[analysis.Output]:
-        """runner.run(inputs) -> runs a list of scenario inputs within the
-        runner's root directory, generating a directory for each of the scenarios"""
         if not isinstance(inputs, list):
             raise TypeError('inputs must be a list of scenario inputs')
 
-        # prep scenarios to run
         num_inputs = len(inputs)
         max_num_digits = math.floor(math.log10(num_inputs)) + 1
         logger.info(f'{self.model.name}: generating input for {num_inputs} scenarios...')
         found_dir = False
-        args: list[dict] = []
+        run_args: list[dict] = []
 
         for i, input in enumerate(inputs):
-            # zero-pad the 1-based scenario index
             num_digits = math.floor(math.log10(i+1)) + 1
             formatted_index = '0' * (max_num_digits - num_digits) + f'{i+1}'
             scenario_name = self.scenario_name.format(index=formatted_index)
 
-            # make the scenario directory if needed
-            dir = os.path.join(self.root, scenario_name)
-            if os.path.exists(dir):
+            run_dir = os.path.join(self.root, scenario_name)
+            if os.path.exists(run_dir):
                 found_dir = True
             else:
-                os.mkdir(dir)
+                os.mkdir(run_dir)
 
-            # write input files
-            self.model.write_input_files(input, dir, scenario_name)
+            # Write inputs
+            self.model.write_input_files(input, run_dir, scenario_name)
 
-            # build the command & environment once, here
-            cmd = self.model.invocation(self.executable, scenario_name)
-            if isinstance(cmd, tuple):
-                command, env_from_model = cmd
+            # Command + optional env
+            inv = self.model.invocation(self.executable, scenario_name)
+            if isinstance(inv, tuple):
+                command, cmd_env = inv
             else:
-                command, env_from_model = cmd, None
+                command, cmd_env = inv, None
 
-            # If the model carries a CAMP config, merge its runtime env
-            run_env = dict(os.environ)
-            if hasattr(self.model, "camp") and self.model.camp:
-                camp_env = self.model.camp.runtime_env(run_dir=dir)  # sets CAMP_FILE_LIST + DYLD/LD paths
-                run_env.update(camp_env)
+            # Merge model-provided CAMP env if available
+            env = dict(os.environ)
+            if hasattr(self.model, "camp") and getattr(self.model, "camp"):
+                env.update(self.model.camp.runtime_env())
+            if cmd_env:
+                env.update(cmd_env)
 
-            if env_from_model:
-                run_env.update(env_from_model)
-
-            args.append({"command": command, "dir": dir, "env": run_env})
+            run_args.append({"command": command, "dir": run_dir, "env": env})
 
         if found_dir:
             logger.warning(f'{self.model.name}: one or more existing scenario directories found. Overwriting contents...')
         logger.info(f'{self.model.name}: finished generating scenario input.')
 
-        # run scenarios in parallel
         pool = multiprocessing.dummy.Pool(self.num_processes)
         logger.info(f'{self.model.name}: running {num_inputs} inputs ({self.num_processes} parallel processes)')
 
-        error_flag = {"any_error": False}  # avoid Python closure scoping trap
-
-        def callback(completed_processes) -> None:
-            if not all([p.returncode == 0 for p in completed_processes]):
-                error_flag["any_error"] = True
-
-        def run_scenario(one: dict) -> subprocess.CompletedProcess:
-            f_stdout = open(os.path.join(one['dir'], 'stdout.log'), 'w')
-            f_stderr = open(os.path.join(one['dir'], 'stderr.log'), 'w')
-            f_timer  = open(os.path.join(one['dir'], 'timer.log'), 'w')
+        def run_scenario(arg) -> subprocess.CompletedProcess:
+            f_stdout = open(os.path.join(arg['dir'], 'stdout.log'), 'w')
+            f_stderr = open(os.path.join(arg['dir'], 'stderr.log'), 'w')
+            f_timer  = open(os.path.join(arg['dir'], 'timer.log'),  'w')
             start_time = timeit.default_timer()
             try:
-                cp = subprocess.run(one['command'].split(),
+                proc = subprocess.run(arg['command'].split(),
                                     close_fds=True,
-                                    cwd=one['dir'],
+                                    cwd=arg['dir'],
                                     stdout=f_stdout,
                                     stderr=f_stderr,
-                                    env=one['env'])
+                                    env=arg.get('env', os.environ))
             finally:
-                stop_time = timeit.default_timer()
-                f_timer.write(str(stop_time - start_time))
-            return cp
+                elapsed = timeit.default_timer() - start_time
+                f_timer.write(str(elapsed))
+                f_timer.close(); f_stdout.close(); f_stderr.close()
+            return proc
 
-        results = pool.map_async(run_scenario, args, callback=callback)
-        results.wait()
+        procs = pool.map(run_scenario, run_args)
+        pool.close(); pool.join()
 
-        logger.info(f'{self.model.name}: completed runs.')
-        if error_flag["any_error"]:
+        if not all(p.returncode == 0 for p in procs):
             logger.error(f'{self.model.name}: At least one run failed.')
 
-        # (Optionally: gather output here)
+        # This runner currently returns no parsed outputs; keep behavior consistent with your tree.
         return []
+
 
 
 # # FIXME: LMF addition; double-check
