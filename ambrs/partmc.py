@@ -222,7 +222,7 @@ class AerosolModel(BaseAerosolModel):
             pressure_profile = [(0, scenario.pressure)],
             height_profile = [(0, scenario.height)],
 
-            rel_humidity = 0.5,#scenario.relative_humidity,
+            rel_humidity = scenario.relative_humidity,
             latitude = 0,       # FIXME:
             longitude = 0,      # FIXME:
             altitude = 0,       # FIXME:
@@ -279,7 +279,7 @@ class AerosolModel(BaseAerosolModel):
         # time info
         spec_content += f't_max {input.t_max}\ndel_t {input.del_t}\nt_output {input.t_output}\nt_progress {input.t_progress}\n'
         spec_content += '\n'
-
+        
         # chemistry
         if input.do_camp_chem:
             spec_content += 'do_camp_chem yes\n'
@@ -352,7 +352,9 @@ class AerosolModel(BaseAerosolModel):
 
         # processes
         if input.do_coagulation:
-            spec_content += f'do_coagulation yes\ncoag_kernel {input.coag_kernel if input.coag_kernel else 'zero'}\n'
+            kernel = input.coag_kernel if input.coag_kernel else "brown"
+            spec_content += f"do_coagulation yes\ncoag_kernel {kernel}\n"
+            # spec_content += f'do_coagulation yes\ncoag_kernel {input.coag_kernel if input.coag_kernel else 'zero'}\n'
         else:
             spec_content += 'do_coagulation no\n'
         if input.do_condensation:

@@ -60,6 +60,8 @@ specific parameters (no state information)"""
             'OIN',
             'OC',
             'BC',
+            # FIXME: Laura addition
+            'SOA',
             'H2O',
         ]
         
