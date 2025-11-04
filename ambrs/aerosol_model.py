@@ -98,31 +98,34 @@ Override this method to write input files for an aerosol model. Arguments:
     * dir: an absolute path to a directory where the files are written
     * prefix: a prefix used to identify the main input file"""
         raise NotImplementedError('BaseAerosolModel.write_input_files not overridden!')
+    
+    def retrieve_model_state():
+        raise NotImplementedError('BaseAerosolModel.retrieve_model_state not overridden!')
 
-    def read_output_files(self,
-                          input,
-                          dir: str,
-                          prefix: str) -> Output:
-        """ambrs.BaseAerosolModel.read_output_files(input, dir, prefix) ->
-ambrs.analysis.Output containing diagnostic information about the final state of
-the aerosol particle distribution
+#     def read_output_files(self,
+#                           input,
+#                           dir: str,
+#                           prefix: str) -> Output:
+#         """ambrs.BaseAerosolModel.read_output_files(input, dir, prefix) ->
+# ambrs.analysis.Output containing diagnostic information about the final state of
+# the aerosol particle distribution
 
-Override this method to read the contents of output files for an aerosol model
-and compute diagnostic quantities for the aerosol model in its final state.
+# Override this method to read the contents of output files for an aerosol model
+# and compute diagnostic quantities for the aerosol model in its final state.
 
-Input parameters:
-    * input: the input corresponding to the output files to be read
-    * dir: an absolute path to a directory containing the output files
-    * prefix: a prefix used to identify the output files (if any)
+# Input parameters:
+#     * input: the input corresponding to the output files to be read
+#     * dir: an absolute path to a directory containing the output files
+#     * prefix: a prefix used to identify the output files (if any)
 
-Output diagnostics (key/value pairs in the dict returned by this method):
-    -------------------------------------------------------------------------
-    Key:        Value:
-    -------------------------------------------------------------------------
-    'dNdlnD'    a rank-3 numpy.array containing the logarithmic derivative of
-                the number of particles of diameter D w.r.t. D
-                (FIXME: describe indices here)
-    -------------------------------------------------------------------------
-"""
-        raise NotImplementedError('BaseAerosolModel.read_output_files not overridden!')
+# Output diagnostics (key/value pairs in the dict returned by this method):
+#     -------------------------------------------------------------------------
+#     Key:        Value:
+#     -------------------------------------------------------------------------
+#     'dNdlnD'    a rank-3 numpy.array containing the logarithmic derivative of
+#                 the number of particles of diameter D w.r.t. D
+#                 (FIXME: describe indices here)
+#     -------------------------------------------------------------------------
+# """
+#         raise NotImplementedError('BaseAerosolModel.read_output_files not overridden!')
 
