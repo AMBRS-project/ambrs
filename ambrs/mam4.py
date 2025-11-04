@@ -409,7 +409,7 @@ def retrieve_model_state(
     
     if timestep == 0:
         raise ValueError('timestep=0 is invalid. Specify timestep = 1 for initial conditions')
-    elif False: #timestep == 1:
+    elif timestep == 1:
         scenario_dir = ensemble_output_dir + '/' + scenario_name + '/'
         # mam_input = scenario_dir + 'mam_input.nl'
         mam_input = scenario_dir + 'namelist'
