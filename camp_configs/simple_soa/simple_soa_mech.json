@@ -1,0 +1,38 @@
+{
+"notes" :"Simple SOA condensation that mimics MAM4 SOA scheme using SOAG chemical speciation.",	
+"camp-data" : [
+{
+  "name": "SOAG",
+  "type": "CHEM_SPEC",
+  "phase": "gas",
+  "properties": {
+    "molecular weight [kg mol-1]": 0.096,
+    "diffusion coeff [m2 s-1]": 1.0e-5,
+    "N star": 1.1
+  }
+},
+{
+  "name": "MSA",
+  "type": "CHEM_SPEC",
+  "phase": "Organic phase",
+  "properties": {
+    "molecular weight [kg mol-1]": 0.096,
+    "density [kg m-3]": 1000.0
+  }
+}, 
+{
+  "name": "Organic phase",
+  "type": "AERO_PHASE",
+  "composition": ["MSA"]
+},
+{
+  "name": "SOAG to MSA condensation",
+  "type": "REACTION",
+  "subtype": "SIMPOL_PHASE_TRANSFER",
+  "gas-phase species": "SOAG",
+  "aerosol phase": "Organic phase",
+  "aerosol-phase species": "MSA",
+  "B": [-6.0, 0.0, 0.0, 0.0]
+}
+]
+}
