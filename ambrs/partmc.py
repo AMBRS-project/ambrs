@@ -181,9 +181,13 @@ class AerosolModel(BaseAerosolModel):
             molecular_weight = s.molar_mass / 1000.,
             kappa = s.hygroscopicity,
         ) for s in scenario.aerosols]
+        
+        # FIXME: neutralize=True hardcoded by laura, should be somewhere else
+        neutralize=True
         aero_init = [AeroMode(
             mode_name = m.name.replace(' ', '_'),
-            mass_frac = {m.species[i].name:m.mass_fractions[i] for i in range(len(m.species))},
+            # FIXME: Laura added this neutralization step
+            mass_frac = {m.species[i].name:m.mass_fractions[i] for i in range(len(m.species))} if not neutralize else get_mass_fracs_neutralized(m), 
             diam_type = 'geometric', # FIXME: could also be 'mobility'
             mode_type = 'log_normal', # FIXME: could also be 'exp', 'mono', 'sampled'
             num_conc = m.number,
@@ -684,3 +688,25 @@ timestep and ensemble index, given the directory in which it resides"""
             return ncfilename
         else:
             raise OSError(f'No NetCDF output found for repeat number {repeat_num} and timestep {timestep} in {dir}!')
+
+# fixme: quick add by laura; should be somewhere else. Utlities?
+def get_mass_fracs_neutralized(mode: AerosolModalSizePopulation) -> dict:
+    """Given an AerosolModalSizePopulation mode, return a dictionary of
+    mass fractions adjusted for neutralization (i.e., adding counterions
+    to soluble species as needed to neutralize their charge).
+    Note: only works for single-species ions currently.
+    """
+    MW_SO4 = 0.09606 # kg/mol
+    MW_NH4 = 0.01804 # kg/mol
+    mass_fracs = {}
+    for i, species in enumerate(mode.species):
+        if species.name == 'SO4': # FIXME: quick check for SO4 for now; generalize with ions_in_soln
+            mf_so4_noBalance = mode.mass_fractions[i]
+            mf_so4 = mf_so4_noBalance*MW_SO4/(MW_SO4 + 2*MW_NH4)
+            mf_nh4 = 2*mf_so4_noBalance*MW_NH4/(MW_SO4 + 2*MW_NH4)
+            mass_fracs['SO4'] = mf_so4
+            mass_fracs['NH4'] = mf_nh4
+        else:
+            mass_fracs[species.name] = mode.mass_fractions[i]
+    
+    return mass_fracs
