@@ -146,13 +146,14 @@ class Input:
 class AerosolModel(BaseAerosolModel):
     def __init__(self,
                  processes: AerosolProcesses,
-                 # FIXME: LMF add: better way to handle this?
                  camp: Optional[CampConfig] = None, 
+                 camp_config: Optional[str] = None,
                  run_type = 'particle',
                  n_part = None,
                  n_repeat = 0):
         BaseAerosolModel.__init__(self, 'partmc', processes)
         self.camp = camp
+        self.camp_config = camp_config
 
         if run_type not in ['particle']:
             raise ValueError(f'Unsupported run_type: {run_type}')
@@ -290,41 +291,52 @@ class AerosolModel(BaseAerosolModel):
         # chemistry
         if input.do_camp_chem:
             spec_content += 'do_camp_chem yes\n'
+        
+        from pathlib import Path
+        if self.camp_config:
+            cfg = Path(self.camp_config)
+            if cfg.is_dir():
+                cfg = cfg / "config.json"
+            spec_content += f"camp_config {cfg.resolve()}\n"
+        elif self.camp is not None:
+            file_list = self.camp.write_for_model("partmc", dir)
+            spec_content += f"camp_config {file_list}\n"
+        
 
-            from pathlib import Path
-            camp_files_abs = self.camp.write_for_model(Path(dir), model_name="partmc")
-            spec_content += f"camp_config {camp_files_abs}\n"
-            # build CAMP config files under <dir>/camp and add the required line
-            # camp_list_path = self.camp.write_common_files(dir)
-            # camp_list_path = self.camp.write_for_model(dir, model_name="partmc")
-            # rel = os.path.relpath(camp_list_path, start=dir)
-            # # FIXME: check path correctness?
-            # spec_content += f'camp_config {rel}\n'
-            # # spec_content += f'camp_config {camp_list_path}\n'
-        else:
-            spec_content += 'do_camp_chem no\n'
-        spec_content += '\n'
-
-        # FIXME: alternative?
-        # if self.camp is not None:
-        #     file_list_path = self.camp.write_common_files(dir)  # <scenario_dir>/camp/camp_file_list.json
-        #     # PartMC expects a *path* in the .spec:
-        #     camp_config_line = f'camp_config {file_list_path}\n'
-        #     self._camp_env = self.camp.runtime_env()
-
-        # # Append the camp_config line if needed
-        # spec_content += camp_config_line
-        # if input.do_camp_chem:
-        #     spec_content += 'do_camp_chem yes\n'
-            
-        #     # build CAMP config files under <dir>/camp and add the required line
         #     from pathlib import Path
-        #     gases = list(input.gas_data) if input.gas_data else None
-        #     camp_files_json = self.camp.write_for_model(Path(dir), model_name="partmc", gases=gases)
-        #     spec_content += f'camp_config {rel_camp_path}\n'
+        #     camp_files_abs = self.camp.write_for_model(Path(dir), model_name="partmc")
+        #     spec_content += f"camp_config {camp_files_abs}\n"
+        #     # build CAMP config files under <dir>/camp and add the required line
+        #     # camp_list_path = self.camp.write_common_files(dir)
+        #     # camp_list_path = self.camp.write_for_model(dir, model_name="partmc")
+        #     # rel = os.path.relpath(camp_list_path, start=dir)
+        #     # # FIXME: check path correctness?
+        #     # spec_content += f'camp_config {rel}\n'
+        #     # # spec_content += f'camp_config {camp_list_path}\n'
         # else:
         #     spec_content += 'do_camp_chem no\n'
         # spec_content += '\n'
+
+        # # FIXME: alternative?
+        # # if self.camp is not None:
+        # #     file_list_path = self.camp.write_common_files(dir)  # <scenario_dir>/camp/camp_file_list.json
+        # #     # PartMC expects a *path* in the .spec:
+        # #     camp_config_line = f'camp_config {file_list_path}\n'
+        # #     self._camp_env = self.camp.runtime_env()
+
+        # # # Append the camp_config line if needed
+        # # spec_content += camp_config_line
+        # # if input.do_camp_chem:
+        # #     spec_content += 'do_camp_chem yes\n'
+            
+        # #     # build CAMP config files under <dir>/camp and add the required line
+        # #     from pathlib import Path
+        # #     gases = list(input.gas_data) if input.gas_data else None
+        # #     camp_files_json = self.camp.write_for_model(Path(dir), model_name="partmc", gases=gases)
+        # #     spec_content += f'camp_config {rel_camp_path}\n'
+        # # else:
+        # #     spec_content += 'do_camp_chem no\n'
+        # # spec_content += '\n'
 
         # gas data
         spec_content += 'gas_data gas_data.dat\ngas_init gas_init.dat\n'
