@@ -183,11 +183,14 @@ class AerosolModel(BaseAerosolModel):
         ) for s in scenario.aerosols]
         
         # FIXME: neutralize=True hardcoded by laura, should be somewhere else
-        neutralize=True
+        # FIXME: probably remove this
+        neutralize=False
+
         aero_init = [AeroMode(
             mode_name = m.name.replace(' ', '_'),
             # FIXME: Laura added this neutralization step
-            mass_frac = {m.species[i].name:m.mass_fractions[i] for i in range(len(m.species))} if not neutralize else get_mass_fracs_neutralized(m), 
+            # mass_frac = {m.species[i].name:m.mass_fractions[i] for i in range(len(m.species))} if not neutralize else get_mass_fracs_neutralized(m),
+            mass_frac = {m.species[i].name:m.mass_fractions[i] for i in range(len(m.species))}, 
             diam_type = 'geometric', # FIXME: could also be 'mobility'
             mode_type = 'log_normal', # FIXME: could also be 'exp', 'mono', 'sampled'
             num_conc = m.number,
