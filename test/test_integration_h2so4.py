@@ -1,13 +1,4 @@
-# test/test_integration_h2so4.py
-
-# FIXME: move to separate test dir that is run only periodically?
-
-# Integration tests for AMBRS × CAMP with a simple H2SO4 mechanism.
-# These tests:
-#   1) Run MAM4 baseline (native condensation) vs CAMP (simple H2SO4 sink).
-#   2) Run PartMC baseline (MOSAIC) vs CAMP (simple H2SO4 sink).
-#   3) Check CAMP ~ native (per model), and within-model conservation (gas + SO4).
-#   4) Compare final aerosol SO4 between MAM4 and PartMC (rough parity).
+# integration test for H2SO4 sink via CAMP in MAM4 and PartMC
 
 import os
 import math
@@ -20,7 +11,7 @@ import pytest
 from netCDF4 import Dataset
 
 import ambrs
-from ambrs import mam4, partmc
+from ambrs import mam4_semiready, partmc_dq_merge_start
 from ambrs.aerosol import AerosolProcesses
 from ambrs.ppe import Ensemble
 from ambrs.runners import PoolRunner
@@ -181,7 +172,7 @@ def _run_mam4(tmp: Path, ensemble, use_camp: bool):
     )
 
     camp_cfg = _camp_h2so4_template() if use_camp else None
-    model = mam4.AerosolModel(processes=processes, camp=camp_cfg)
+    model = mam4_semiready.AerosolModel(processes=processes, camp=camp_cfg)
 
     inputs = [model.create_input(s, DT, NSTEPS) for s in ensemble.scenarios]
 
@@ -210,7 +201,7 @@ def _run_partmc(tmp: Path, ensemble, use_camp: bool):
     )
 
     camp_cfg = _camp_h2so4_template() if use_camp else None
-    model = partmc.AerosolModel(
+    model = partmc_dq_merge_start.AerosolModel(
         processes=processes,
         camp=camp_cfg,
         run_type="particle",

@@ -8,7 +8,10 @@ from .ppe import EnsembleSpecification, Ensemble, ensemble_from_scenarios, \
 from .runners import PoolRunner
 from .scenario import Scenario
 
-from .camp import CampConfig
+from .camp import CAMP
 from . import mam4
-from . import mphys
 from . import partmc
+from . import mphys
+# from . import partmc_dq_merge_start
+#from .camp import CampConfig
+# from . import mam4_semiready

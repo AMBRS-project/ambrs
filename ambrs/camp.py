@@ -1,5 +1,268 @@
-# ambrs/camp.py
-from __future__ import annotations
+from .ppe import EnsembleSpecification
+import os
+import numpy as np
+from scipy.optimize import fsolve
+from scipy.constants import gas_constant
+
+
+####################################################################################################
+#> CAMP configuration
+####################################################################################################
+class CAMP:
+    """ambrs.CAMP -- a helper to write CAMP configuration files for a single scenrio"""
+    def __init__(self, spec: EnsembleSpecification, scenario:int):
+        self.temps = spec.temperature
+        self.pres = spec.pressure
+        self.n = self.temps.size
+        self.scenario = scenario
+
+    def write_config_json(self, n_part_max:int=1100):
+        for member in range(self.n):
+            path = f'/Users/duncancq/Research/AMBRS/aero_unit_tests/alpha-pinene/camp_config/scenarios/{self.scenario}/{member+1:0>3}'
+            json = \
+'''{
+    "camp-data" : [
+        {
+            "name" : "mixed",
+            "type" : "AERO_PHASE",
+            "species" : [
+                "SO4",
+                "POM",
+                "SOA",
+                "BC",
+                "DST",
+                "NCL",
+                "MOM"
+            ]
+        }
+    ]
+}
+'''
+            if not os.path.exists(path):
+                os.mkdir(path)
+            with open(f'{path}/aero_phases.json', 'w') as f:
+                f.write(json)
+            f.close()
+
+            json = \
+f'''{{
+  "camp-data" : [
+    {{
+      "name" : "PartMC single particle",
+      "type" : "AERO_REP_SINGLE_PARTICLE",
+      "layers": [
+	      {{
+		      "name": "core",
+		      "covers": "none",
+		      "phases": [
+			      "mixed"
+		      ]
+	      }}
+      ],
+      "maximum computational particles" : {n_part_max}
+    }}
+  ]
+}}
+'''
+            if not os.path.exists(path):
+                os.mkdir(path)
+            with open(f'{path}/aero_rep.json', 'w') as f:
+                f.write(json)
+            f.close()
+
+            json = \
+f'''{{
+    "camp-files" : [
+        "{path}/aero_phases.json",
+        "{path}/aero_rep.json",
+        "{path}/species.json",
+        "{path}/mech.json"
+    ]
+}}
+'''
+            if not os.path.exists(path):
+                os.mkdir(path)
+            with open(f'{path}/config.json', 'w') as f:
+                f.write(json)
+            f.close()
+        return self
+
+    def write_mech_json(self):
+        p0_298K = 1e-10
+        delta__H_v = 156e3
+        log10e = np.log10(np.e)
+        B1 = -delta__H_v * log10e / gas_constant
+        B2 = -10 + delta__H_v * log10e / (298*gas_constant)
+        for member in range(self.n):
+            N_star = fsolve(accoef, 1.1, args=(self.temps[member],))
+            json = \
+f'''{{
+    "camp-data" : [
+        {{
+            "type" : "RELATIVE_TOLERANCE",
+            "value" : 1.0e-10
+        }},
+        {{
+            "name" : "MAM4_SOA_partitioning",
+            "type" : "MECHANISM",
+            "reactions" : [
+                {{
+                    "type" : "SIMPOL_PHASE_TRANSFER",
+                    "gas-phase species" : "SOAG",
+                    "aerosol phase" : "mixed",
+                    "aerosol-phase species" : "SOA",
+                    "B" : [ {B1}, {B2}, 0.0, 0.0 ],
+                    "N star" : {N_star}
+                }}
+            ]
+        }}
+    ]
+}}
+'''
+            if not os.path.exists(path):
+                os.mkdir(path)
+            with open(f'{path}/mech.json', 'w') as f:
+                f.write(json)
+            f.close()
+        return self
+    
+    # fixme: hard-coded for MAM4 species for now, add flexibility later
+    def write_species_json(self):
+        diffus = 0.557e-4 * (self.temps**1.75) / self.pres
+        mam_spec = [
+            {
+                "name" : "SO2",
+                "molecular weight [kg mol-1]" : 0.0640
+            },
+            {
+                "name" : "SO4",
+                "phase" : "AEROSOL",
+                "molecular weight [kg mol-1]" : 0.115107340,
+                "density [kg m-3]" : 1770.0000,
+                "num_ions" : 2,
+                "charge" : -2,
+                "kappa" : 0.0
+            },
+            {
+                "name" : "H2O",
+                "molecular weight [kg mol-1]" : 0.018,
+                "is gas-phase water" : True
+            },
+            {
+                "name" : "POM",
+                "phase" : "AEROSOL",
+                "molecular weight [kg mol-1]" : 0.012011,
+                "density [kg m-3]" : 1000.0000,
+                "num_ions" : 0,
+                "charge" : 0,
+                "kappa" : 0.010
+            },
+            {
+                "name" : "SOA",
+                "phase" : "AEROSOL",
+                "molecular weight [kg mol-1]" : 0.012011,
+                "density [kg m-3]" : 1000.0000,
+                "num_ions" : 0,
+                "charge" : 0,
+                "kappa" : 0.140
+            },
+            {
+                "name" : "BC",
+                "phase" : "AEROSOL",
+                "molecular weight [kg mol-1]" : 0.012011,
+                "density [kg m-3]" : 1700.0000,
+                "num_ions" : 0,
+                "charge" : 0,
+                "kappa" : 1.0e-10
+            },
+            {
+                "name" : "DST",
+                "phase" : "AEROSOL",
+                "molecular weight [kg mol-1]" : 0.135064039,
+                "density [kg m-3]" : 2600.0000,
+                "num_ions" : 0,
+                "charge" : 0,
+                "kappa" : 0.068
+            },
+            {
+                "name" : "NCL",
+                "phase" : "AEROSOL",
+                "molecular weight [kg mol-1]" : 0.058442468,
+                "density [kg m-3]" : 1900.0000,
+                "num_ions" : 0,
+                "charge" : 0,
+                "kappa" : 1.160
+            },
+            {
+                "name" : "MOM",
+                "phase" : "AEROSOL",
+                "molecular weight [kg mol-1]" : 250.092672000,
+                "density [kg m-3]" : 1601.0000,
+                "num_ions" : 0,
+                "charge" : 0,
+                "kappa" : 0.100
+            }
+        ]
+        for member in range(self.n):
+            json = \
+'''{
+    "camp-data": ['''
+            tdep_mam_spec = [
+                {
+                    'name': 'SOAG',
+                    'molecular weight [kg mol-1]': 0.012011,
+                    'diffusion coeff [m2 s-1]': 0.81 * diffus[member]
+                },
+                {
+                    'name': 'H2SO4',
+                    'molecular weight [kg mol-1]': 0.098,
+                    'diffusion coeff [m2 s-1]': diffus[member],
+                }
+            ]
+            for species in [*mam_spec,*tdep_mam_spec]:
+                json += \
+'''
+        {
+                "type": "CHEM_SPEC",
+                "absolute integration tolerance" : 1e-06,'''
+                for key, value in species.items():
+                    if type(value)==str:
+                        json += \
+f'''
+                "{key}": "{value}",'''
+                    elif type(value)==bool and value:
+                        json += \
+f'''
+                "{key}": true,'''
+
+                    else:
+                        json += \
+f'''
+                "{key}": {value},'''
+                json = json[:-1] + \
+'''
+        },'''
+            json = json[:-1] + \
+'''
+    ]
+}
+'''
+            path = f'/Users/duncancq/Research/AMBRS/aero_unit_tests/alpha-pinene/camp_config/scenarios/{self.scenario}/{member+1:0>3}'
+            if not os.path.exists(path):
+                os.mkdir(path)
+            with open(f'{path}/species.json', 'w') as f:
+                f.write(json)
+            f.close()
+        return self
+
+####################################################################################################
+#> End
+####################################################################################################
+
+
+
+# orig: 
+# from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 import json, os, sys
@@ -133,3 +396,13 @@ class CampConfig:
             elif sys.platform.startswith("linux"):
                 env["LD_LIBRARY_PATH"] = f"{lib_str}:{os.environ.get('LD_LIBRARY_PATH','')}".rstrip(":")
         return env
+
+
+
+def accoef(N_star, T):
+    del_H = 4.184e3 * (-10.0*(N_star - 1.0) + 7.53*(N_star**(2.0/3.0) - 1.0) - 1.0)
+    del_S = 4.184e0 * (-32.0*(N_star - 1.0) + 9.21*(N_star**(2.0/3.0) - 1.0) - 1.3)
+    del_G = del_H - T * del_S
+    alpha = np.exp(-del_G / (gas_constant * T))
+    alpha = alpha / (1.0 + alpha)
+    return alpha - 0.65

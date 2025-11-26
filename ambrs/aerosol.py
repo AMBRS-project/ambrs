@@ -26,6 +26,7 @@ class AerosolProcesses:
     gas_phase_chemistry: bool = False
     optics: bool = False
     nucleation: bool = False
+    do_camp_chem: bool = False
 
 @dataclass(frozen=True)
 class AerosolSpecies:
@@ -65,8 +66,8 @@ specific parameters (no state information)"""
             'H2O',
         ]
         
-        if self.name not in valid_aerosol_species:
-            raise NameError(f'Invalid aerosol species name: {self.name}\nValid names are {valid_aerosol_species}')
+        # if self.name not in valid_aerosol_species:
+        #     raise NameError(f'Invalid aerosol species name: {self.name}\nValid names are {valid_aerosol_species}')
         if self.molar_mass <= 0.0:
             raise ValueError(f'Non-positive molar mass: {self.molar_mass}')
         if self.density <= 0.0:

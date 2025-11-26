@@ -1,0 +1,8 @@
+{
+    "camp-files" : [
+        "/global/scratch/users/duncanquevedo/AMBRS/NSF_INTERN/camp_config/aerosol_phases.json",
+        "/global/scratch/users/duncanquevedo/AMBRS/NSF_INTERN/camp_config/partmc_aerosol_representation.json",
+        "/global/scratch/users/duncanquevedo/AMBRS/NSF_INTERN/camp_config/species.json",
+        "/global/scratch/users/duncanquevedo/AMBRS/NSF_INTERN/camp_config/pmc_mech.json"
+    ]
+}

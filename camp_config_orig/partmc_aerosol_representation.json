@@ -1,0 +1,18 @@
+{
+  "camp-data" : [
+    {
+      "name" : "PartMC single particle",
+      "type" : "AERO_REP_SINGLE_PARTICLE",
+      "layers": [
+	      {
+		      "name": "core",
+		      "covers": "none",
+		      "phases": [
+			      "mixed"
+		      ]
+	      }
+      ],
+      "maximum computational particles" : 1100
+    }
+  ]
+}
