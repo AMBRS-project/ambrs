@@ -157,7 +157,7 @@ class AerosolMassFractions:
             BC  = scenario.size.modes[3].mass_fraction("BC"),
         )
         
-dry_air_molar_mass   = 28.9647   # g/mol, dry air
+dry_air_molar_mass   = 29.   # g/mol, dry air
 
 # this type handles the mapping of AMBRS gas species to MAM4 species
 class GasMixingRatios:
@@ -239,7 +239,6 @@ Parameters:
                 aero_names.append(getattr(sp, "name", str(sp)))
 
         gas_names = [getattr(gs, "name", str(gs)) for gs in scenario.gases]
-
         return Input(
             mam_dt = dt,
             mam_nstep = nstep,
@@ -286,6 +285,8 @@ Parameters:
             aero_spec_names = aero_names,
             gas_spec_names = gas_names
         )
+
+
     
     def invocation(self, exe: str, prefix: str) -> str:
         """input.invocation(exe, prefix) -> a string defining the command invoking
@@ -412,13 +413,14 @@ def retrieve_model_state(
         repeat_num: int=1, # option for Partmc; set to 1 for MAM4
         species_modifications: dict={},
         ensemble_output_dir: str='mam4_runs', 
-        N_bins:int = 1000) -> Output: # data structure that allows species modifications in post-processing (e.g., treat some organics as light-absorbing)
+        N_bins:int = 2000) -> Output: # data structure that allows species modifications in post-processing (e.g., treat some organics as light-absorbing)
     
+    aero_spec_names = []
     GMDs = []
     GSDs = []
     Ns = []
-    aero_spec_names = []
     aero_spec_fracs = []
+    
     for mode in scenario.size.modes:
         GMDs.append(mode.geom_mean_diam)
         GSDs.append(10.**mode.log10_geom_std_dev)
@@ -428,6 +430,7 @@ def retrieve_model_state(
         for one_spec in scenario.size.modes[0].species:
             aero_spec_names_onemode.append(one_spec.name)
         aero_spec_names.append(aero_spec_names_onemode)
+    
     
     if timestep == 0:
         raise ValueError('timestep=0 is invalid. Specify timestep = 1 for initial conditions')
@@ -443,8 +446,9 @@ def retrieve_model_state(
         
         binned_lognormal_cfg = {
             'type': 'binned_lognormals',
-            'D_min':1e-10, #fixme: option for +/- sigmas
-            'D_max':1e-4,
+            # 'D_min':1e-11, #fixme: option for +/- sigmas
+            # 'D_max':1e-5,
+            'N_sigmas': 10,
             'N_bins': N_bins,
             'N': Ns,
             'GMD': GMDs,
@@ -481,8 +485,11 @@ def retrieve_model_state(
             #'output_filename': output_filename,
             'timestep':timestep,
             'GSD':GSDs, #fixme: put in the correct GSD values!
-            'D_min':1e-10, #fixme: option for +/- sigmas
-            'D_max':1e-4,
+            'N_sigmas': 10,
+            # 'D_min':1e-8, #fixme: option for +/- sigmas
+            # 'D_max':1e-6,
+            # 'D_min':1e-10, #fixme: option for +/- sigmas
+            # 'D_max':1e-4,
             'N_bins':N_bins,
             'T':scenario.temperature,
             'p':scenario.pressure}
