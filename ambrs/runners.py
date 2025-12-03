@@ -244,8 +244,10 @@ Optional parameters:
 runner's root directory, generating a directory for each of the scenarios"""
         if not isinstance(inputs, list):
             raise TypeError('inputs must be a list of scenario inputs')
-
+        
         # prep scenarios to run
+        
+        # FIXME: move scenario name function to a utils file to avoid code duplication
         num_inputs = len(inputs)
         max_num_digits = math.floor(math.log10(num_inputs)) + 1
         logger.info(f'{self.model.name}: generating input for {num_inputs} scenarios...')
