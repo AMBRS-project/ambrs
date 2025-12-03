@@ -729,7 +729,7 @@ def get_Dlims(output_list, wetsize=True):
     return D_min, D_max
     
 from ambrs.partmc_dq_merge_start import retrieve_model_state as retrieve_partmc
-from ambrs.mam4_semiready import retrieve_model_state as retrieve_mam4
+from ambrs.mam4 import retrieve_model_state as retrieve_mam4
 # from ..partmc import retrieve_model_state as retrieve_partmc
 # from ..mam4 import retrieve_model_state as retrieve_mam4
 

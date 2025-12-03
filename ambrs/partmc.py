@@ -222,7 +222,6 @@ class AerosolModel(BaseAerosolModel):
                     # nh4_frac = ammonium_sulfate_frac * nh4_per_ammonium_sulfate  # assuming all sulfate is in the form of (NH4)2SO4
                     aero_init[ii].mass_frac['NH4'] = ammonium_sulfate_frac * nh4_per_ammonium_sulfate
                     aero_init[ii].mass_frac['SO4'] = ammonium_sulfate_frac * so4_per_ammonium_sulfate
-                    print(ammonium_sulfate_frac, aero_init[ii].mass_frac['SO4'], aero_init[ii].mass_frac['NH4'])
         do_mosaic = self.processes.condensation and not self.processes.do_camp_chem
         do_camp_chem = self.processes.condensation and self.processes.do_camp_chem
         return Input(
@@ -321,8 +320,7 @@ class AerosolModel(BaseAerosolModel):
         # time info
         spec_content += f't_max {input.t_max}\ndel_t {input.del_t}\nt_output {input.t_output}\nt_progress {input.t_progress}\n'
         spec_content += '\n'
-
-        print('input.do_camp_chem =',input.do_camp_chem)
+        
         # chemistry
         if input.do_camp_chem:
             spec_content += 'do_camp_chem yes\n'
@@ -543,53 +541,10 @@ class AerosolModel(BaseAerosolModel):
                 for species, mass_frac in mode.mass_frac.items():
                     f.write(f'{species}\t{mass_frac}\n')
 
-#     def read_output_files(self,
-#                           input,
-#                           dir: str,
-#                           prefix: str,
-#                           lnDs = np.logspace(-9,-5,1001)) -> Output:
-#         n_repeat = self.n_repeat
-#         timestep = -1 # for now, we use the last timestep
-#         '''
-#         dNdlnD_repeat = np.zeros([len(lnDs), n_repeat])
-#         for i, repeat in enumerate(range(1, n_repeat+1)):
-#             output_file = self.get_ncfile(dir, prefix, timestep, repeat)
-#             # FIXME: we need something equivalent to get_partmc_dsd_onefile here,
-#             # FIXME: and that's a lot of code. Also: Where do we get lnDs?
-#             dNdlnD_repeats[:,ii] = get_partmc_dsd_onefile(lnDs,output_file,density_type=density_type)
-#         ''' 
-#         return Output(
-#             model = self.name,
-#             input = input,
-#             dNdlnD = np.zeros([len(lnDs)]),
-#             bins = None,
-#         )
-
-#     def get_ncfile(self, dir, prefix, timestep, ensemble_number=1):
-#         """helper function that returns the filename corresponding to the given
-# timestep and ensemble index, given the directory in which it resides"""
-#         output_dir = os.path.join(dir, 'out')
-#         full_prefix = prefix + '_' + str(int(ensemble_number)).zfill(4)
-#         ncfiles = [f for f in os.listdir(output_dir) if f.startswith(full_prefix) and f.endswith('.nc')]
-#         if len(ncfiles) == 0:
-#             raise OSError(f'No NetCDF output found for ensemble number {ensemble_number} in {dir}!')
-#         if timestep == -1: # return the most recent output file
-#             ncfiles.sort()
-#             return ncfiles[-1]
-#         else:
-#             ncfile = full_prefix + str(int(timestep)).zfill(8) + '.nc'
-#             if ncfile in ncfiles:
-#                 return ncfile
-#             else:
-#                 raise OSError(f'No NetCDF output found for ensemble number {ensemble_number} and timestep {timestep} in {dir}!')
-
-
 def retrieve_model_state(
         scenario_name: str, 
         scenario: Scenario,
         timestep: int, 
-        # t_eval: float, 
-        # model_times: np.array,
         repeat_num: int=1, # number of PartMC repeat, set to 1 if scenario just run once
         species_modifications: dict={},
         ensemble_output_dir: str='partmc_runs') -> Output: # data structure that allows species modifications in post-processing (e.g., treat some organics as light-absorbing)
@@ -628,7 +583,6 @@ def retrieve_model_state(
         'partmc',
         scenario_name=scenario_name, 
         scenario=scenario,
-        # time=t_eval,
         timestep=timestep,
         particle_population=particle_population,
         gas_mixture=gas_mixture,
@@ -638,6 +592,7 @@ def retrieve_model_state(
 def get_ncfile(scenario_name, timestep, ensemble_output_dir='partmc_runs', repeat_num=1):
     """helper function that returns the filename corresponding to the given
 timestep and ensemble index, given the directory in which it resides"""
+    
     # fixme: make this a Path rather than a string?
     output_dir = ensemble_output_dir + '/' +  scenario_name + '/out'
     full_prefix = scenario_name + '_' + str(int(repeat_num)).zfill(4)
