@@ -36,6 +36,7 @@ PPE are sampled"""
     pressure: RVFrozenDistribution #float # <-- these are fixed per ensemble # !!! FIXME: Changed from float to RV
     height: float   # <--
     gas_emissions: Optional[list[tuple[float, dict], ...]] = None
+    gas_background: Optional[list[tuple[float, dict], ...]] = None
     soa_source : Optional[tuple[float, ...]] = None
     soa_loss: Optional[float] = None
 
@@ -53,6 +54,7 @@ a specific EnsembleSpecification"""
     pressure: np.array
     height: float
     gas_emissions: Optional[list[tuple[float, dict], ...]] = None
+    gas_background: Optional[list[tuple[float, dict], ...]] = None
     soa_source : Optional[tuple[float, ...]] = None
     soa_loss: Optional[float] = None
     specification: Optional[EnsembleSpecification] = None # if used for creation
@@ -77,6 +79,7 @@ a specific EnsembleSpecification"""
             pressure = self.pressure[i], # FIXME: indexed pressure like prev two vars
             height = self.height,
             gas_emissions = self.gas_emissions,
+            gas_background = self.gas_background,
             soa_source = self.soa_source,
             soa_loss = self.soa_loss,
         )
@@ -138,7 +141,8 @@ specified scenarios (which must all have the same particle size representation)"
         pressure = pressure, #scenarios[0].pressure,
         height = scenarios[0].height,
         gas_emissions = scenarios[0].gas_emissions,
-        soa_source  = scenarios[0].soa_source ,
+        gas_background = scenarios[0].gas_background,
+        soa_source  = scenarios[0].soa_source,
         soa_loss = scenarios[0].soa_loss,
     )
 
@@ -178,7 +182,8 @@ def sample(specification: EnsembleSpecification, n: int) -> Ensemble:
         pressure = specification.pressure.rvs(n),
         height = specification.height,
         gas_emissions = specification.gas_emissions,
-        soa_source  = specification.soa_source ,
+        gas_background = specification.gas_background,
+        soa_source  = specification.soa_source,
         soa_loss = specification.soa_loss,
     )
 
@@ -244,7 +249,8 @@ distribution from which ensemble members are sampled."""
         pressure = specification.pressure.ppf(lhd[:,-1]),
         height = specification.height,
         gas_emissions = specification.gas_emissions,
-        soa_source  = specification.soa_source ,
+        gas_background = specification.gas_background,
+        soa_source  = specification.soa_source,
         soa_loss = specification.soa_loss,
     )
 
@@ -425,7 +431,8 @@ parameter sweeps"""
             pressure = reference_state.pressure,
             height = reference_state.height,
             gas_emissions = reference_state.gas_emissions,
-            soa_source = reference_state.soa_source ,
+            gas_background = reference_state.gas_background,
+            soa_source = reference_state.soa_source,
             soa_loss = reference_state.soa_loss,
         )
         index += 3

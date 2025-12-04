@@ -197,7 +197,11 @@ class AerosolModel(BaseAerosolModel):
             # do_select_weighting = False,
             do_select_weighting = True,
             weight_type = 'power_source',
+            # weight_type = 'power',
+            # weight_type = 'flat',
+            # weight_type = 'nummass',
             weighting_exponent = 0,
+            # weighting_exponent = -3,
 
             t_max = nstep * dt,
             del_t = dt,
@@ -223,7 +227,7 @@ class AerosolModel(BaseAerosolModel):
             rel_humidity = scenario.relative_humidity,
             latitude = 0,       # FIXME:
             longitude = 0,      # FIXME:
-            altitude = 3.0e+3,       # FIXME:
+            altitude = 3.0e+3,  # FIXME:
             start_time = 21600, # FIXME:
             start_day = 200,    # FIXME:
 
@@ -240,6 +244,7 @@ class AerosolModel(BaseAerosolModel):
             do_parallel = False,
 
             gas_emissions = scenario.gas_emissions,
+            gas_background = scenario.gas_background,
 
             camp_config = self.camp_config,
         )
@@ -273,7 +278,8 @@ class AerosolModel(BaseAerosolModel):
         if input.do_select_weighting:
             spec_content += 'do_select_weighting yes\n'
             spec_content += f'weight_type {input.weight_type}\n'
-            spec_content += f'weighting_exponent {input.weighting_exponent}\n'
+            if input.weight_type in ['power','power_source']:
+                spec_content += f'weighting_exponent {input.weighting_exponent}\n'
         else:
             spec_content += 'do_select_weighting no\n'
         spec_content += '\n'
@@ -285,7 +291,8 @@ class AerosolModel(BaseAerosolModel):
         # chemistry
         if input.do_camp_chem:
             spec_content += 'do_camp_chem yes\n'
-            spec_content += f'camp_config {input.camp_config}\n' # FIXME: path
+            # spec_content += f'camp_config {input.camp_config}\n' # FIXME: path
+            spec_content += f'camp_config {input.camp_config}/{prefix}/config.json\n' # FIXME: path
         else:
             spec_content += 'do_camp_chem no\n'
         spec_content += '\n'
@@ -422,16 +429,19 @@ class AerosolModel(BaseAerosolModel):
 
         # gas_back.dat
         if input.gas_background:
-            gas_background_species = [input.gas_background[0].time_series[1].keys()]
+            # gas_background_species = [input.gas_background[0].time_series[1].keys()]
+            gas_background_species = list(input.gas_background[0][1].keys())
             gas_background_species.remove('rate')
             # FIXME: convert background conc to ppb
             with open(os.path.join(dir, 'gas_back.dat'), 'w') as f:
                 f.write('# time (s)\n# rate (s^{-1})\n# concentrations (ppb)\n')
-                f.write('\t'.join(['time'] + [pair[0] for pair in input.gas_background]) + '\n')
-                f.write('\t'.join(['rate'] + [pair[1]['rate'] for pair in input.gas_background]) + '\n')
-                f.write('\t'.join([species_name] + [pair[1][species_name] \
-                                  for species_name in gas_background_species \
-                                  for pair in input.gas_background]))
+                f.write('\t'.join(['time'] + [str(pair[0]) for pair in input.gas_background]) + '\n')
+                f.write('\t'.join(['rate'] + [str(pair[1]['rate']) for pair in input.gas_background]) + '\n')
+                # f.write('\t'.join([species_name] + [str(pair[1][species_name]) \
+                #                   for species_name in gas_background_species \
+                #                   for pair in input.gas_background]))
+                for species_name in gas_background_species:
+                    f.write('\t'.join([species_name] + [str(pair[1][species_name]) for pair in input.gas_background]) + '\n')
         else:
             # write a gas background file with zero data
             with open(os.path.join(dir, 'gas_back.dat'), 'w') as f:
