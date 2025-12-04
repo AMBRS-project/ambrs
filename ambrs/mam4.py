@@ -227,21 +227,21 @@ Parameters:
         # translate the scenario's gas mixing ratios to MAM4-ese
         gas_mixing_ratios = GasMixingRatios(scenario)
 
-        mfs1 = {p.name : scenario.size.modes[0].mass_fraction(p.name) for p in scenario.size.modes[0].species}# if p.name in ['ASO4','AH2O','AH3OP','SOA','APOC','AEC','ANA','ASOIL','H2SO4_aq']}
+        mfs1 = {p.name : scenario.size.modes[0].mass_fraction(p.name) for p in scenario.size.modes[0].species}
         mftot1 = sum(mfs1.values())
-        mfs1 = {p.name : mfs1[p.name]/mftot1 for p in scenario.size.modes[0].species} # if p.name in ['ASO4','AH2O','AH3OP','SOA','APOC','AEC','ANA','ASOIL','H2SO4_aq']}
+        mfs1 = {p.name : mfs1[p.name]/mftot1 for p in scenario.size.modes[0].species} 
 
-        mfs2 = {p.name : scenario.size.modes[1].mass_fraction(p.name) for p in scenario.size.modes[1].species} # if p.name in ['ASO4','AH2O','AH3OP','SOA','ANA','H2SO4_aq']}
+        mfs2 = {p.name : scenario.size.modes[1].mass_fraction(p.name) for p in scenario.size.modes[1].species} 
         mftot2 = sum(mfs2.values())
-        mfs2 = {p.name : mfs2[p.name]/mftot2 for p in scenario.size.modes[1].species} # if p.name in ['ASO4','AH2O','AH3OP','SOA','ANA','H2SO4_aq']}
+        mfs2 = {p.name : mfs2[p.name]/mftot2 for p in scenario.size.modes[1].species} 
         
-        mfs3 = {p.name : scenario.size.modes[2].mass_fraction(p.name) for p in scenario.size.modes[2].species} # if p.name in ['ASO4','AH2O','AH3OP','SOA','APOC','AEC','ANA','ASOIL','H2SO4_aq']}
+        mfs3 = {p.name : scenario.size.modes[2].mass_fraction(p.name) for p in scenario.size.modes[2].species} 
         mftot3 = sum(mfs3.values())
-        mfs3 = {p.name : mfs3[p.name]/mftot3 for p in scenario.size.modes[2].species} # if p.name in ['ASO4','AH2O','AH3OP','SOA','APOC','AEC','ANA','ASOIL','H2SO4_aq']}
+        mfs3 = {p.name : mfs3[p.name]/mftot3 for p in scenario.size.modes[2].species} 
 
-        mfs4 = {p.name : scenario.size.modes[3].mass_fraction(p.name) for p in scenario.size.modes[3].species} # if p.name in ['APOC','AEC','AH2O','AH3OP','H2SO4_aq']}
+        mfs4 = {p.name : scenario.size.modes[3].mass_fraction(p.name) for p in scenario.size.modes[3].species} 
         mftot4 = sum(mfs4.values())
-        mfs4 = {p.name : mfs4[p.name]/mftot4 for p in scenario.size.modes[3].species} # if p.name in ['APOC','AEC','AH2O','AH3OP','H2SO4_aq']}
+        mfs4 = {p.name : mfs4[p.name]/mftot4 for p in scenario.size.modes[3].species} 
 
         mfs = [mfs1, mfs2, mfs3, mfs4]
 
@@ -358,20 +358,20 @@ working directory contains any needed input files."""
   qsoag          = {input.qsoag},
 /
 &size_parameters
-    dgnum1       = {input.scenario.size.modes[0].geom_mean_diam}
-    dgnum2       = {input.scenario.size.modes[1].geom_mean_diam}
-    dgnum3       = {input.scenario.size.modes[2].geom_mean_diam}
-    dgnum4       = {input.scenario.size.modes[3].geom_mean_diam}
-    sigmag1      = {10**input.scenario.size.modes[0].log10_geom_std_dev}
-    sigmag2      = {10**input.scenario.size.modes[1].log10_geom_std_dev}
-    sigmag3      = {10**input.scenario.size.modes[2].log10_geom_std_dev}
-    sigmag4      = {10**input.scenario.size.modes[3].log10_geom_std_dev}
+    dgnum1       = {input.scenario.size.modes[0].geom_mean_diam},
+    dgnum2       = {input.scenario.size.modes[1].geom_mean_diam},
+    dgnum3       = {input.scenario.size.modes[2].geom_mean_diam},
+    dgnum4       = {input.scenario.size.modes[3].geom_mean_diam},
+    sigmag1      = {10**input.scenario.size.modes[0].log10_geom_std_dev},
+    sigmag2      = {10**input.scenario.size.modes[1].log10_geom_std_dev},
+    sigmag3      = {10**input.scenario.size.modes[2].log10_geom_std_dev},
+    sigmag4      = {10**input.scenario.size.modes[3].log10_geom_std_dev},
 /
 &camp_config
-    config_key   = {input.camp_config},
+    config_key   = \'{input.camp_config}\',
 /
 &camp_mech
-    mech_key     = {input.camp_mech},
+    mech_key     = \'{input.camp_mech}\',
 /
 """
         if not os.path.exists(dir):
@@ -380,77 +380,6 @@ working directory contains any needed input files."""
         with open(filename, 'w') as f:
             print(content)
             f.write(content)
-
-#         content = """"""
-#         for mode, species, mf, dens in [('accumulation', p.name, input.mfs[0][p.name], p.density) for p in input.scenario.size.modes[0].species]: #  \
-#                                         # if p.name in ['ASO4','AH2O','AH3OP','SOA','APOC','AEC','ANA','ASOIL','H2SO4_aq'] \
-#                                         # else ('accumulation', p.name, 0., p.density) for p in input.scenario.aerosols]:
-#             content += \
-# f"""
-# {mode},{species},{mf},{dens}
-# """
-#         for mode, species, mf, dens in [('aitken', p.name, input.mfs[1][p.name], p.density) for p in input.scenario.size.modes[1].species]: #  \
-#                                         # if p.name in ['ASO4','AH2O','AH3OP','SOA','ANA','H2SO4_aq'] \
-#                                         # else ('aitken', p.name, 0., p.density) for p in input.scenario.aerosols]:
-#             content += \
-# f"""
-# {mode},{species},{mf},{dens}
-# """
-#         for mode, species, mf, dens in [('coarse', p.name, input.mfs[2][p.name], p.density) for p in input.scenario.size.modes[2].species]: #  \
-#                                         # if p.name in ['ASO4','AH2O','AH3OP','SOA','APOC','AEC','ANA','ASOIL','H2SO4_aq'] \
-#                                         # else ('coarse', p.name, 0., p.density) for p in input.scenario.aerosols]:
-#             content += \
-# f"""
-# {mode},{species},{mf},{dens}
-# """
-#         for mode, species, mf, dens in [('primary_carbon', p.name, input.mfs[3][p.name], p.density) for p in input.scenario.size.modes[3].species]: # \
-#                                         #if p.name in ['APOC','AEC','AH2O','AH3OP','H2SO4_aq'] \
-#                                         #else ('primary_carbon', p.name, 0., p.density) for p in input.scenario.aerosols]:
-#             content += \
-# f"""
-# {mode},{species},{mf},{dens}
-# """
-#         filename = os.path.join(dir, 'aero_mass_fracs.dat')
-#         with open(filename, 'w') as f:
-#             # print(content)
-#             f.write(content)
-
-           
-#         content = ''''''
-
-#         for g, y in zip(input.scenario.gases, input.scenario.gas_concs):
-#             content += \
-# f'''
-# {g.name}, {y}
-# '''
-#         filename = os.path.join(dir, 'ic.dat')
-#         with open(filename, 'w') as f:
-#             # print(content)
-#             f.write(content)
-
-#         content = \
-# f'''
-# &camp_config
-#     config_key = '/Users/duncancq/Research/AMBRS/aero_unit_tests/MAM4-like/camp_config/mam4_config.json',
-# /
-# &camp_mech
-#     mech_key = 'MAM4_SOA_partitioning',
-# /
-# &mam_emis
-#     e_soa1 = {input.scenario.soa_source[0]},
-#     e_soa2 = {input.scenario.soa_source[1]},
-#     e_soa3 = {input.scenario.soa_source[2]},
-#     e_soa4 = {input.scenario.soa_source[3]},
-# /
-# &mam_loss
-#     soa_loss = {input.scenario.soa_loss},
-# /
-# '''
-        # filename = os.path.join(dir, 'camp_nml')
-        # with open(filename, 'w') as f:
-        #     # print(content)
-        #     f.write(content)
-
 
     def read_output_files(self,
                           input,
