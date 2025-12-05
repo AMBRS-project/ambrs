@@ -1,0 +1,32 @@
+Metadata-Version: 2.4
+Name: ambrs
+Version: 0.1.0
+Summary: Aerosol Model Benchmarking Repository and Standards
+Author: AMBRS Project
+Requires-Python: >=3.11
+Requires-Dist: certifi==2024.7.4
+Requires-Dist: cftime==1.6.4
+Requires-Dist: contourpy==1.2.1
+Requires-Dist: coverage==7.6.0
+Requires-Dist: cycler==0.12.1
+Requires-Dist: fonttools==4.53.0
+Requires-Dist: kiwisolver==1.4.5
+Requires-Dist: matplotlib==3.9.0
+Requires-Dist: netCDF4==1.7.1.post1
+Requires-Dist: numpy==2.0.0
+Requires-Dist: packaging==24.1
+Requires-Dist: pandas==2.2.2
+Requires-Dist: pillow==10.3.0
+Requires-Dist: pyDOE==0.3.8
+Requires-Dist: pyparsing==3.1.2
+Requires-Dist: python-dateutil==2.9.0.post0
+Requires-Dist: pytz==2024.1
+Requires-Dist: scipy==1.14.0
+Requires-Dist: seaborn==0.13.2
+Requires-Dist: six==1.16.0
+Requires-Dist: tzdata==2024.1
+Requires-Dist: pyparticle==0.1.5
+Dynamic: author
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
