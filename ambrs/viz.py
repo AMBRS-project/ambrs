@@ -43,6 +43,20 @@ def _format_panel(ax, *, xscale=None, yscale=None, minimal_spines=True):
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
 
+def _add_row_label(ax, label: str, color: str = "black"):
+    xlims = ax.get_xlim()
+    ylims = ax.get_ylim()
+    ax.text(
+        xlims[1] - 0.2*(xlims[1]-xlims[0]),
+        0.95*(ylims[0]+ylims[1]),
+        label,
+        # rotation=90,
+        ha='left',
+        va='center',
+        fontsize=12,
+        transform=ax.transData,
+        color=color
+    )
 
 # -----------------------------------------------------------
 # Helper functions for variable cfgs
@@ -83,7 +97,7 @@ def render_partmc_and_mam4_variable_grid(
     yscale: str = 'linear',
     species_modifications: Dict = {}, # modify aerosol species during post-processing (e.g., assume BrC rather than non-absorbing OC)
     sharex: bool = True,
-    sharey: bool = True,
+    sharey: bool = False,
     ) -> Tuple[plt.Figure, np.ndarray]:
     """
     Render a grid where rows = scenarios and columns = user-defined 'columns'
@@ -130,7 +144,7 @@ def render_partmc_and_mam4_variable_grid(
             ax = fig.add_subplot(
                 gs[i_row, i_col], 
                 sharex=axes[i_row-1,i_col] if sharex and i_row > 0 else None,
-                sharey=axes[i_row,i_col-1] if sharey and i_col > 0 else None)
+                sharey=axes[i_row-1,i_col] if sharey and i_row > 0 else None)
             axes[i_row, i_col] = ax
             
             partmc_output = partmc.retrieve_model_state(
@@ -217,7 +231,7 @@ def render_dNdlnD_grid(
     legend_loc=None, row_colors=None,
     xscale='log', yscale='linear',
     spec_modifications={},
-    sharex=True, sharey=True):
+    sharex=True, sharey=False):
     """
     Render grid of bscat vs wavelength at specified RH values.
     """
