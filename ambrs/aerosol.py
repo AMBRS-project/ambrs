@@ -134,22 +134,22 @@ log-normal aerosol mode (distribution only--no state information)"""
         object.__setattr__(self,'name',name)
         # self.species = species
         object.__setattr__(self,'species',species)
-        if number is RVFrozenDistribution:
+        if type(number) is RVFrozenDistribution:
             # self.number = number
             object.__setattr__(self,'number',number)
-        elif number is float:
+        elif type(number) is float:
             # self.number = Delta(number)
             object.__setattr__(self,'number',Delta(number))
-        if geom_mean_diam is RVFrozenDistribution:
+        if type(geom_mean_diam) is RVFrozenDistribution:
             # self.geom_mean_diam = geom_mean_diam
             object.__setattr__(self,'geom_mean_diam',geom_mean_diam)
-        elif geom_mean_diam is float:
+        elif type(geom_mean_diam) is float:
             # self.geom_mean_diam = Delta(geom_mean_diam)
             object.__setattr__(self,'geom_mean_diam',Delta(geom_mean_diam))
-        if log10_geom_std_dev is RVFrozenDistribution:
+        if type(log10_geom_std_dev) is RVFrozenDistribution:
             # self.log10_geom_std_dev = log10_geom_std_dev
             object.__setattr__(self,'log10_geom_std_dev',log10_geom_std_dev)
-        elif log10_geom_std_dev is float:
+        elif type(log10_geom_std_dev) is float:
             # self.log10_geom_std_dev = Delta(log10_geom_std_dev)
             object.__setattr__(self,'log10_geom_std_dev',Delta(log10_geom_std_dev))
         # self.mass_fractions = tuple([mass_fraction if mass_fraction is RVFrozenDistribution else Delta(mass_fraction) for mass_fraction in mass_fractions])

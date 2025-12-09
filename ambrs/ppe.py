@@ -64,28 +64,28 @@ PPE are sampled"""
         # self.gas_concs = tuple([gas_conc if gas_conc is RVFrozenDistribution else Delta(gas_conc) for gas_conc in gas_concs])
         object.__setattr__(self,'gas_concs',
                            tuple([gas_conc if gas_conc is RVFrozenDistribution else Delta(gas_conc) for gas_conc in gas_concs]))
-        if flux is RVFrozenDistribution:
+        if type(flux) is RVFrozenDistribution:
             # self.flux = flux
             object.__setattr__(self,'flux',flux)
-        elif flux is float:
+        elif type(flux) is float:
             # self.flux = Delta(flux)
             object.__setattr__(self,'flux',Delta(flux))
-        if relative_humidity is RVFrozenDistribution:
+        if type(relative_humidity) is RVFrozenDistribution:
             # self.relative_humidity = relative_humidity
             object.__setattr__(self,'relative_humidity',relative_humidity)
-        elif relative_humidity is float:
+        elif type(relative_humidity) is float:
             # self.relative_humidity = Delta(relative_humidity)
             object.__setattr__(self,'relative_humidity',Delta(relative_humidity))
-        if temperature is RVFrozenDistribution:
+        if type(temperature) is RVFrozenDistribution:
             # self.temperature = temperature
             object.__setattr__(self,'temperature',temperature)
-        elif temperature is float:
+        elif type(temperature) is float:
             # self.temperature = Delta(temperature)
             object.__setattr__(self,'temperature',Delta(temperature))
-        if pressure is RVFrozenDistribution:
+        if type(pressure) is RVFrozenDistribution:
             # self.pressure = pressure
             object.__setattr__(self,'pressure',pressure)
-        elif pressure is float:
+        elif type(pressure) is float:
             # self.pressure = Delta(pressure)
             object.__setattr__(self,'pressure',Delta(pressure))
         # self.height = height
