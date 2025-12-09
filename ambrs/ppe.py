@@ -37,8 +37,6 @@ PPE are sampled"""
     height: float   # <--
     gas_emissions: Optional[list[tuple[float, dict], ...]] = None
     gas_background: Optional[list[tuple[float, dict], ...]] = None
-    soa_source : Optional[tuple[float, ...]] = None
-    soa_loss: Optional[float] = None
 
 @dataclass(frozen=True)
 class Ensemble:
@@ -55,8 +53,6 @@ a specific EnsembleSpecification"""
     height: float
     gas_emissions: Optional[list[tuple[float, dict], ...]] = None
     gas_background: Optional[list[tuple[float, dict], ...]] = None
-    soa_source : Optional[tuple[float, ...]] = None
-    soa_loss: Optional[float] = None
     specification: Optional[EnsembleSpecification] = None # if used for creation
 
     def __len__(self):
@@ -80,8 +76,6 @@ a specific EnsembleSpecification"""
             height = self.height,
             gas_emissions = self.gas_emissions,
             gas_background = self.gas_background,
-            soa_source = self.soa_source,
-            soa_loss = self.soa_loss,
         )
 
 #------------------------------------------------
@@ -142,8 +136,6 @@ specified scenarios (which must all have the same particle size representation)"
         height = scenarios[0].height,
         gas_emissions = scenarios[0].gas_emissions,
         gas_background = scenarios[0].gas_background,
-        soa_source  = scenarios[0].soa_source,
-        soa_loss = scenarios[0].soa_loss,
     )
 
 #-------------------------------------------------
@@ -183,8 +175,6 @@ def sample(specification: EnsembleSpecification, n: int) -> Ensemble:
         height = specification.height,
         gas_emissions = specification.gas_emissions,
         gas_background = specification.gas_background,
-        soa_source  = specification.soa_source,
-        soa_loss = specification.soa_loss,
     )
 
 def lhs(specification: EnsembleSpecification,
@@ -250,8 +240,6 @@ distribution from which ensemble members are sampled."""
         height = specification.height,
         gas_emissions = specification.gas_emissions,
         gas_background = specification.gas_background,
-        soa_source  = specification.soa_source,
-        soa_loss = specification.soa_loss,
     )
 
 #---------------------------
@@ -432,8 +420,6 @@ parameter sweeps"""
             height = reference_state.height,
             gas_emissions = reference_state.gas_emissions,
             gas_background = reference_state.gas_background,
-            soa_source = reference_state.soa_source,
-            soa_loss = reference_state.soa_loss,
         )
         index += 3
         members.append(member)

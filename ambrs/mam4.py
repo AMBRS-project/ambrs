@@ -88,13 +88,6 @@ class Input:
     qh2so4: float
     qsoag: float
 
-    #---------------------------------------
-    # CAMP control
-    #---------------------------------------
-
-    camp_config: str
-    camp_mech: str
-
 # this type handles the mapping of AMBRS aerosol species to MAM4 species
 # within all aerosol modes
 class AerosolMassFractions:
@@ -192,12 +185,8 @@ class GasMixingRatios:
     
 class AerosolModel(BaseAerosolModel):
     def __init__(self,
-                 processes: AerosolProcesses,
-                 camp_config: str = None,
-                 camp_mech :str = None):
+                 processes: AerosolProcesses):
         BaseAerosolModel.__init__(self, 'mam4', processes)
-        self.camp_config = camp_config
-        self.camp_mech = camp_mech
 
     def create_input(self,
                      scenario: Scenario,
@@ -294,9 +283,6 @@ Parameters:
             qso2 = gas_mixing_ratios.SO2 * 1.e-6 * 64.0648 / 28.966,
             qh2so4 = gas_mixing_ratios.H2SO4 * 1.e-6 * 98.0784 / 28.966,
             qsoag = gas_mixing_ratios.SOAG *  1.e-6 * 12.0109997 / 28.966,
-
-            camp_config = self.camp_config,
-            camp_mech = self.camp_mech,
         )
     
     def invocation(self, exe: str, prefix: str) -> str:
@@ -366,12 +352,6 @@ working directory contains any needed input files."""
     sigmag2      = {10**input.scenario.size.modes[1].log10_geom_std_dev},
     sigmag3      = {10**input.scenario.size.modes[2].log10_geom_std_dev},
     sigmag4      = {10**input.scenario.size.modes[3].log10_geom_std_dev},
-/
-&camp_config
-    config_key   = \'{input.camp_config}\',
-/
-&camp_mech
-    mech_key     = \'{input.camp_mech}\',
 /
 """
         if not os.path.exists(dir):
