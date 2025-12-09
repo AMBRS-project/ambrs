@@ -17,8 +17,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from .. import partmc, mam4
-from pyparticle.viz.style import StyleManager, Theme
-from pyparticle.viz.builder import build_plotter
+from part2pop.viz.style import StyleManager, Theme
+from part2pop.viz.builder import build_plotter
 
 # -----------------------------------------------------------
 # Retrieve partmc and mam4 model states for given scenario/timestep

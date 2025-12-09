@@ -7,9 +7,9 @@ import scipy.stats
 import pandas as pd
 from typing import Optional, Dict, List
 
-from pyparticle import ParticlePopulation  # type: ignore
-from pyparticle.optics.builder import build_optical_population  # type: ignore
-from pyparticle import analysis as ppa  # type: ignore
+from part2pop import ParticlePopulation  # type: ignore
+from part2pop.optics.builder import build_optical_population  # type: ignore
+from part2pop import analysis as ppa  # type: ignore
 
 from .gas import GasMixture
 from .scenario import Scenario
@@ -28,7 +28,7 @@ class Output:
     species_modifications: dict = None
     # diagnostics: Optional(dict)
     def compute_variable(self, varname: str, var_cfg: Optional[Dict] = None) -> Dict:
-        """Delegate variable computation to pyparticle.analysis.
+        """Delegate variable computation to part2pop.analysis.
 
         Parameters
         ----------
@@ -38,7 +38,7 @@ class Output:
             Configuration overrides (axes, ranges, etc.).
         """
         return ppa.compute_variable(
-            population=self.particle_population,  # PyParticle >= latest uses keyword 'population'
+            population=self.particle_population,  # part2pop >= latest uses keyword 'population'
             varname=varname,
             var_cfg=var_cfg or {}
         )
@@ -71,7 +71,7 @@ def nmae(output_list1: List[Output], output_list2: List[Output], varname: str, v
 # fixme: generalize kl_divergence to distribution wrt to any independent variable?
 # fixme: kl_divergence is comaprison between single time-step for single scenario
 def kl_divergence(output1: Output, output2: Output, var_cfg: Optional[Dict] = None) -> float:
-    """KL-divergence between two size distributions using PyParticle dispatcher.
+    """KL-divergence between two size distributions using part2pop dispatcher.
 
     Parameters
     ----------

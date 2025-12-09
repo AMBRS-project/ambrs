@@ -1,7 +1,7 @@
-"""Refactored visualization utilities using PyParticle.viz
+"""Refactored visualization utilities using part2pop.viz
 
 This module replaces legacy seaborn ridge/FacetGrid plotting with
-declarative PyParticle population + plotting helpers.
+declarative part2pop population + plotting helpers.
 
 Public Functions
 ----------------
@@ -23,13 +23,13 @@ from typing import Callable, Dict, Iterable, List, Sequence, Tuple, Optional
 
 import numpy as np
 
-from PyParticle import build_population  # generic factory
-from PyParticle.viz.plotting import plot_lines
-from PyParticle.viz.grids import make_grid_scenarios_models
+from part2pop import build_population  # generic factory
+from part2pop.viz.plotting import plot_lines
+from part2pop.viz.grids import make_grid_scenarios_models
 
 try:
     # MAM4 specific builder (provisional path per user instructions)
-    from PyParticle.population.factory.mam4 import build as build_mam4
+    from part2pop.population.factory.mam4 import build as build_mam4
 except ImportError:  # pragma: no cover
     build_mam4 = None  # type: ignore
 
@@ -58,7 +58,7 @@ def _partmc_builder(cfg: Dict) -> 'ParticlePopulation':  # type: ignore[name-def
 
 def _mam4_builder(cfg: Dict) -> 'ParticlePopulation':  # type: ignore[name-defined]
     if build_mam4 is None:
-        raise ImportError("PyParticle MAM4 builder not available; install PyParticle with MAM4 extras.")
+        raise ImportError("part2pop MAM4 builder not available; install part2pop with MAM4 extras.")
     # Accept either pre-built keys or minimal set if embedded in output file
     allowed = {'type', 'output_filename', 'timestep', 'GSD', 'D_min', 'D_max', 'N_bins', 'p', 'T'}
     mam_cfg = {k: cfg[k] for k in allowed if k in cfg}
@@ -164,7 +164,7 @@ def plot_ensemble_variables(
 
     Parameters
     ----------
-    variables : list of variable names accepted by PyParticle.viz.plot_lines
+    variables : list of variable names accepted by part2pop.viz.plot_lines
         e.g., ['dNdlnD', 'frac_ccn']
     var_cfg : optional mapping variable -> config dict
     """

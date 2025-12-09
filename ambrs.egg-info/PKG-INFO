@@ -25,7 +25,7 @@ Requires-Dist: scipy==1.14.0
 Requires-Dist: seaborn==0.13.2
 Requires-Dist: six==1.16.0
 Requires-Dist: tzdata==2024.1
-Requires-Dist: pyparticle==0.1.5
+Requires-Dist: part2pop==0.1.5
 Dynamic: author
 Dynamic: requires-dist
 Dynamic: requires-python
