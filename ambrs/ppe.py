@@ -17,7 +17,7 @@ from typing import Optional
 from .aerosol import \
     AerosolModalSizeState, AerosolModeState, AerosolModePopulation, \
     AerosolModalSizeDistribution, AerosolModalSizePopulation, AerosolSpecies, \
-    RVFrozenDistribution
+    RVFrozenDistribution, Delta
 from .gas import GasSpecies
 from .scenario import Scenario
 
@@ -29,14 +29,54 @@ PPE are sampled"""
     aerosols: tuple[AerosolSpecies, ...]
     gases: tuple[GasSpecies, ...]
     size: AerosolModalSizeDistribution
-    gas_concs: tuple[RVFrozenDistribution, ...] # ordered like gases
-    flux: RVFrozenDistribution
-    relative_humidity: RVFrozenDistribution
-    temperature: RVFrozenDistribution
-    pressure: RVFrozenDistribution #float # <-- these are fixed per ensemble # !!! FIXME: Changed from float to RV
-    height: float   # <--
-    gas_emissions: Optional[list[tuple[float, dict], ...]] = None
-    gas_background: Optional[list[tuple[float, dict], ...]] = None
+    gas_concs: tuple[RVFrozenDistribution | float, ...] # ordered like gases
+    flux: RVFrozenDistribution | float
+    relative_humidity: RVFrozenDistribution | float
+    temperature: RVFrozenDistribution | float
+    pressure: RVFrozenDistribution | float
+    height: float
+    gas_emissions: Optional[list[tuple[float, dict]]] = None
+    gas_background: Optional[list[tuple[float, dict]]] = None
+
+    def __init__(
+        self,
+        name: str,
+        aerosols: tuple[AerosolSpecies, ...],
+        gases: tuple[GasSpecies, ...],
+        size: AerosolModalSizeDistribution,
+        gas_concs: tuple[RVFrozenDistribution | float, ...], # ordered like gases
+        flux: RVFrozenDistribution | float,
+        relative_humidity: RVFrozenDistribution | float,
+        temperature: RVFrozenDistribution | float,
+        pressure: RVFrozenDistribution | float,
+        height: float,
+        gas_emissions: Optional[list[tuple[float, dict]]] = None,
+        gas_background: Optional[list[tuple[float, dict]]] = None
+    ):
+        self.name = name
+        self.aerosols = aerosols
+        self.gases = gases
+        self.size = size
+        self.gas_concs = tuple([gas_conc if gas_conc is RVFrozenDistribution else Delta(gas_conc) for gas_conc in gas_concs])
+        if flux is RVFrozenDistribution:
+            self.flux = flux
+        elif flux is float:
+            self.flux = Delta(flux)
+        if relative_humidity is RVFrozenDistribution:
+            self.relative_humidity = relative_humidity
+        elif relative_humidity is float:
+            self.relative_humidity = Delta(relative_humidity)
+        if temperature is RVFrozenDistribution:
+            self.temperature = temperature
+        elif temperature is float:
+            self.temperature = Delta(temperature)
+        if pressure is RVFrozenDistribution:
+            self.pressure = pressure
+        elif pressure is float:
+            self.pressure = Delta(pressure)        
+        self.height = height
+        self.gas_emissions = gas_emissions
+        self.gas_background = gas_background
 
 @dataclass(frozen=True)
 class Ensemble:
@@ -51,8 +91,8 @@ a specific EnsembleSpecification"""
     temperature: np.array
     pressure: np.array
     height: float
-    gas_emissions: Optional[list[tuple[float, dict], ...]] = None
-    gas_background: Optional[list[tuple[float, dict], ...]] = None
+    gas_emissions: Optional[list[tuple[float, dict]]] = None
+    gas_background: Optional[list[tuple[float, dict]]] = None
     specification: Optional[EnsembleSpecification] = None # if used for creation
 
     def __len__(self):
@@ -72,7 +112,7 @@ a specific EnsembleSpecification"""
             flux = self.flux[i],
             relative_humidity = self.relative_humidity[i],
             temperature = self.temperature[i],
-            pressure = self.pressure[i], # FIXME: indexed pressure like prev two vars
+            pressure = self.pressure[i],
             height = self.height,
             gas_emissions = self.gas_emissions,
             gas_background = self.gas_background,
@@ -204,7 +244,7 @@ distribution from which ensemble members are sampled."""
                     species = mode.species,
                     number=mode.number.ppf(lhd[:,(3+num_species[m])*m]),
                     geom_mean_diam=mode.geom_mean_diam.ppf(lhd[:,(3+num_species[m])*m+1]),
-                    log10_geom_std_dev=np.array(mode.log10_geom_std_dev.ppf(lhd[:,(3+num_species[m])*m+2])), # !!! FIXME: Changed np.array --> np.log10
+                    log10_geom_std_dev=np.array(mode.log10_geom_std_dev.ppf(lhd[:,(3+num_species[m])*m+2])),
                     mass_fractions=tuple(
                         [mass_fraction.ppf(lhd[:,(3+num_species[m])*m+f])
                          for f, mass_fraction in enumerate(mode.mass_fractions)]),
