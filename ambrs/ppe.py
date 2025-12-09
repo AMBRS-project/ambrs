@@ -53,30 +53,47 @@ PPE are sampled"""
         gas_emissions: Optional[list[tuple[float, dict]]] = None,
         gas_background: Optional[list[tuple[float, dict]]] = None
     ):
-        self.name = name
-        self.aerosols = aerosols
-        self.gases = gases
-        self.size = size
-        self.gas_concs = tuple([gas_conc if gas_conc is RVFrozenDistribution else Delta(gas_conc) for gas_conc in gas_concs])
+        # self.name = name
+        object.__setattr__(self,'name',name)
+        # self.aerosols = aerosols
+        object.__setattr__(self,'aerosols',aerosols)
+        # self.gases = gases
+        object.__setattr__(self,'gases',gases)
+        # self.size = size
+        object.__setattr__(self,'size',size)
+        # self.gas_concs = tuple([gas_conc if gas_conc is RVFrozenDistribution else Delta(gas_conc) for gas_conc in gas_concs])
+        object.__setattr__(self,'gas_concs',
+                           tuple([gas_conc if gas_conc is RVFrozenDistribution else Delta(gas_conc) for gas_conc in gas_concs]))
         if flux is RVFrozenDistribution:
-            self.flux = flux
+            # self.flux = flux
+            object.__setattr__(self,'flux',flux)
         elif flux is float:
-            self.flux = Delta(flux)
+            # self.flux = Delta(flux)
+            object.__setattr__(self,'flux',Delta(flux))
         if relative_humidity is RVFrozenDistribution:
-            self.relative_humidity = relative_humidity
+            # self.relative_humidity = relative_humidity
+            object.__setattr__(self,'relative_humidity',relative_humidity)
         elif relative_humidity is float:
-            self.relative_humidity = Delta(relative_humidity)
+            # self.relative_humidity = Delta(relative_humidity)
+            object.__setattr__(self,'relative_humidity',Delta(relative_humidity))
         if temperature is RVFrozenDistribution:
-            self.temperature = temperature
+            # self.temperature = temperature
+            object.__setattr__(self,'temperature',temperature)
         elif temperature is float:
-            self.temperature = Delta(temperature)
+            # self.temperature = Delta(temperature)
+            object.__setattr__(self,'temperature',Delta(temperature))
         if pressure is RVFrozenDistribution:
-            self.pressure = pressure
+            # self.pressure = pressure
+            object.__setattr__(self,'pressure',pressure)
         elif pressure is float:
-            self.pressure = Delta(pressure)        
-        self.height = height
-        self.gas_emissions = gas_emissions
-        self.gas_background = gas_background
+            # self.pressure = Delta(pressure)
+            object.__setattr__(self,'pressure',Delta(pressure))
+        # self.height = height
+        object.__setattr__(self,'height',height)
+        # self.gas_emissions = gas_emissions
+        object.__setattr__(self,'gas_emissions',gas_emissions)
+        # self.gas_background = gas_background
+        object.__setattr__(self,'gas_background',gas_background)
 
 @dataclass(frozen=True)
 class Ensemble:

@@ -130,21 +130,31 @@ log-normal aerosol mode (distribution only--no state information)"""
         log10_geom_std_dev: RVFrozenDistribution | float, # mode-specific logarithmic diameter std dev
         mass_fractions: tuple[RVFrozenDistribution | float, ...] # species mass fraction distributions
     ):
-        self.name = name
-        self.species = species
+        # self.name = name
+        object.__setattr__(self,'name',name)
+        # self.species = species
+        object.__setattr__(self,'species',species)
         if number is RVFrozenDistribution:
-            self.number = number
+            # self.number = number
+            object.__setattr__(self,'number',number)
         elif number is float:
-            self.number = Delta(number)
+            # self.number = Delta(number)
+            object.__setattr__(self,'number',Delta(number))
         if geom_mean_diam is RVFrozenDistribution:
-            self.geom_mean_diam = geom_mean_diam
+            # self.geom_mean_diam = geom_mean_diam
+            object.__setattr__(self,'geom_mean_diam',geom_mean_diam)
         elif geom_mean_diam is float:
-            self.geom_mean_diam = Delta(geom_mean_diam)
+            # self.geom_mean_diam = Delta(geom_mean_diam)
+            object.__setattr__(self,'geom_mean_diam',Delta(geom_mean_diam))
         if log10_geom_std_dev is RVFrozenDistribution:
-            self.log10_geom_std_dev = log10_geom_std_dev
+            # self.log10_geom_std_dev = log10_geom_std_dev
+            object.__setattr__(self,'log10_geom_std_dev',log10_geom_std_dev)
         elif log10_geom_std_dev is float:
-            self.log10_geom_std_dev = Delta(log10_geom_std_dev)
-        self.mass_fractions = tuple([mass_fraction if mass_fraction is RVFrozenDistribution else Delta(mass_fraction) for mass_fraction in mass_fractions])
+            # self.log10_geom_std_dev = Delta(log10_geom_std_dev)
+            object.__setattr__(self,'log10_geom_std_dev',Delta(log10_geom_std_dev))
+        # self.mass_fractions = tuple([mass_fraction if mass_fraction is RVFrozenDistribution else Delta(mass_fraction) for mass_fraction in mass_fractions])
+        object.__setattr__(self,'mass_fractions',
+                           tuple([mass_fraction if mass_fraction is RVFrozenDistribution else Delta(mass_fraction) for mass_fraction in mass_fractions]))
 
 @dataclass
 class AerosolModePopulation:
