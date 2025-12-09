@@ -22,7 +22,7 @@ ambrs/visualization_old/__init__.py
 ambrs/visualization_old/input_ranges.py
 ambrs/visualization_old/input_table.py
 ambrs/visualization_old/output_plot.py
-ambrs/visualization_old/output_pyparticle.py
+ambrs/visualization_old/output_part2pop.py
 ambrs/visualization_old/viz_old.py
 test/__init__.py
 test/test_aerosol.py

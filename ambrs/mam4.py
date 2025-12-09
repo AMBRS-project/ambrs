@@ -17,7 +17,7 @@ import pathlib
 
 
 # fixme: put this in wrapper? load wrapper with .aerosol? 
-from pyparticle import build_population
+from part2pop import build_population
 from dataclasses import dataclass
 from netCDF4 import Dataset
 import numpy as np

@@ -15,7 +15,7 @@ import numpy as np
 from dataclasses import dataclass
 import json
 import pandas as pd
-from pyparticle import build_population
+from part2pop import build_population
 from netCDF4 import Dataset
 
 @dataclass

@@ -5,8 +5,8 @@ import math
 
 from typing import Sequence, Tuple, Dict, Any
 
-from pyparticle.viz.style import StyleManager, Theme
-from pyparticle.viz.builder import build_plotter
+from part2pop.viz.style import StyleManager, Theme
+from part2pop.viz.builder import build_plotter
 from .ppe import Ensemble
 
 from ambrs import partmc, mam4 # import modules
@@ -98,6 +98,7 @@ def render_partmc_and_mam4_variable_grid(
     species_modifications: Dict = {}, # modify aerosol species during post-processing (e.g., assume BrC rather than non-absorbing OC)
     sharex: bool = True,
     sharey: bool = False,
+    color: str | Sequence[str] | None = None,
     ) -> Tuple[plt.Figure, np.ndarray]:
     """
     Render a grid where rows = scenarios and columns = user-defined 'columns'
@@ -131,7 +132,12 @@ def render_partmc_and_mam4_variable_grid(
     axes = np.empty((n_rows, n_cols), dtype=object)
     
     base = _base_styles()
-    colors = _scenario_colors(n_rows) if row_colors is None else list(row_colors)
+    if color == None:
+        colors = _scenario_colors(n_rows) if row_colors is None else list(row_colors)
+    elif isinstance(color, str):
+        colors = [color]*n_rows
+    else:
+        colors = color
     
     
     # else:
@@ -219,7 +225,6 @@ def render_partmc_and_mam4_variable_grid(
         yvarlab = varname.replace("_", " ")
     axes[np.floor(n_rows/2).astype(int), 0].set_ylabel(yvarlab)
     
-
     for i_col in range(n_cols):
         axes[-1, i_col].set_xlabel(xvarlab)
 
@@ -231,7 +236,8 @@ def render_dNdlnD_grid(
     legend_loc=None, row_colors=None,
     xscale='log', yscale='linear',
     spec_modifications={},
-    sharex=True, sharey=False):
+    sharex=True, sharey=False,
+    color=None):
     """
     Render grid of bscat vs wavelength at specified RH values.
     """
@@ -251,7 +257,8 @@ def render_dNdlnD_grid(
         yscale = yscale,
         species_modifications = spec_modifications, # modify aerosol species during post-processing (e.g., assume BrC rather than non-absorbing OC)
         sharex = sharex,
-        sharey = sharey
+        sharey = sharey,
+        color = color,
         )
 
 def render_frac_ccn_grid(
