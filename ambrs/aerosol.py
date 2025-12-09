@@ -27,7 +27,7 @@ class AerosolProcesses:
     optics: bool = False
     nucleation: bool = False
 
-@dataclass(frozen=False) # Unfroze. Reason for frozen?
+@dataclass(frozen=True)
 class AerosolSpecies:
     """AerosolSpecies: the definition of an aerosol species in terms of species-
 specific parameters (no state information)"""
