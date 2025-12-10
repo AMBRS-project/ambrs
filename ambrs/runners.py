@@ -307,7 +307,7 @@ runner's root directory, generating a directory for each of the scenarios"""
 
         logger.info(f'{self.model.name}: completed runs.')
         if error_occurred:
-            logger.error('f{self.model.name}: At least one run failed.')
+            logger.error(f'{self.model.name}: At least one run failed.')
 
         # # gather model output
         # outputs = []

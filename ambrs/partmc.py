@@ -1,4 +1,4 @@
-"""ambrs.mam4 -- data types and functions related to the MAM4 box model"""
+"""ambrs.partmc -- data types and functions related to the PartMC box model"""
 
 from .aerosol import AerosolProcesses, AerosolModalSizePopulation, \
                      AerosolModalSizeState
@@ -147,7 +147,6 @@ class Input:
     # CAMP configuration
     camp_config: Optional[str] = None
 
-neutralize = False
 class AerosolModel(BaseAerosolModel):
     def __init__(self,
                  processes: AerosolProcesses,
@@ -230,7 +229,6 @@ class AerosolModel(BaseAerosolModel):
             n_repeat = self.n_repeat,
 
             restart = False,
-            # do_select_weighting = False,
             do_select_weighting = True,
             weight_type = 'power_source',
             weighting_exponent = 0,
@@ -312,7 +310,8 @@ class AerosolModel(BaseAerosolModel):
         if input.do_select_weighting:
             spec_content += 'do_select_weighting yes\n'
             spec_content += f'weight_type {input.weight_type}\n'
-            spec_content += f'weighting_exponent {input.weighting_exponent}\n'
+            if input.weight_type in ['power','power_source']:
+                spec_content += f'weighting_exponent {input.weighting_exponent}\n'
         else:
             spec_content += 'do_select_weighting no\n'
         spec_content += '\n'
@@ -464,16 +463,19 @@ class AerosolModel(BaseAerosolModel):
 
         # gas_back.dat
         if input.gas_background:
-            gas_background_species = [input.gas_background[0].time_series[1].keys()]
+            # gas_background_species = [input.gas_background[0].time_series[1].keys()]
+            gas_background_species = list(input.gas_background[0][1].keys())
             gas_background_species.remove('rate')
             # FIXME: convert background conc to ppb
             with open(os.path.join(dir, 'gas_back.dat'), 'w') as f:
                 f.write('# time (s)\n# rate (s^{-1})\n# concentrations (ppb)\n')
-                f.write('\t'.join(['time'] + [pair[0] for pair in input.gas_background]) + '\n')
-                f.write('\t'.join(['rate'] + [pair[1]['rate'] for pair in input.gas_background]) + '\n')
-                f.write('\t'.join([species_name] + [pair[1][species_name] \
-                                  for species_name in gas_background_species \
-                                  for pair in input.gas_background]))
+                f.write('\t'.join(['time'] + [str(pair[0]) for pair in input.gas_background]) + '\n')
+                f.write('\t'.join(['rate'] + [str(pair[1]['rate']) for pair in input.gas_background]) + '\n')
+                # f.write('\t'.join([species_name] + [str(pair[1][species_name]) \
+                #                   for species_name in gas_background_species \
+                #                   for pair in input.gas_background]))
+                for species_name in gas_background_species:
+                    f.write('\t'.join([species_name] + [str(pair[1][species_name]) for pair in input.gas_background]) + '\n')
         else:
             # write a gas background file with zero data
             with open(os.path.join(dir, 'gas_back.dat'), 'w') as f:
@@ -609,36 +611,3 @@ timestep and ensemble index, given the directory in which it resides"""
             return ncfilename
         else:
             raise OSError(f'No NetCDF output found for repeat number {repeat_num} and timestep {timestep} in {dir}!')
-
-def mam4_sulfate_to_so4_and_nh4(sulfate_mass_frac: float) -> dict:
-    """Given a mass fraction of sulfate (SO4), return a dictionary with
-    the mass fractions of SO4 and NH4 needed to neutralize it.
-    Note: only works for single-species ions currently.
-    """
-    MW_SO4 = 0.09606 # kg/mol
-    MW_NH4 = 0.01804 # kg/mol
-    mf_so4 = sulfate_mass_frac*MW_SO4/(MW_SO4 + 2*MW_NH4)
-    mf_nh4 = 2*sulfate_mass_frac*MW_NH4/(MW_SO4 + 2*MW_NH4)
-    return {'SO4': mf_so4, 'NH4': mf_nh4}
-
-# # fixme: quick add by laura; should be somewhere else. Utlities?
-# def get_mass_fracs_neutralized(mode: AerosolModalSizePopulation) -> dict:
-#     """Given an AerosolModalSizePopulation mode, return a dictionary of
-#     mass fractions adjusted for neutralization (i.e., adding counterions
-#     to soluble species as needed to neutralize their charge).
-#     Note: only works for single-species ions currently.
-#     """
-#     MW_SO4 = 0.09606 # kg/mol
-#     MW_NH4 = 0.01804 # kg/mol
-#     mass_fracs = {}
-#     for i, species in enumerate(mode.species):
-#         if species.name == 'SO4': # FIXME: quick check for SO4 for now; generalize with ions_in_soln
-#             mf_so4_noBalance = mode.mass_fractions[i]
-#             mf_so4 = mf_so4_noBalance*MW_SO4/(MW_SO4 + 2*MW_NH4)
-#             mf_nh4 = 2*mf_so4_noBalance*MW_NH4/(MW_SO4 + 2*MW_NH4)
-#             mass_fracs['SO4'] = mf_so4
-#             mass_fracs['NH4'] = mf_nh4
-#         else:
-#             mass_fracs[species.name] = mode.mass_fractions[i]
-    
-#     return mass_fracs

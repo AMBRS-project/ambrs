@@ -18,7 +18,7 @@ import pathlib
 
 # fixme: put this in wrapper? load wrapper with .aerosol? 
 from part2pop import build_population
-from dataclasses import dataclass
+from dataclasses import dataclass, make_dataclass
 from netCDF4 import Dataset
 import numpy as np
 import os.path
@@ -29,6 +29,12 @@ class Input:
     """ambrs.mam4.Input -- an input dataclass for the MAM4 box model"""
     # all fields here are named identically to their respective namelist
     # parameters in the MAM4 box model
+
+    # scenario
+    scenario: Scenario
+
+    # CAMP mass fractions
+    mfs: list
 
     # timestepping parameters
     mam_dt: float
@@ -132,31 +138,51 @@ class AerosolMassFractions:
                  scenario: Scenario):
         self.accum = self.AccumMode(
             SO4 = scenario.size.modes[0].mass_fraction('SO4'),
-            POM = scenario.size.modes[0].mass_fraction("OC"),
-            SOA = scenario.size.modes[0].mass_fraction('MSA'), # FIXME: using MSA as a placeholder for SOA
+            POM = scenario.size.modes[0].mass_fraction('POM'),
+            SOA = scenario.size.modes[0].mass_fraction('SOA'),
             BC  = scenario.size.modes[0].mass_fraction("BC"),
-            DST = scenario.size.modes[0].mass_fraction("OIN"),
-            NCL = scenario.size.modes[0].mass_fraction("Na"), # FIXME: and "Cl"? Assuming 1:1 for now
+            DST = scenario.size.modes[0].mass_fraction("DST"),
+            NCL = scenario.size.modes[0].mass_fraction("NCL"),
         )
+        # self.AccumMode = make_dataclass('AccumMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[0].species])
+        # self.accum = self.AccumMode(
+        #     **{p.aliases if p.aliases else p.name : scenario.size.modes[0].mass_fraction(p.name) for p in scenario.size.modes[0].species}
+        # )
+                
         
         self.aitken = self.AitkenMode(
             SO4 = scenario.size.modes[1].mass_fraction("SO4"),
-            SOA = scenario.size.modes[1].mass_fraction("MSA"), # FIXME: using MSA as a placeholder for SOA
-            NCL = scenario.size.modes[1].mass_fraction("Na"), # FIXME: assuming 1:1 with Cl for now
+            SOA = scenario.size.modes[1].mass_fraction("SOA"),
+            NCL = scenario.size.modes[1].mass_fraction("NCL"),
         )
         self.coarse = self.CoarseMode(
-            DST = scenario.size.modes[2].mass_fraction("OIN"),
-            NCL = scenario.size.modes[2].mass_fraction("Na"), # FIXME: see above
+            DST = scenario.size.modes[2].mass_fraction("DST"),
+            NCL = scenario.size.modes[2].mass_fraction("NCL"),
             SO4 = scenario.size.modes[2].mass_fraction("SO4"),
             BC  = scenario.size.modes[2].mass_fraction("BC"),
-            POM = scenario.size.modes[2].mass_fraction("OC"),
-            SOA = scenario.size.modes[2].mass_fraction("MSA"), # FIXME: using MSA as a placeholder for SOA
+            POM = scenario.size.modes[2].mass_fraction("POM"),
+            SOA = scenario.size.modes[2].mass_fraction("SOA"),
         )
         self.pcarbon = self.PCarbonMode(
-            POM = scenario.size.modes[3].mass_fraction("OC"),
+            POM = scenario.size.modes[3].mass_fraction("POM"),
             BC  = scenario.size.modes[3].mass_fraction("BC"),
         )
+        # self.AitkenMode = make_dataclass('AitkenMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[1].species])
+        # self.aitken = self.AitkenMode(
+        #     **{p.aliases if p.aliases else p.name : scenario.size.modes[1].mass_fraction(p.name) for p in scenario.size.modes[1].species}
+        # )
+
+        # self.CoarseMode = make_dataclass('CoarseMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[2].species])
+        # self.coarse = self.CoarseMode(
+        #     **{p.aliases if p.aliases else p.name : scenario.size.modes[2].mass_fraction(p.name) for p in scenario.size.modes[2].species}
+        # )
         
+        # self.PCarbonMode = make_dataclass('PCarbonMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[3].species])
+        # self.pcarbon = self.PCarbonMode(
+        #     **{p.aliases if p.aliases else p.name : scenario.size.modes[3].mass_fraction(p.name) for p in scenario.size.modes[3].species}
+        # )
+        
+# FIXME: put this in constants?
 dry_air_molar_mass   = 29.   # g/mol, dry air
 
 # this type handles the mapping of AMBRS gas species to MAM4 species
@@ -214,24 +240,26 @@ Parameters:
         
         # translate the scenario's gas mixing ratios to MAM4-ese
         gas_mixing_ratios = GasMixingRatios(scenario)
-        
-        mftot1 = (
-            aero_mass_fracs.accum.SO4 + aero_mass_fracs.accum.POM + 
-            aero_mass_fracs.accum.SOA + aero_mass_fracs.accum.BC + 
-            aero_mass_fracs.accum.DST + aero_mass_fracs.accum.NCL)
 
-        mftot2 = (
-            aero_mass_fracs.aitken.SO4 + 
-            aero_mass_fracs.aitken.SOA + 
-            aero_mass_fracs.aitken.NCL)
-        
-        mftot3 = (
-            aero_mass_fracs.coarse.SO4 + aero_mass_fracs.coarse.POM + 
-            aero_mass_fracs.coarse.SOA + aero_mass_fracs.coarse.BC + 
-            aero_mass_fracs.coarse.DST + aero_mass_fracs.coarse.NCL)
+        mfs1 = {p.name : scenario.size.modes[0].mass_fraction(p.name) for p in scenario.size.modes[0].species}
+        mftot1 = sum(mfs1.values())
+        mfs1 = {p.name : mfs1[p.name]/mftot1 for p in scenario.size.modes[0].species} 
 
-        mftot4 = (
-            aero_mass_fracs.pcarbon.POM + aero_mass_fracs.pcarbon.BC)
+        mfs2 = {p.name : scenario.size.modes[1].mass_fraction(p.name) for p in scenario.size.modes[1].species} 
+        mftot2 = sum(mfs2.values())
+        mfs2 = {p.name : mfs2[p.name]/mftot2 for p in scenario.size.modes[1].species} 
+        
+        mfs3 = {p.name : scenario.size.modes[2].mass_fraction(p.name) for p in scenario.size.modes[2].species} 
+        mftot3 = sum(mfs3.values())
+        mfs3 = {p.name : mfs3[p.name]/mftot3 for p in scenario.size.modes[2].species} 
+
+        mfs4 = {p.name : scenario.size.modes[3].mass_fraction(p.name) for p in scenario.size.modes[3].species} 
+        mftot4 = sum(mfs4.values())
+        mfs4 = {p.name : mfs4[p.name]/mftot4 for p in scenario.size.modes[3].species} 
+
+        mfs = [mfs1, mfs2, mfs3, mfs4]
+
+        # print( 'MASS FRACS', mfs )
         
         aero_names = []
         for mode in scenario.size.modes:
@@ -240,6 +268,10 @@ Parameters:
 
         gas_names = [getattr(gs, "name", str(gs)) for gs in scenario.gases]
         return Input(
+            scenario = scenario,
+
+            mfs = mfs,
+            
             mam_dt = dt,
             mam_nstep = nstep,
 
@@ -257,6 +289,7 @@ Parameters:
             numc2 = scenario.size.modes[1].number,
             numc3 = scenario.size.modes[2].number,
             numc4 = scenario.size.modes[3].number,
+            
             mfso41 = aero_mass_fracs.accum.SO4/mftot1,
             mfpom1 = aero_mass_fracs.accum.POM/mftot1,
             mfsoa1 = aero_mass_fracs.accum.SOA/mftot1,
@@ -372,15 +405,20 @@ qso2           = {input.qso2},
 qh2so4         = {input.qh2so4},
 qsoag          = {input.qsoag},
 /
-{camp_block}"""
-
-
-# &camp_input
-# use_camp       = 1,
-# camp_files     = '{camp_files_abs if camp_files_abs else ""}',
-# /
-# """
-        filename = dir / 'namelist'
+&size_parameters
+    dgnum1       = {input.scenario.size.modes[0].geom_mean_diam},
+    dgnum2       = {input.scenario.size.modes[1].geom_mean_diam},
+    dgnum3       = {input.scenario.size.modes[2].geom_mean_diam},
+    dgnum4       = {input.scenario.size.modes[3].geom_mean_diam},
+    sigmag1      = {10**input.scenario.size.modes[0].log10_geom_std_dev},
+    sigmag2      = {10**input.scenario.size.modes[1].log10_geom_std_dev},
+    sigmag3      = {10**input.scenario.size.modes[2].log10_geom_std_dev},
+    sigmag4      = {10**input.scenario.size.modes[3].log10_geom_std_dev},
+/
+"""
+        if not os.path.exists(dir):
+            raise OSError(f'Directory not found: {dir}')
+        filename = os.path.join(dir, 'namelist')
         with open(filename, 'w') as f:
             f.write(content)
 

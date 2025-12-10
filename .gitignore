@@ -3,3 +3,8 @@
 
 .DS_Store
 runs/
+
+.ipynb_checkpoints/
+ambrs/.ipynb_checkpoints/
+ambrs/camp.py
+test/.ipynb_checkpoints/

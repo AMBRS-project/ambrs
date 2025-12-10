@@ -1,0 +1,83 @@
+{
+    "camp-data" : [
+        {
+            "name" : "organic",
+            "type" : "AERO_PHASE",
+            "species" : [
+                
+                "SOA",
+
+                "AORGH2O",
+
+                "APOC",
+
+                "APNCOM",
+
+                "ALVPO1",
+
+                "ASVPO1",
+
+                "ASVPO2",
+
+                "ASVPO3",
+
+                "AIVPO1"
+
+            ]
+        },
+        {
+            "name" : "inorganic",
+            "type" : "AERO_PHASE",
+            "species" : [
+                
+                "AH2O",
+
+                "AH3OP",
+
+                "ASO4",
+
+                "ANH4",
+
+                "ANO3",
+
+                "ANA",
+
+                "ACL"
+
+            ]
+        },
+        {
+            "name" : "inert",
+            "type" : "AERO_PHASE",
+            "species" : [
+                
+                "AEC",
+
+                "AOTHR",
+
+                "AFE",
+
+                "AAL",
+
+                "ASI",
+
+                "ATI",
+
+                "ACA",
+
+                "AMG",
+
+                "AK",
+
+                "AMN",
+
+                "ACORS",
+
+                "ASOIL",
+
+                "ASEACAT"
+
+            ]
+        }
+    ]
+}
