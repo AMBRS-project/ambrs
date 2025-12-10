@@ -1,8 +1,0 @@
-{
-    "camp-files" : [
-        "../../../../camp_config/aerosol_phases.json",
-        "../../../../camp_config/partmc_aerosol_representation.json",
-        "../../../../camp_config/species.json",
-        "../../../../camp_config/pmc_mech.json"
-    ]
-}
