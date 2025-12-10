@@ -29,11 +29,11 @@ PPE are sampled"""
     aerosols: tuple[AerosolSpecies, ...]
     gases: tuple[GasSpecies, ...]
     size: AerosolModalSizeDistribution
-    gas_concs: tuple[RVFrozenDistribution | float, ...] # ordered like gases
-    flux: RVFrozenDistribution | float
-    relative_humidity: RVFrozenDistribution | float
-    temperature: RVFrozenDistribution | float
-    pressure: RVFrozenDistribution | float
+    gas_concs: tuple[RVFrozenDistribution, ...] # ordered like gases
+    flux: RVFrozenDistribution
+    relative_humidity: RVFrozenDistribution
+    temperature: RVFrozenDistribution
+    pressure: RVFrozenDistribution
     height: float
     gas_emissions: Optional[list[tuple[float, dict]]] = None
     gas_background: Optional[list[tuple[float, dict]]] = None
@@ -44,55 +44,40 @@ PPE are sampled"""
         aerosols: tuple[AerosolSpecies, ...],
         gases: tuple[GasSpecies, ...],
         size: AerosolModalSizeDistribution,
-        gas_concs: tuple[RVFrozenDistribution | float, ...], # ordered like gases
-        flux: RVFrozenDistribution | float,
-        relative_humidity: RVFrozenDistribution | float,
-        temperature: RVFrozenDistribution | float,
-        pressure: RVFrozenDistribution | float,
+        gas_concs: tuple[RVFrozenDistribution, ...], # ordered like gases
+        flux: RVFrozenDistribution,
+        relative_humidity: RVFrozenDistribution,
+        temperature: RVFrozenDistribution,
+        pressure: RVFrozenDistribution,
         height: float,
         gas_emissions: Optional[list[tuple[float, dict]]] = None,
         gas_background: Optional[list[tuple[float, dict]]] = None
     ):
         # self.name = name
         object.__setattr__(self,'name',name)
-        # self.aerosols = aerosols
         object.__setattr__(self,'aerosols',aerosols)
-        # self.gases = gases
         object.__setattr__(self,'gases',gases)
-        # self.size = size
         object.__setattr__(self,'size',size)
-        # self.gas_concs = tuple([gas_conc if gas_conc is RVFrozenDistribution else Delta(gas_conc) for gas_conc in gas_concs])
         object.__setattr__(self,'gas_concs',
-                           tuple([gas_conc if gas_conc is RVFrozenDistribution else Delta(gas_conc) for gas_conc in gas_concs]))
-        if type(flux) is RVFrozenDistribution:
-            # self.flux = flux
+                           tuple([gas_conc if callable(getattr(gas_conc,'ppf',None)) else Delta(gas_conc) for gas_conc in gas_concs]))
+        if callable(getattr(flux,'ppf',None)):
             object.__setattr__(self,'flux',flux)
-        elif type(flux) is float:
-            # self.flux = Delta(flux)
+        elif isinstance(flux,(int,float)):
             object.__setattr__(self,'flux',Delta(flux))
-        if type(relative_humidity) is RVFrozenDistribution:
-            # self.relative_humidity = relative_humidity
+        if callable(getattr(relative_humidity,'ppf',None)):
             object.__setattr__(self,'relative_humidity',relative_humidity)
-        elif type(relative_humidity) is float:
-            # self.relative_humidity = Delta(relative_humidity)
+        elif isinstance(relative_humidity,(int,float)):
             object.__setattr__(self,'relative_humidity',Delta(relative_humidity))
-        if type(temperature) is RVFrozenDistribution:
-            # self.temperature = temperature
+        if callable(getattr(temperature,'ppf',None)):
             object.__setattr__(self,'temperature',temperature)
-        elif type(temperature) is float:
-            # self.temperature = Delta(temperature)
+        elif isinstance(temperature,(int,float)):
             object.__setattr__(self,'temperature',Delta(temperature))
-        if type(pressure) is RVFrozenDistribution:
-            # self.pressure = pressure
+        if callable(getattr(pressure,'ppf',None)):
             object.__setattr__(self,'pressure',pressure)
-        elif type(pressure) is float:
-            # self.pressure = Delta(pressure)
+        elif isinstance(pressure,(int,float)):
             object.__setattr__(self,'pressure',Delta(pressure))
-        # self.height = height
         object.__setattr__(self,'height',height)
-        # self.gas_emissions = gas_emissions
         object.__setattr__(self,'gas_emissions',gas_emissions)
-        # self.gas_background = gas_background
         object.__setattr__(self,'gas_background',gas_background)
 
 @dataclass(frozen=True)
@@ -121,6 +106,19 @@ a specific EnsembleSpecification"""
 
     def member(self, i: int) -> Scenario:
         """ensemble.member(i) -> extracts Scenario from ith ensemble member"""
+        for key in self.__dict__:
+            if key == 'gas_concs':
+                object.__setattr__(
+                    self,
+                    key,
+                    tuple([conc*np.ones(self.__len__()) for conc in getattr(self,key)])
+                )
+            elif key in ['flux','relative_humidity','temperature','pressure']:
+                object.__setattr__(
+                    self,
+                    key,
+                    getattr(self,key) * np.ones(self.__len__())
+                )
         return Scenario(
             aerosols = self.aerosols,
             gases = self.gases,
@@ -189,7 +187,7 @@ specified scenarios (which must all have the same particle size representation)"
         flux = flux,
         relative_humidity = relative_humidity,
         temperature = temperature,
-        pressure = pressure, #scenarios[0].pressure,
+        pressure = pressure,
         height = scenarios[0].height,
         gas_emissions = scenarios[0].gas_emissions,
         gas_background = scenarios[0].gas_background,
@@ -210,7 +208,6 @@ def sample(specification: EnsembleSpecification, n: int) -> Ensemble:
                     species = mode.species,
                     number = mode.number.rvs(n),
                     geom_mean_diam = mode.geom_mean_diam.rvs(n),
-                    # log10_geom_std_dev = np.array([mode.log10_geom_std_dev.rvs(n) for i in range(n)]),
                     log10_geom_std_dev = mode.log10_geom_std_dev.rvs(n),
                     mass_fractions = tuple([f.rvs(n) for f in mode.mass_fractions]),
                 ) for mode in specification.size.modes]),
