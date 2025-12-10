@@ -21,13 +21,13 @@ so4 = aerosol.AerosolSpecies(
     hygroscopicity = 0.507,
 )
 pom = aerosol.AerosolSpecies(
-    name='OC',
+    name='POM',
     molar_mass = 12.01,
     density = 1000,
     hygroscopicity = 0.5,
 )
 soa = aerosol.AerosolSpecies(
-    name='MSA',
+    name='SOA',
     molar_mass = 12.01,
     density = 1000,
     hygroscopicity = 0.5,
@@ -39,13 +39,13 @@ bc = aerosol.AerosolSpecies(
     hygroscopicity = 0.5,
 )
 dst = aerosol.AerosolSpecies(
-    name='OIN',
+    name='DST',
     molar_mass = 135.065,
     density = 1000,
     hygroscopicity = 0.5,
 )
 ncl = aerosol.AerosolSpecies(
-    name='Na',
+    name='NCL',
     molar_mass = 58.44,
     density = 1000,
     hygroscopicity = 0.5,
