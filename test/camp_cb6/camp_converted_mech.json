@@ -1,0 +1,4075 @@
+{ "camp-data" : [
+  {
+    "name" : "CB6R5_AE7_AQ",
+    "type" : "MECHANISM",
+    "reactions" : [
+       {
+        "rxn id" : "R1",
+        "reactants" : {
+          "NO2" : {} 
+        },
+        "products" : {
+          "NO" : {} ,
+          "O" : {} 
+        },
+        "orig params" : "1.0/<NO2_IUPAC10>"
+      },
+      {
+        "rxn id" : "R2",
+        "reactants" : {
+          "O" : {} ,
+          "O2" : {} ,
+          "M" : {} 
+        },
+        "products" : {
+          "O3" : {} ,
+          "M" : {} 
+        },
+        "orig params" : "6.00E-34^-2.6"
+      },
+      {
+        "rxn id" : "R3",
+        "reactants" : {
+          "O3" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "NO2" : {} 
+        },
+        "orig params" : "2.07E-12@1400"
+      },
+      {
+        "rxn id" : "R4",
+        "reactants" : {
+          "O" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "NO2" : {} 
+        },
+        "orig params" : "1.00E-31^-1.6 & 5.00E-11^0.30 &0.85 &0.84"
+      },
+      {
+        "rxn id" : "R5",
+        "reactants" : {
+          "O" : {} ,
+          "NO2" : {} 
+        },
+        "products" : {
+          "NO" : {} 
+        },
+        "orig params" : "5.10E-12@-198"
+      },
+      {
+        "rxn id" : "R6",
+        "reactants" : {
+          "O" : {} ,
+          "NO2" : {} 
+        },
+        "products" : {
+          "NO3" : {} 
+        },
+        "orig params" : "1.30E-31^-1.5 & 2.30E-11^0.24 &0.6 &1.03"
+      },
+      {
+        "rxn id" : "R7",
+        "reactants" : {
+          "O" : {} ,
+          "O3" : {} 
+        },
+        "products" : {
+        },
+        "orig params" : "8.00E-12@2060"
+      },
+      {
+        "rxn id" : "R8",
+        "reactants" : {
+          "O3" : {} 
+        },
+        "products" : {
+          "O" : {} 
+        },
+        "orig params" : "1.0/<O3_O3P_IUPAC10>"
+      },
+      {
+        "rxn id" : "R9",
+        "reactants" : {
+          "O3" : {} 
+        },
+        "products" : {
+          "O1D" : {} 
+        },
+        "orig params" : "1.0/<O3_O1D_IUPAC10>"
+      },
+      {
+        "rxn id" : "R10",
+        "reactants" : {
+          "O1D" : {} ,
+          "M" : {} 
+        },
+        "products" : {
+          "O" : {} ,
+          "M" : {} 
+        },
+        "orig params" : "2.23E-11@-115"
+      },
+      {
+        "rxn id" : "R11",
+        "reactants" : {
+          "O1D" : {} ,
+          "H2O" : {} 
+        },
+        "products" : {
+          "OH" : {}<YIELD2.0> 
+        },
+        "orig params" : "2.14E-10"
+      },
+      {
+        "rxn id" : "R12",
+        "reactants" : {
+          "O3" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "HO2" : {} 
+        },
+        "orig params" : "1.70E-12@940"
+      },
+      {
+        "rxn id" : "R13",
+        "reactants" : {
+          "O3" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "OH" : {} 
+        },
+        "orig params" : "2.03E-16^4.57@-693"
+      },
+      {
+        "rxn id" : "R14",
+        "reactants" : {
+          "OH" : {} ,
+          "O" : {} 
+        },
+        "products" : {
+          "HO2" : {} 
+        },
+        "orig params" : "2.40E-11@-110"
+      },
+      {
+        "rxn id" : "R15",
+        "reactants" : {
+          "HO2" : {} ,
+          "O" : {} 
+        },
+        "products" : {
+          "OH" : {} 
+        },
+        "orig params" : "3.00E-11@-200"
+      },
+      {
+        "rxn id" : "R16",
+        "reactants" : {
+          "OH" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "O" : {} 
+        },
+        "orig params" : "6.20E-14^2.6@-945"
+      },
+      {
+        "rxn id" : "R17",
+        "reactants" : {
+          "OH" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "H2O2" : {} 
+        },
+        "orig params" : "9.00E-31^-3.2 & 3.90E-11^-0.47 &0.42 &1.23"
+      },
+      {
+        "rxn id" : "R18",
+        "reactants" : {
+          "OH" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+        },
+        "orig params" : "4.80E-11@-250"
+      },
+      {
+        "rxn id" : "R19",
+        "reactants" : {
+          "HO2" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "H2O2" : {} %3 
+        },
+        "orig params" : "2.20E-13@-600 & 1.90E-33@-980"
+      },
+      {
+        "rxn id" : "R20",
+        "reactants" : {
+          "HO2" : {} ,
+          "HO2" : {} ,
+          "H2O" : {} 
+        },
+        "products" : {
+          "H2O2" : {} %3 
+        },
+        "orig params" : "3.08E-34@-2800 & 2.66E-54@-3180"
+      },
+      {
+        "rxn id" : "R21",
+        "reactants" : {
+          "H2O2" : {} 
+        },
+        "products" : {
+          "OH" : {}<YIELD2.0> 
+        },
+        "orig params" : "1.0/<H2O2_IUPAC10>"
+      },
+      {
+        "rxn id" : "R22",
+        "reactants" : {
+          "H2O2" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "HO2" : {} 
+        },
+        "orig params" : "1.80E-12"
+      },
+      {
+        "rxn id" : "R23",
+        "reactants" : {
+          "H2O2" : {} ,
+          "O" : {} 
+        },
+        "products" : {
+          "OH" : {} ,
+          "HO2" : {} 
+        },
+        "orig params" : "1.40E-12@2000"
+      },
+      {
+        "rxn id" : "R24",
+        "reactants" : {
+          "NO" : {} ,
+          "NO" : {} ,
+          "O2" : {} 
+        },
+        "products" : {
+          "NO2" : {}<YIELD2.0> 
+        },
+        "orig params" : "4.25E-39@-664"
+      },
+      {
+        "rxn id" : "R25",
+        "reactants" : {
+          "HO2" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "OH" : {} ,
+          "NO2" : {} 
+        },
+        "orig params" : "3.45E-12@-270"
+      },
+      {
+        "rxn id" : "R26",
+        "reactants" : {
+          "NO2" : {} ,
+          "O3" : {} 
+        },
+        "products" : {
+          "NO3" : {} 
+        },
+        "orig params" : "1.40E-13@2470"
+      },
+      {
+        "rxn id" : "R27",
+        "reactants" : {
+          "NO3" : {} 
+        },
+        "products" : {
+          "NO2" : {} ,
+          "O" : {} 
+        },
+        "orig params" : "1.0/<NO3NO2_06>"
+      },
+      {
+        "rxn id" : "R28",
+        "reactants" : {
+          "NO3" : {} 
+        },
+        "products" : {
+          "NO" : {} 
+        },
+        "orig params" : "1.0/<NO3NO_06>"
+      },
+      {
+        "rxn id" : "R29",
+        "reactants" : {
+          "NO3" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "NO2" : {}<YIELD2.0> 
+        },
+        "orig params" : "1.80E-11@-110"
+      },
+      {
+        "rxn id" : "R30",
+        "reactants" : {
+          "NO3" : {} ,
+          "NO2" : {} 
+        },
+        "products" : {
+          "NO" : {} ,
+          "NO2" : {} 
+        },
+        "orig params" : "4.50E-14@1260"
+      },
+      {
+        "rxn id" : "R31",
+        "reactants" : {
+          "NO3" : {} ,
+          "O" : {} 
+        },
+        "products" : {
+          "NO2" : {} 
+        },
+        "orig params" : "1.70E-11"
+      },
+      {
+        "rxn id" : "R32",
+        "reactants" : {
+          "NO3" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "HO2" : {} ,
+          "NO2" : {} 
+        },
+        "orig params" : "2.00E-11"
+      },
+      {
+        "rxn id" : "R33",
+        "reactants" : {
+          "NO3" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "OH" : {} ,
+          "NO2" : {} 
+        },
+        "orig params" : "4.00E-12"
+      },
+      {
+        "rxn id" : "R34",
+        "reactants" : {
+          "NO3" : {} ,
+          "O3" : {} 
+        },
+        "products" : {
+          "NO2" : {} 
+        },
+        "orig params" : "1.00E-17"
+      },
+      {
+        "rxn id" : "R35",
+        "reactants" : {
+          "NO3" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "NO2" : {}<YIELD2.0> 
+        },
+        "orig params" : "8.50E-13@2450"
+      },
+      {
+        "rxn id" : "R36",
+        "reactants" : {
+          "NO3" : {} ,
+          "NO2" : {} 
+        },
+        "products" : {
+          "N2O5" : {} 
+        },
+        "orig params" : "3.60E-30^-4.1 & 1.90E-12^0.2 &0.35 &1.33"
+      },
+      {
+        "rxn id" : "R37",
+        "reactants" : {
+          "N2O5" : {} 
+        },
+        "products" : {
+          "NO3" : {} ,
+          "NO2" : {} 
+        },
+        "orig params" : "1.30E-3^-3.5@11000 & 9.70E+14^0.1@11080 &0.35 &1.33"
+      },
+      {
+        "rxn id" : "R38",
+        "reactants" : {
+          "N2O5" : {} 
+        },
+        "products" : {
+          "NO2" : {} ,
+          "NO3" : {} 
+        },
+        "orig params" : "1.0/<N2O5_IUPAC10>"
+      },
+      {
+        "rxn id" : "R39",
+        "reactants" : {
+          "N2O5" : {} ,
+          "H2O" : {} 
+        },
+        "products" : {
+          "HNO3" : {}<YIELD2.0> 
+        },
+        "orig params" : "1.00E-22"
+      },
+      {
+        "rxn id" : "R40",
+        "reactants" : {
+          "NO" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "HONO" : {} 
+        },
+        "orig params" : "7.40E-31^-2.4 & 3.30E-11^-0.3 &0.81 &0.87"
+      },
+      {
+        "rxn id" : "R41",
+        "reactants" : {
+          "NO" : {} ,
+          "NO2" : {} ,
+          "H2O" : {} 
+        },
+        "products" : {
+          "HONO" : {}<YIELD2.0> 
+        },
+        "orig params" : "5.00E-40"
+      },
+      {
+        "rxn id" : "R42",
+        "reactants" : {
+          "HONO" : {} ,
+          "HONO" : {} 
+        },
+        "products" : {
+          "NO" : {} ,
+          "NO2" : {} 
+        },
+        "orig params" : "1.00E-20"
+      },
+      {
+        "rxn id" : "R43",
+        "reactants" : {
+          "HONO" : {} 
+        },
+        "products" : {
+          "NO" : {} ,
+          "OH" : {} 
+        },
+        "orig params" : "1.0/<HONO_IUPAC10>"
+      },
+      {
+        "rxn id" : "R44",
+        "reactants" : {
+          "HONO" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "NO2" : {} 
+        },
+        "orig params" : "2.50E-12@-260"
+      },
+      {
+        "rxn id" : "R45",
+        "reactants" : {
+          "NO2" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "HNO3" : {} 
+        },
+        "orig params" : "1.80E-30^-3 & 2.80E-11 &0.6 &1"
+      },
+      {
+        "rxn id" : "R46",
+        "reactants" : {
+          "HNO3" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "NO3" : {} %2 
+        },
+        "orig params" : "2.40E-14@-460 & 2.70E-17@-2199 & 6.50E-34@-1335"
+      },
+      {
+        "rxn id" : "R47",
+        "reactants" : {
+          "HNO3" : {} 
+        },
+        "products" : {
+          "OH" : {} ,
+          "NO2" : {} 
+        },
+        "orig params" : "1.0/<HNO3_IUPAC10>"
+      },
+      {
+        "rxn id" : "R48",
+        "reactants" : {
+          "HO2" : {} ,
+          "NO2" : {} 
+        },
+        "products" : {
+          "PNA" : {} 
+        },
+        "orig params" : "1.40E-31^-3.1 & 4.00E-12 &0.4 &1.26"
+      },
+      {
+        "rxn id" : "R49",
+        "reactants" : {
+          "PNA" : {} 
+        },
+        "products" : {
+          "HO2" : {} ,
+          "NO2" : {} 
+        },
+        "orig params" : "4.10E-5@10650 & 6.00E+15@11170 &0.4 &1.26"
+      },
+      {
+        "rxn id" : "R50",
+        "reactants" : {
+          "PNA" : {} 
+        },
+        "products" : {
+          "HO2" : {}<YIELD0.59> ,
+          "NO2" : {}<YIELD0.59> ,
+          "OH" : {}<YIELD0.41> ,
+          "NO3" : {}<YIELD0.41> 
+        },
+        "orig params" : "1.0/<PNA_IUPAC10>"
+      },
+      {
+        "rxn id" : "R51",
+        "reactants" : {
+          "PNA" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "NO2" : {} 
+        },
+        "orig params" : "3.20E-13@-690"
+      },
+      {
+        "rxn id" : "R52",
+        "reactants" : {
+          "SO2" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "SULF" : {} ,
+          "HO2" : {} ,
+          "SULRXN" : {} 
+        },
+        "orig params" : "2.80E-31^-2.6 & 2.00E-12 &0.53 &1.1"
+      },
+      {
+        "rxn id" : "R53",
+        "reactants" : {
+          "C2O3" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "NO2" : {} ,
+          "MEO2" : {} ,
+          "RO2" : {} 
+        },
+        "orig params" : "7.50E-12@-290"
+      },
+      {
+        "rxn id" : "R54",
+        "reactants" : {
+          "C2O3" : {} ,
+          "NO2" : {} 
+        },
+        "products" : {
+          "PAN" : {} 
+        },
+        "orig params" : "3.61E-28^-6.87 & 1.24E-11^-1.105 &0.3 &1.41"
+      },
+      {
+        "rxn id" : "R55",
+        "reactants" : {
+          "PAN" : {} 
+        },
+        "products" : {
+          "NO2" : {} ,
+          "C2O3" : {} 
+        },
+        "orig params" : "1.10E-5@10100 & 1.90E+17@14100 &0.3 &1.41"
+      },
+      {
+        "rxn id" : "R56",
+        "reactants" : {
+          "PAN" : {} 
+        },
+        "products" : {
+          "NO2" : {}<YIELD0.6> ,
+          "C2O3" : {}<YIELD0.6> ,
+          "NO3" : {}<YIELD0.4> ,
+          "MEO2" : {}<YIELD0.4> ,
+          "RO2" : {}<YIELD0.4> 
+        },
+        "orig params" : "1.0/<PAN_IUPAC10>"
+      },
+      {
+        "rxn id" : "R57",
+        "reactants" : {
+          "C2O3" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "PACD" : {}<YIELD0.37> ,
+          "AACD" : {}<YIELD0.13> ,
+          "O3" : {}<YIELD0.13> ,
+          "MEO2" : {}<YIELD0.5> ,
+          "RO2" : {}<YIELD0.5> ,
+          "OH" : {}<YIELD0.50> 
+        },
+        "orig params" : "3.14E-12@-580"
+      },
+      {
+        "rxn id" : "R58",
+        "reactants" : {
+          "C2O3" : {} ,
+          "RO2" : {} 
+        },
+        "products" : {
+          "MEO2" : {} 
+        },
+        "orig params" : "4.40E-13@-1070"
+      },
+      {
+        "rxn id" : "R59",
+        "reactants" : {
+          "C2O3" : {} ,
+          "C2O3" : {} 
+        },
+        "products" : {
+          "MEO2" : {}<YIELD2.0> ,
+          "RO2" : {}<YIELD2.0> 
+        },
+        "orig params" : "2.90E-12@-500"
+      },
+      {
+        "rxn id" : "R60",
+        "reactants" : {
+          "C2O3" : {} ,
+          "CXO3" : {} 
+        },
+        "products" : {
+          "MEO2" : {} ,
+          "ALD2" : {} ,
+          "XO2H" : {} ,
+          "RO2" : {}<YIELD2.0> 
+        },
+        "orig params" : "1.00E+0*K<R59>"
+      },
+      {
+        "rxn id" : "R61",
+        "reactants" : {
+          "CXO3" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "NO2" : {} ,
+          "ALD2" : {} ,
+          "XO2H" : {} ,
+          "RO2" : {} 
+        },
+        "orig params" : "6.70E-12@-340"
+      },
+      {
+        "rxn id" : "R62",
+        "reactants" : {
+          "CXO3" : {} ,
+          "NO2" : {} 
+        },
+        "products" : {
+          "PANX" : {} 
+        },
+        "orig params" : "8.4E-1*K<R54>"
+      },
+      {
+        "rxn id" : "R63",
+        "reactants" : {
+          "PANX" : {} 
+        },
+        "products" : {
+          "NO2" : {} ,
+          "CXO3" : {} 
+        },
+        "orig params" : "8.4E-1*K<R55>"
+      },
+      {
+        "rxn id" : "R64",
+        "reactants" : {
+          "PANX" : {} 
+        },
+        "products" : {
+          "NO2" : {}<YIELD0.6> ,
+          "CXO3" : {}<YIELD0.6> ,
+          "NO3" : {}<YIELD0.4> ,
+          "ALD2" : {}<YIELD0.4> ,
+          "XO2H" : {}<YIELD0.4> ,
+          "RO2" : {}<YIELD0.4> 
+        },
+        "orig params" : "1.0/<PAN_IUPAC10>"
+      },
+      {
+        "rxn id" : "R65",
+        "reactants" : {
+          "CXO3" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "PACD" : {}<YIELD0.37> ,
+          "AACD" : {}<YIELD0.13> ,
+          "O3" : {}<YIELD0.13> ,
+          "OH" : {}<YIELD0.5> ,
+          "MEO2" : {}<YIELD0.5> ,
+          "RO2" : {}<YIELD0.5> 
+        },
+        "orig params" : "1.00E+0*K<R57>"
+      },
+      {
+        "rxn id" : "R66",
+        "reactants" : {
+          "CXO3" : {} ,
+          "RO2" : {} 
+        },
+        "products" : {
+          "MEO2" : {} 
+        },
+        "orig params" : "1.00E+0*K<R58>"
+      },
+      {
+        "rxn id" : "R67",
+        "reactants" : {
+          "CXO3" : {} ,
+          "CXO3" : {} 
+        },
+        "products" : {
+          "MEO2" : {}<YIELD2.0> ,
+          "RO2" : {}<YIELD2.0> 
+        },
+        "orig params" : "1.00E+0*K<R59>"
+      },
+      {
+        "rxn id" : "R68",
+        "reactants" : {
+          "RO2" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "NO" : {} 
+        },
+        "orig params" : "2.40E-12@-360"
+      },
+      {
+        "rxn id" : "R69",
+        "reactants" : {
+          "RO2" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "HO2" : {} 
+        },
+        "orig params" : "4.80E-13@-800"
+      },
+      {
+        "rxn id" : "R70",
+        "reactants" : {
+          "RO2" : {} ,
+          "RO2" : {} 
+        },
+        "products" : {
+        },
+        "orig params" : "6.50E-14@-500"
+      },
+      {
+        "rxn id" : "R71",
+        "reactants" : {
+          "MEO2" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "FORM" : {} ,
+          "HO2" : {} ,
+          "NO2" : {} 
+        },
+        "orig params" : "2.30E-12@-360"
+      },
+      {
+        "rxn id" : "R72",
+        "reactants" : {
+          "MEO2" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "MEPX" : {}<YIELD0.9> ,
+          "FORM" : {}<YIELD0.1> 
+        },
+        "orig params" : "3.80E-13@-780"
+      },
+      {
+        "rxn id" : "R73",
+        "reactants" : {
+          "MEO2" : {} ,
+          "C2O3" : {} 
+        },
+        "products" : {
+          "FORM" : {} ,
+          "HO2" : {}<YIELD0.9> ,
+          "MEO2" : {}<YIELD0.9> ,
+          "AACD" : {}<YIELD0.1> ,
+          "RO2" : {}<YIELD0.9> 
+        },
+        "orig params" : "2.E-12@-500"
+      },
+      {
+        "rxn id" : "R74",
+        "reactants" : {
+          "MEO2" : {} ,
+          "RO2" : {} 
+        },
+        "products" : {
+          "FORM" : {}<YIELD0.685> ,
+          "MEOH" : {}<YIELD0.315> ,
+          "HO2" : {}<YIELD0.37> ,
+          "RO2" : {} 
+        },
+        "orig params" : "1.0*K<R70>"
+      },
+      {
+        "rxn id" : "R75",
+        "reactants" : {
+          "XO2H" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "NO2" : {} ,
+          "HO2" : {} 
+        },
+        "orig params" : "2.70E-12@-360"
+      },
+      {
+        "rxn id" : "R76",
+        "reactants" : {
+          "XO2H" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "ROOH" : {} 
+        },
+        "orig params" : "6.80E-13@-800"
+      },
+      {
+        "rxn id" : "R77",
+        "reactants" : {
+          "XO2H" : {} ,
+          "C2O3" : {} 
+        },
+        "products" : {
+          "HO2" : {}<YIELD0.8> ,
+          "MEO2" : {}<YIELD0.8> ,
+          "AACD" : {}<YIELD0.2> ,
+          "RO2" : {}<YIELD0.8> 
+        },
+        "orig params" : "1.0*K<R58>"
+      },
+      {
+        "rxn id" : "R78",
+        "reactants" : {
+          "XO2H" : {} ,
+          "RO2" : {} 
+        },
+        "products" : {
+          "HO2" : {}<YIELD0.6> ,
+          "RO2" : {} 
+        },
+        "orig params" : "1.00E+0*K<R70>"
+      },
+      {
+        "rxn id" : "R79",
+        "reactants" : {
+          "XO2" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "NO2" : {} 
+        },
+        "orig params" : "1.00E+0*K<R75>"
+      },
+      {
+        "rxn id" : "R80",
+        "reactants" : {
+          "XO2" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "ROOH" : {} 
+        },
+        "orig params" : "1.00E+0*K<R76>"
+      },
+      {
+        "rxn id" : "R81",
+        "reactants" : {
+          "XO2" : {} ,
+          "C2O3" : {} 
+        },
+        "products" : {
+          "MEO2" : {}<YIELD0.8> ,
+          "AACD" : {}<YIELD0.2> ,
+          "RO2" : {}<YIELD0.8> 
+        },
+        "orig params" : "1.0*K<R58>"
+      },
+      {
+        "rxn id" : "R82",
+        "reactants" : {
+          "XO2" : {} ,
+          "RO2" : {} 
+        },
+        "products" : {
+          "RO2" : {} 
+        },
+        "orig params" : "1.00E+0*K<R70>"
+      },
+      {
+        "rxn id" : "R83",
+        "reactants" : {
+          "XO2N" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "NTR1" : {}<YIELD0.5> ,
+          "NTR2" : {}<YIELD0.5> 
+        },
+        "orig params" : "1.00E+0*K<R75>"
+      },
+      {
+        "rxn id" : "R84",
+        "reactants" : {
+          "XO2N" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "ROOH" : {} 
+        },
+        "orig params" : "1.00E+0*K<R76>"
+      },
+      {
+        "rxn id" : "R85",
+        "reactants" : {
+          "XO2N" : {} ,
+          "C2O3" : {} 
+        },
+        "products" : {
+          "HO2" : {}<YIELD0.8> ,
+          "MEO2" : {}<YIELD0.8> ,
+          "AACD" : {}<YIELD0.2> ,
+          "RO2" : {}<YIELD0.8> 
+        },
+        "orig params" : "1.0*K<R58>"
+      },
+      {
+        "rxn id" : "R86",
+        "reactants" : {
+          "XO2N" : {} ,
+          "RO2" : {} 
+        },
+        "products" : {
+          "RO2" : {} 
+        },
+        "orig params" : "1.00E+0*K<R70>"
+      },
+      {
+        "rxn id" : "R87",
+        "reactants" : {
+          "MEPX" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "MEO2" : {}<YIELD0.6> ,
+          "RO2" : {}<YIELD0.6> ,
+          "FORM" : {}<YIELD0.4> ,
+          "OH" : {}<YIELD0.4> 
+        },
+        "orig params" : "5.30E-12@-190"
+      },
+      {
+        "rxn id" : "R88",
+        "reactants" : {
+          "MEPX" : {} 
+        },
+        "products" : {
+          "MEO2" : {} ,
+          "RO2" : {} ,
+          "OH" : {} 
+        },
+        "orig params" : "1.0/<MEPX_IUPAC10>"
+      },
+      {
+        "rxn id" : "R89",
+        "reactants" : {
+          "ROOH" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "XO2H" : {}<YIELD0.54> ,
+          "XO2N" : {}<YIELD0.06> ,
+          "RO2" : {}<YIELD0.6> ,
+          "OH" : {}<YIELD0.4> 
+        },
+        "orig params" : "5.30E-12@-190"
+      },
+      {
+        "rxn id" : "R90",
+        "reactants" : {
+          "ROOH" : {} 
+        },
+        "products" : {
+          "HO2" : {} ,
+          "OH" : {} 
+        },
+        "orig params" : "1.0/<MEPX_IUPAC10>"
+      },
+      {
+        "rxn id" : "R91",
+        "reactants" : {
+          "NTR1" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "NTR2" : {} 
+        },
+        "orig params" : "2.00E-12"
+      },
+      {
+        "rxn id" : "R92",
+        "reactants" : {
+          "NTR1" : {} 
+        },
+        "products" : {
+          "NO2" : {} 
+        },
+        "orig params" : "1.0/<NTR_IUPAC10>"
+      },
+      {
+        "rxn id" : "R93",
+        "reactants" : {
+          "FACD" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "HO2" : {} 
+        },
+        "orig params" : "4.50E-13"
+      },
+      {
+        "rxn id" : "R94",
+        "reactants" : {
+          "AACD" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "MEO2" : {} ,
+          "RO2" : {} 
+        },
+        "orig params" : "4.00E-14@-850"
+      },
+      {
+        "rxn id" : "R95",
+        "reactants" : {
+          "PACD" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "C2O3" : {} 
+        },
+        "orig params" : "5.30E-12@-190"
+      },
+      {
+        "rxn id" : "R96",
+        "reactants" : {
+          "FORM" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "HO2" : {} ,
+          "CO" : {} 
+        },
+        "orig params" : "5.40E-12@-135"
+      },
+      {
+        "rxn id" : "R97",
+        "reactants" : {
+          "FORM" : {} 
+        },
+        "products" : {
+          "HO2" : {}<YIELD2.0> ,
+          "CO" : {} 
+        },
+        "orig params" : "1.0/<FORM_R_IUPAC13>"
+      },
+      {
+        "rxn id" : "R98",
+        "reactants" : {
+          "FORM" : {} 
+        },
+        "products" : {
+          "CO" : {} 
+        },
+        "orig params" : "1.0/<FORM_M_IUPAC13>"
+      },
+      {
+        "rxn id" : "R99",
+        "reactants" : {
+          "FORM" : {} ,
+          "O" : {} 
+        },
+        "products" : {
+          "OH" : {} ,
+          "HO2" : {} ,
+          "CO" : {} 
+        },
+        "orig params" : "3.40E-11@1600"
+      },
+      {
+        "rxn id" : "R100",
+        "reactants" : {
+          "FORM" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "HNO3" : {} ,
+          "HO2" : {} ,
+          "CO" : {} 
+        },
+        "orig params" : "5.50E-16"
+      },
+      {
+        "rxn id" : "R101",
+        "reactants" : {
+          "FORM" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "HCO3" : {} 
+        },
+        "orig params" : "9.70E-15@-625"
+      },
+      {
+        "rxn id" : "R102",
+        "reactants" : {
+          "HCO3" : {} 
+        },
+        "products" : {
+          "FORM" : {} ,
+          "HO2" : {} 
+        },
+        "orig params" : "2.40E+12@7000"
+      },
+      {
+        "rxn id" : "R103",
+        "reactants" : {
+          "HCO3" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "FACD" : {} ,
+          "NO2" : {} ,
+          "HO2" : {} 
+        },
+        "orig params" : "5.60E-12"
+      },
+      {
+        "rxn id" : "R104",
+        "reactants" : {
+          "HCO3" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "MEPX" : {}<YIELD0.5> ,
+          "FACD" : {}<YIELD0.5> ,
+          "OH" : {}<YIELD0.2> ,
+          "HO2" : {}<YIELD0.2> 
+        },
+        "orig params" : "5.60E-15@-2300"
+      },
+      {
+        "rxn id" : "R105",
+        "reactants" : {
+          "ALD2" : {} ,
+          "O" : {} 
+        },
+        "products" : {
+          "C2O3" : {} ,
+          "OH" : {} 
+        },
+        "orig params" : "1.80E-11@1100"
+      },
+      {
+        "rxn id" : "R106",
+        "reactants" : {
+          "ALD2" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "C2O3" : {} 
+        },
+        "orig params" : "4.70E-12@-345"
+      },
+      {
+        "rxn id" : "R107",
+        "reactants" : {
+          "ALD2" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "C2O3" : {} ,
+          "HNO3" : {} 
+        },
+        "orig params" : "1.40E-12@1860"
+      },
+      {
+        "rxn id" : "R108",
+        "reactants" : {
+          "ALD2" : {} 
+        },
+        "products" : {
+          "MEO2" : {} ,
+          "RO2" : {} ,
+          "CO" : {} ,
+          "HO2" : {} 
+        },
+        "orig params" : "1.0/<ALD2_R_IUPAC13>"
+      },
+      {
+        "rxn id" : "R109",
+        "reactants" : {
+          "ALDX" : {} ,
+          "O" : {} 
+        },
+        "products" : {
+          "CXO3" : {} ,
+          "OH" : {} 
+        },
+        "orig params" : "1.30E-11@870"
+      },
+      {
+        "rxn id" : "R110",
+        "reactants" : {
+          "ALDX" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "CXO3" : {} 
+        },
+        "orig params" : "4.90E-12@-405"
+      },
+      {
+        "rxn id" : "R111",
+        "reactants" : {
+          "ALDX" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "CXO3" : {} ,
+          "HNO3" : {} 
+        },
+        "orig params" : "6.30E-15"
+      },
+      {
+        "rxn id" : "R112",
+        "reactants" : {
+          "ALDX" : {} 
+        },
+        "products" : {
+          "ALD2" : {} ,
+          "XO2H" : {} ,
+          "RO2" : {} ,
+          "CO" : {} ,
+          "HO2" : {} 
+        },
+        "orig params" : "1.0/<ALDX_R_IUPAC13>"
+      },
+      {
+        "rxn id" : "R113",
+        "reactants" : {
+          "GLYD" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "GLY" : {}<YIELD0.2> ,
+          "HO2" : {}<YIELD0.2> ,
+          "C2O3" : {}<YIELD0.8> 
+        },
+        "orig params" : "8.00E-12"
+      },
+      {
+        "rxn id" : "R114",
+        "reactants" : {
+          "GLYD" : {} 
+        },
+        "products" : {
+          "FORM" : {}<YIELD0.74> ,
+          "CO" : {}<YIELD0.89> ,
+          "HO2" : {}<YIELD1.4> ,
+          "MEOH" : {}<YIELD0.15> ,
+          "OH" : {}<YIELD0.19> ,
+          "GLY" : {}<YIELD0.11> ,
+          "XO2H" : {}<YIELD0.11> ,
+          "RO2" : {}<YIELD0.11> 
+        },
+        "orig params" : "1.0/<GLYD_IUPAC13>"
+      },
+      {
+        "rxn id" : "R115",
+        "reactants" : {
+          "GLYD" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "HNO3" : {} ,
+          "C2O3" : {} 
+        },
+        "orig params" : "1.00E+0*K<R107>"
+      },
+      {
+        "rxn id" : "R116",
+        "reactants" : {
+          "GLY" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "CO" : {}<YIELD1.8> ,
+          "XO2" : {}<YIELD0.2> ,
+          "RO2" : {}<YIELD0.2> ,
+          "HO2" : {} 
+        },
+        "orig params" : "3.10E-12@-340"
+      },
+      {
+        "rxn id" : "R117",
+        "reactants" : {
+          "GLY" : {} 
+        },
+        "products" : {
+          "HO2" : {}<YIELD2.0> ,
+          "CO" : {}<YIELD2.0> 
+        },
+        "orig params" : "1.0/<GLY_R_IUPAC13>"
+      },
+      {
+        "rxn id" : "R118",
+        "reactants" : {
+          "GLY" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "HNO3" : {} ,
+          "CO" : {}<YIELD1.5> ,
+          "XO2" : {}<YIELD0.5> ,
+          "RO2" : {}<YIELD0.5> ,
+          "HO2" : {} 
+        },
+        "orig params" : "4.00E-16"
+      },
+      {
+        "rxn id" : "R119",
+        "reactants" : {
+          "MGLY" : {} 
+        },
+        "products" : {
+          "C2O3" : {} ,
+          "HO2" : {} ,
+          "CO" : {} 
+        },
+        "orig params" : "1.0/<MGLY_IUPAC10>"
+      },
+      {
+        "rxn id" : "R120",
+        "reactants" : {
+          "MGLY" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "HNO3" : {} ,
+          "C2O3" : {} ,
+          "XO2" : {} ,
+          "RO2" : {} 
+        },
+        "orig params" : "5.00E-16"
+      },
+      {
+        "rxn id" : "R121",
+        "reactants" : {
+          "MGLY" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "C2O3" : {} ,
+          "CO" : {} 
+        },
+        "orig params" : "1.90E-12@-575"
+      },
+      {
+        "rxn id" : "R122",
+        "reactants" : {
+          "H2" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "HO2" : {} 
+        },
+        "orig params" : "7.70E-12@2100"
+      },
+      {
+        "rxn id" : "R123",
+        "reactants" : {
+          "CO" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "HO2" : {} %3 
+        },
+        "orig params" : "1.44E-13@0.0 &3.43E-33@0.0"
+      },
+      {
+        "rxn id" : "R124",
+        "reactants" : {
+          "CH4" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "MEO2" : {} ,
+          "RO2" : {} 
+        },
+        "orig params" : "1.85E-12@1690"
+      },
+      {
+        "rxn id" : "R125",
+        "reactants" : {
+          "ETHA" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "ALD2" : {}<YIELD0.991> ,
+          "XO2H" : {}<YIELD0.991> ,
+          "XO2N" : {}<YIELD0.009> ,
+          "RO2" : {} 
+        },
+        "orig params" : "6.90E-12@1000"
+      },
+      {
+        "rxn id" : "R126",
+        "reactants" : {
+          "MEOH" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "FORM" : {} ,
+          "HO2" : {} 
+        },
+        "orig params" : "2.85E-12@345"
+      },
+      {
+        "rxn id" : "R127",
+        "reactants" : {
+          "ETOH" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "ALD2" : {}<YIELD0.95> ,
+          "HO2" : {}<YIELD0.9> ,
+          "XO2H" : {}<YIELD0.1> ,
+          "RO2" : {}<YIELD0.1> ,
+          "FORM" : {}<YIELD0.078> ,
+          "GLYD" : {}<YIELD0.011> 
+        },
+        "orig params" : "3.00E-12@-20"
+      },
+      {
+        "rxn id" : "R128",
+        "reactants" : {
+          "KET" : {} 
+        },
+        "products" : {
+          "ALD2" : {}<YIELD0.5> ,
+          "C2O3" : {}<YIELD0.5> ,
+          "XO2H" : {}<YIELD0.5> ,
+          "CXO3" : {}<YIELD0.5> ,
+          "MEO2" : {}<YIELD0.5> ,
+          "RO2" : {} <PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT>,
+          "PAR" : {}<YIELD-2.5> 
+        },
+        "orig params" : "1.0/<KET_IUPAC10>"
+      },
+      {
+        "rxn id" : "R129",
+        "reactants" : {
+          "ACET" : {} 
+        },
+        "products" : {
+          "CO" : {}<YIELD0.38> ,
+          "MEO2" : {}<YIELD1.38> ,
+          "RO2" : {}<YIELD1.38> ,
+          "C2O3" : {}<YIELD0.62> 
+        },
+        "orig params" : "1.0/<ACET_IUPAC10>"
+      },
+      {
+        "rxn id" : "R130",
+        "reactants" : {
+          "ACET" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "FORM" : {} ,
+          "C2O3" : {} ,
+          "XO2" : {} ,
+          "RO2" : {} 
+        },
+        "orig params" : "1.41E-12@620.6"
+      },
+      {
+        "rxn id" : "R131",
+        "reactants" : {
+          "PRPA" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "XPRP" : {} 
+        },
+        "orig params" : "7.60E-12@585"
+      },
+      {
+        "rxn id" : "R132",
+        "reactants" : {
+          "PAR" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "XPAR" : {} 
+        },
+        "orig params" : "8.10E-13"
+      },
+      {
+        "rxn id" : "R133",
+        "reactants" : {
+          "ROR" : {} 
+        },
+        "products" : {
+          "KET" : {}<YIELD0.2> ,
+          "ACET" : {}<YIELD0.42> ,
+          "ALD2" : {}<YIELD0.74> ,
+          "ALDX" : {}<YIELD0.37> ,
+          "XO2N" : {}<YIELD0.04> ,
+          "XO2H" : {}<YIELD0.94> ,
+          "RO2" : {}<YIELD0.98> ,
+          "ROR" : {}<YIELD0.02> <PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT>,
+          "PAR" : {}<YIELD-2.7> 
+        },
+        "orig params" : "5.70E+12@5780"
+      },
+      {
+        "rxn id" : "R134",
+        "reactants" : {
+          "ROR" : {} ,
+          "O2" : {} 
+        },
+        "products" : {
+          "KET" : {} ,
+          "HO2" : {} 
+        },
+        "orig params" : "1.50E-14@200"
+      },
+      {
+        "rxn id" : "R135",
+        "reactants" : {
+          "ROR" : {} ,
+          "NO2" : {} 
+        },
+        "products" : {
+          "NTR1" : {} 
+        },
+        "orig params" : "8.60E-12@-400"
+      },
+      {
+        "rxn id" : "R136",
+        "reactants" : {
+          "ETHY" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "GLY" : {}<YIELD0.7> ,
+          "OH" : {}<YIELD0.7> ,
+          "FACD" : {}<YIELD0.3> ,
+          "CO" : {}<YIELD0.3> ,
+          "HO2" : {}<YIELD0.3> 
+        },
+        "orig params" : "5.E-30^-1.5 & 1.00E-12 &0.37 &1.3"
+      },
+      {
+        "rxn id" : "R137",
+        "reactants" : {
+          "ETH" : {} ,
+          "O" : {} 
+        },
+        "products" : {
+          "FORM" : {} ,
+          "HO2" : {} ,
+          "CO" : {} ,
+          "XO2H" : {}<YIELD0.7> ,
+          "RO2" : {}<YIELD0.7> ,
+          "OH" : {}<YIELD0.3> 
+        },
+        "orig params" : "1.04E-11@792"
+      },
+      {
+        "rxn id" : "R138",
+        "reactants" : {
+          "ETH" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "XO2H" : {} ,
+          "RO2" : {} ,
+          "FORM" : {}<YIELD1.56> ,
+          "GLYD" : {}<YIELD0.22> 
+        },
+        "orig params" : "8.60E-29^-3.1 & 9.00E-12^-0.85 &0.48 &1.15"
+      },
+      {
+        "rxn id" : "R139",
+        "reactants" : {
+          "ETH" : {} ,
+          "O3" : {} 
+        },
+        "products" : {
+          "FORM" : {} ,
+          "CO" : {}<YIELD0.35> ,
+          "HO2" : {}<YIELD0.27> ,
+          "OH" : {}<YIELD0.17> ,
+          "FACD" : {}<YIELD0.42> 
+        },
+        "orig params" : "6.82E-15@2500"
+      },
+      {
+        "rxn id" : "R140",
+        "reactants" : {
+          "ETH" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "NO2" : {}<YIELD0.5> ,
+          "NTR1" : {}<YIELD0.5> ,
+          "XO2H" : {}<YIELD0.5> ,
+          "XO2" : {}<YIELD0.5> ,
+          "RO2" : {} ,
+          "FORM" : {}<YIELD1.125> 
+        },
+        "orig params" : "3.30E-12@2880"
+      },
+      {
+        "rxn id" : "R141",
+        "reactants" : {
+          "OLE" : {} ,
+          "O" : {} 
+        },
+        "products" : {
+          "ALD2" : {}<YIELD0.2> ,
+          "ALDX" : {}<YIELD0.3> ,
+          "HO2" : {}<YIELD0.1> ,
+          "XO2H" : {}<YIELD0.2> ,
+          "CO" : {}<YIELD0.2> ,
+          "FORM" : {}<YIELD0.2> ,
+          "XO2N" : {}<YIELD0.01> ,
+          "RO2" : {}<YIELD0.21> ,
+          "PAR" : {}<YIELD0.2> ,
+          "OH" : {}<YIELD0.1> 
+        },
+        "orig params" : "1.00E-11@280"
+      },
+      {
+        "rxn id" : "R142",
+        "reactants" : {
+          "OLE" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "FORM" : {}<YIELD0.781> ,
+          "ALD2" : {}<YIELD0.488> ,
+          "ALDX" : {}<YIELD0.488> ,
+          "XO2H" : {}<YIELD0.976> ,
+          "XO2" : {}<YIELD0.195> ,
+          "XO2N" : {}<YIELD0.024> ,
+          "RO2" : {}<YIELD1.195> <PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT>,
+          "PAR" : {}<YIELD-0.73> 
+        },
+        "orig params" : "8.E-27^-3.5&3.00E-11^-1 &0.5 &1.13"
+      },
+      {
+        "rxn id" : "R143",
+        "reactants" : {
+          "OLE" : {} ,
+          "O3" : {} 
+        },
+        "products" : {
+          "ALD2" : {}<YIELD0.295> ,
+          "FORM" : {}<YIELD0.555> ,
+          "ALDX" : {}<YIELD0.27> ,
+          "XO2H" : {}<YIELD0.15> ,
+          "RO2" : {}<YIELD0.15> ,
+          "OH" : {}<YIELD0.334> ,
+          "HO2" : {}<YIELD0.08> ,
+          "CO" : {}<YIELD0.378> ,
+          "GLY" : {}<YIELD0.075> ,
+          "MGLY" : {}<YIELD0.075> ,
+          "FACD" : {}<YIELD0.09> ,
+          "AACD" : {}<YIELD0.13> ,
+          "H2O2" : {}<YIELD0.04> <PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT>,
+          "PAR" : {}<YIELD-0.79> 
+        },
+        "orig params" : "5.50E-15@1880"
+      },
+      {
+        "rxn id" : "R144",
+        "reactants" : {
+          "OLE" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "NO2" : {}<YIELD0.5> ,
+          "NTR1" : {}<YIELD0.5> ,
+          "XO2" : {}<YIELD0.48> ,
+          "XO2H" : {}<YIELD0.48> ,
+          "XO2N" : {}<YIELD0.04> ,
+          "RO2" : {} ,
+          "FORM" : {}<YIELD0.5> ,
+          "ALD2" : {}<YIELD0.25> ,
+          "ALDX" : {}<YIELD0.375> <PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT>,
+          "PAR" : {}<YIELD-1.0> 
+        },
+        "orig params" : "4.60E-13@1155"
+      },
+      {
+        "rxn id" : "R145",
+        "reactants" : {
+          "IOLE" : {} ,
+          "O" : {} 
+        },
+        "products" : {
+          "ALD2" : {}<YIELD1.24> ,
+          "ALDX" : {}<YIELD0.66> ,
+          "XO2H" : {}<YIELD0.1> ,
+          "RO2" : {}<YIELD0.1> ,
+          "CO" : {}<YIELD0.1> ,
+          "PAR" : {}<YIELD0.1> 
+        },
+        "orig params" : "2.30E-11"
+      },
+      {
+        "rxn id" : "R146",
+        "reactants" : {
+          "IOLE" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "ALD2" : {}<YIELD1.3> ,
+          "ALDX" : {}<YIELD0.7> ,
+          "XO2H" : {} ,
+          "RO2" : {} 
+        },
+        "orig params" : "1.05E-11@-519"
+      },
+      {
+        "rxn id" : "R147",
+        "reactants" : {
+          "IOLE" : {} ,
+          "O3" : {} 
+        },
+        "products" : {
+          "ALD2" : {}<YIELD0.732> ,
+          "ALDX" : {}<YIELD0.442> ,
+          "FORM" : {}<YIELD0.128> ,
+          "CO" : {}<YIELD0.245> ,
+          "OH" : {}<YIELD0.5> ,
+          "XO2H" : {}<YIELD0.3> ,
+          "RO2" : {}<YIELD0.3> ,
+          "GLY" : {}<YIELD0.24> ,
+          "MGLY" : {}<YIELD0.06> ,
+          "PAR" : {}<YIELD0.29> ,
+          "AACD" : {}<YIELD0.08> ,
+          "H2O2" : {}<YIELD0.08> 
+        },
+        "orig params" : "4.70E-15@1013"
+      },
+      {
+        "rxn id" : "R148",
+        "reactants" : {
+          "IOLE" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "NO2" : {}<YIELD0.5> ,
+          "NTR1" : {}<YIELD0.5> ,
+          "XO2" : {}<YIELD0.48> ,
+          "XO2H" : {}<YIELD0.48> ,
+          "XO2N" : {}<YIELD0.04> ,
+          "RO2" : {} ,
+          "ALD2" : {}<YIELD0.5> ,
+          "ALDX" : {}<YIELD0.625> ,
+          "PAR" : {} 
+        },
+        "orig params" : "3.70E-13"
+      },
+      {
+        "rxn id" : "R149",
+        "reactants" : {
+          "ISOP" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "ISO2" : {} ,
+          "RO2" : {} ,
+          "ISOPRXN" : {} 
+        },
+        "orig params" : "2.70E-11@-390"
+      },
+      {
+        "rxn id" : "R150",
+        "reactants" : {
+          "ISOP" : {} ,
+          "O" : {} 
+        },
+        "products" : {
+          "ISPD" : {}<YIELD0.75> ,
+          "FORM" : {}<YIELD0.5> ,
+          "XO2" : {}<YIELD0.25> ,
+          "RO2" : {}<YIELD0.25> ,
+          "HO2" : {}<YIELD0.25> ,
+          "CXO3" : {}<YIELD0.25> ,
+          "PAR" : {}<YIELD0.25> 
+        },
+        "orig params" : "3.00E-11"
+      },
+      {
+        "rxn id" : "R151",
+        "reactants" : {
+          "ISO2" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "INTR" : {}<YIELD0.1> ,
+          "NO2" : {}<YIELD0.9> ,
+          "FORM" : {}<YIELD0.673> ,
+          "ISPD" : {}<YIELD0.9> ,
+          "HO2" : {}<YIELD0.818> ,
+          "XO2H" : {}<YIELD0.082> ,
+          "RO2" : {}<YIELD0.082> 
+        },
+        "orig params" : "2.39E-12@-365"
+      },
+      {
+        "rxn id" : "R152",
+        "reactants" : {
+          "ISO2" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "ISPX" : {}<YIELD0.88> ,
+          "OH" : {}<YIELD0.12> ,
+          "HO2" : {}<YIELD0.12> ,
+          "FORM" : {}<YIELD0.12> ,
+          "ISPD" : {}<YIELD0.12> 
+        },
+        "orig params" : "7.43E-13@-700"
+      },
+      {
+        "rxn id" : "R153",
+        "reactants" : {
+          "ISO2" : {} ,
+          "C2O3" : {} 
+        },
+        "products" : {
+          "FORM" : {}<YIELD0.598> ,
+          "ISPD" : {}<YIELD1.0> ,
+          "HO2" : {}<YIELD0.728> ,
+          "XO2H" : {}<YIELD0.072> ,
+          "MEO2" : {}<YIELD0.8> ,
+          "AACD" : {}<YIELD0.2> ,
+          "RO2" : {}<YIELD0.872> 
+        },
+        "orig params" : "1.00E+0*K<R58>"
+      },
+      {
+        "rxn id" : "R154",
+        "reactants" : {
+          "ISO2" : {} ,
+          "RO2" : {} 
+        },
+        "products" : {
+          "FORM" : {}<YIELD0.598> ,
+          "ISPD" : {}<YIELD1.0> ,
+          "HO2" : {}<YIELD0.728> ,
+          "XO2H" : {}<YIELD0.072> ,
+          "RO2" : {}<YIELD1.072> 
+        },
+        "orig params" : "1.0*K<R70>"
+      },
+      {
+        "rxn id" : "R155",
+        "reactants" : {
+          "ISO2" : {} 
+        },
+        "products" : {
+          "HO2" : {} ,
+          "HPLD" : {} 
+        },
+        "orig params" : "3.30E+9@8300"
+      },
+      {
+        "rxn id" : "R156",
+        "reactants" : {
+          "ISOP" : {} ,
+          "O3" : {} 
+        },
+        "products" : {
+          "FORM" : {}<YIELD0.6> ,
+          "ISPD" : {}<YIELD0.65> ,
+          "ALDX" : {}<YIELD0.15> ,
+          "CXO3" : {}<YIELD0.2> ,
+          "PAR" : {}<YIELD0.35> ,
+          "OH" : {}<YIELD0.266> ,
+          "XO2" : {}<YIELD0.2> ,
+          "RO2" : {}<YIELD0.2> ,
+          "HO2" : {}<YIELD0.066> ,
+          "CO" : {}<YIELD0.066> 
+        },
+        "orig params" : "1.03E-14@1995"
+      },
+      {
+        "rxn id" : "R157",
+        "reactants" : {
+          "ISOP" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "NO2" : {}<YIELD0.35> ,
+          "NTR2" : {}<YIELD0.65> ,
+          "XO2H" : {}<YIELD0.64> ,
+          "XO2" : {}<YIELD0.33> ,
+          "XO2N" : {}<YIELD0.03> ,
+          "RO2" : {} ,
+          "FORM" : {}<YIELD0.35> ,
+          "ISPD" : {}<YIELD0.35> ,
+          "ISOPRXN" : {} 
+        },
+        "orig params" : "3.03E-12@448"
+      },
+      {
+        "rxn id" : "R158",
+        "reactants" : {
+          "ISPD" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "XO2N" : {}<YIELD0.022> ,
+          "XO2" : {}<YIELD0.521> ,
+          "MGLY" : {}<YIELD0.115> ,
+          "MEO2" : {}<YIELD0.115> ,
+          "GLYD" : {}<YIELD0.269> ,
+          "C2O3" : {}<YIELD0.269> ,
+          "OPO3" : {}<YIELD0.457> ,
+          "PAR" : {}<YIELD0.117> ,
+          "ACET" : {}<YIELD0.137> ,
+          "CO" : {}<YIELD0.137> ,
+          "HO2" : {}<YIELD0.137> ,
+          "RO2" : {}<YIELD0.658> 
+        },
+        "orig params" : "5.58E-12@-511"
+      },
+      {
+        "rxn id" : "R159",
+        "reactants" : {
+          "ISPD" : {} ,
+          "O3" : {} 
+        },
+        "products" : {
+          "ALD2" : {}<YIELD0.04> ,
+          "FORM" : {}<YIELD0.231> ,
+          "MGLY" : {}<YIELD0.531> ,
+          "GLY" : {}<YIELD0.17> ,
+          "ACET" : {}<YIELD0.17> ,
+          "CO" : {}<YIELD0.543> ,
+          "OH" : {}<YIELD0.461> ,
+          "FACD" : {}<YIELD0.15> ,
+          "HO2" : {}<YIELD0.398> ,
+          "C2O3" : {}<YIELD0.143> 
+        },
+        "orig params" : "3.88E-15@1770"
+      },
+      {
+        "rxn id" : "R160",
+        "reactants" : {
+          "ISPD" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "HNO3" : {}<YIELD0.717> ,
+          "NTR2" : {}<YIELD0.142> ,
+          "NO2" : {}<YIELD0.142> ,
+          "XO2" : {}<YIELD0.142> ,
+          "XO2H" : {}<YIELD0.142> ,
+          "GLYD" : {}<YIELD0.113> ,
+          "MGLY" : {}<YIELD0.113> ,
+          "PAR" : {}<YIELD0.717> ,
+          "CXO3" : {}<YIELD0.717> ,
+          "RO2" : {}<YIELD0.284> 
+        },
+        "orig params" : "4.10E-12@1860"
+      },
+      {
+        "rxn id" : "R161",
+        "reactants" : {
+          "ISPD" : {} 
+        },
+        "products" : {
+          "HO2" : {}<YIELD0.76> ,
+          "XO2H" : {}<YIELD0.34> ,
+          "XO2" : {}<YIELD0.16> ,
+          "MEO2" : {}<YIELD0.34> ,
+          "C2O3" : {}<YIELD0.208> ,
+          "FORM" : {}<YIELD0.26> ,
+          "OLE" : {}<YIELD0.24> ,
+          "PAR" : {}<YIELD0.24> ,
+          "ACET" : {}<YIELD0.17> ,
+          "GLYD" : {}<YIELD0.128> ,
+          "RO2" : {}<YIELD0.84> 
+        },
+        "orig params" : "1.0/<ISPD>"
+      },
+      {
+        "rxn id" : "R162",
+        "reactants" : {
+          "ISPX" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "EPOX" : {}<YIELD0.904> ,
+          "OH" : {}<YIELD0.933> ,
+          "ISO2" : {}<YIELD0.067> ,
+          "RO2" : {}<YIELD0.067> ,
+          "IOLE" : {}<YIELD0.029> ,
+          "ALDX" : {}<YIELD0.029> 
+        },
+        "orig params" : "2.23E-11@-372"
+      },
+      {
+        "rxn id" : "R163",
+        "reactants" : {
+          "HPLD" : {} 
+        },
+        "products" : {
+          "OH" : {} ,
+          "ISPD" : {} 
+        },
+        "orig params" : "1.0/<HPALD>"
+      },
+      {
+        "rxn id" : "R164",
+        "reactants" : {
+          "HPLD" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "HNO3" : {} ,
+          "ISPD" : {} 
+        },
+        "orig params" : "6.00E-12@1860"
+      },
+      {
+        "rxn id" : "R165",
+        "reactants" : {
+          "EPOX" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "EPX2" : {} ,
+          "RO2" : {} 
+        },
+        "orig params" : "5.78E-11@400"
+      },
+      {
+        "rxn id" : "R166",
+        "reactants" : {
+          "EPX2" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "GLYD" : {}<YIELD0.275> ,
+          "GLY" : {}<YIELD0.275> ,
+          "MGLY" : {}<YIELD0.275> ,
+          "OH" : {}<YIELD1.125> ,
+          "HO2" : {}<YIELD0.825> ,
+          "FORM" : {}<YIELD0.375> ,
+          "FACD" : {}<YIELD0.074> ,
+          "CO" : {}<YIELD0.251> ,
+          "PAR" : {}<YIELD2.175> 
+        },
+        "orig params" : "7.43E-13@-700"
+      },
+      {
+        "rxn id" : "R167",
+        "reactants" : {
+          "EPX2" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "GLYD" : {}<YIELD0.275> ,
+          "GLY" : {}<YIELD0.275> ,
+          "MGLY" : {}<YIELD0.275> ,
+          "OH" : {}<YIELD0.125> ,
+          "HO2" : {}<YIELD0.825> ,
+          "FORM" : {}<YIELD0.375> ,
+          "NO2" : {} ,
+          "CO" : {}<YIELD0.251> ,
+          "PAR" : {}<YIELD2.175> 
+        },
+        "orig params" : "2.39E-12@-365"
+      },
+      {
+        "rxn id" : "R168",
+        "reactants" : {
+          "EPX2" : {} ,
+          "C2O3" : {} 
+        },
+        "products" : {
+          "GLYD" : {}<YIELD0.22> ,
+          "GLY" : {}<YIELD0.22> ,
+          "MGLY" : {}<YIELD0.22> ,
+          "OH" : {}<YIELD0.1> ,
+          "HO2" : {}<YIELD0.66> ,
+          "FORM" : {}<YIELD0.3> ,
+          "CO" : {}<YIELD0.2> ,
+          "PAR" : {}<YIELD1.74> ,
+          "MEO2" : {}<YIELD0.8> ,
+          "AACD" : {}<YIELD0.2> ,
+          "RO2" : {}<YIELD0.8> 
+        },
+        "orig params" : "1.0*K<R58>"
+      },
+      {
+        "rxn id" : "R169",
+        "reactants" : {
+          "EPX2" : {} ,
+          "RO2" : {} 
+        },
+        "products" : {
+          "GLYD" : {}<YIELD0.275> ,
+          "GLY" : {}<YIELD0.275> ,
+          "MGLY" : {}<YIELD0.275> ,
+          "OH" : {}<YIELD0.125> ,
+          "HO2" : {}<YIELD0.825> ,
+          "FORM" : {}<YIELD0.375> ,
+          "CO" : {}<YIELD0.251> ,
+          "PAR" : {}<YIELD2.175> ,
+          "RO2" : {} 
+        },
+        "orig params" : "1.0*K<R70>"
+      },
+      {
+        "rxn id" : "R170",
+        "reactants" : {
+          "INTR" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "XO2" : {}<YIELD0.63> ,
+          "XO2H" : {}<YIELD0.37> ,
+          "RO2" : {} ,
+          "NO2" : {}<YIELD0.444> ,
+          "NO3" : {}<YIELD0.185> ,
+          "INTR" : {}<YIELD0.104> ,
+          "FORM" : {}<YIELD0.592> ,
+          "GLYD" : {}<YIELD0.331> ,
+          "FACD" : {}<YIELD0.185> ,
+          "PAR" : {}<YIELD2.7> ,
+          "OLE" : {}<YIELD0.098> ,
+          "ALDX" : {}<YIELD0.078> ,
+          "NTR2" : {}<YIELD0.266> 
+        },
+        "orig params" : "3.10E-11"
+      },
+      {
+        "rxn id" : "R171",
+        "reactants" : {
+          "TERP" : {} ,
+          "O" : {} 
+        },
+        "products" : {
+          "ALDX" : {}<YIELD0.15> ,
+          "PAR" : {}<YIELD5.12> ,
+          "TRPRXN" : {} 
+        },
+        "orig params" : "3.60E-11"
+      },
+      {
+        "rxn id" : "R172",
+        "reactants" : {
+          "TERP" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "XO2H" : {}<YIELD0.75> ,
+          "XO2" : {}<YIELD0.5> ,
+          "XO2N" : {}<YIELD0.25> ,
+          "RO2" : {}<YIELD1.5> ,
+          "FORM" : {}<YIELD0.28> ,
+          "PAR" : {}<YIELD1.66> ,
+          "ALDX" : {}<YIELD0.47> ,
+          "TRPRXN" : {} 
+        },
+        "orig params" : "1.50E-11@-449"
+      },
+      {
+        "rxn id" : "R173",
+        "reactants" : {
+          "TERP" : {} ,
+          "O3" : {} 
+        },
+        "products" : {
+          "OH" : {}<YIELD0.57> ,
+          "XO2H" : {}<YIELD0.07> ,
+          "XO2" : {}<YIELD0.69> ,
+          "XO2N" : {}<YIELD0.18> ,
+          "RO2" : {}<YIELD0.94> ,
+          "FORM" : {}<YIELD0.24> ,
+          "CO" : {}<YIELD0.001> ,
+          "PAR" : {}<YIELD7.0> ,
+          "ALDX" : {}<YIELD0.21> ,
+          "CXO3" : {}<YIELD0.39> ,
+          "TRPRXN" : {} 
+        },
+        "orig params" : "1.20E-15@821"
+      },
+      {
+        "rxn id" : "R174",
+        "reactants" : {
+          "TERP" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "NO2" : {}<YIELD0.47> ,
+          "XO2H" : {}<YIELD0.28> ,
+          "XO2" : {}<YIELD0.75> ,
+          "XO2N" : {}<YIELD0.25> ,
+          "RO2" : {}<YIELD1.28> ,
+          "ALDX" : {}<YIELD0.47> ,
+          "NTR2" : {}<YIELD0.53> ,
+          "TERPNRO2" : {}<YIELD1.0> 
+        },
+        "orig params" : "3.70E-12@-175"
+      },
+<R171a> APIN + O = 0.15*ALDX + 5.12*PAR + TRPRXN 
+        "orig params" : "3.60E-11"
+      },
+<R172a> APIN + OH = 0.75*XO2H + 0.5*XO2 + 0.25*XO2N + 1.5*RO2 + 0.28*FORM + 1.66*PAR + 0.47*ALDX + TRPRXN 
+        "orig params" : "1.50E-11@-449"
+      },
+<R173a> APIN + O3 = 0.57*OH + 0.07*XO2H + 0.69*XO2 + 0.18*XO2N + 0.94*RO2 + 0.24*FORM + 0.001*CO + 7.0*PAR + 0.21*ALDX + 0.39*CXO3 + TRPRXN 
+        "orig params" : "1.20E-15@821"
+      },
+<R174a> APIN + NO3 = 0.47*NO2 + 0.28*XO2H + 0.75*XO2 + 0.25*XO2N + 1.28*RO2 + 0.47*ALDX + 0.53*NTR2 
+        "orig params" : "3.70E-12@-175"
+      },
+      {
+        "rxn id" : "R175",
+        "reactants" : {
+          "BENZENE" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "CRES" : {}<YIELD0.53> ,
+          "BZO2" : {}<YIELD0.352> ,
+          "RO2" : {}<YIELD0.352> ,
+          "OPEN" : {}<YIELD0.118> ,
+          "OH" : {}<YIELD0.118> ,
+          "HO2" : {}<YIELD0.53> ,
+          "BENZRO2" : {} 
+        },
+        "orig params" : "2.30E-12@190"
+      },
+      {
+        "rxn id" : "R176",
+        "reactants" : {
+          "BZO2" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "NO2" : {}<YIELD0.918> ,
+          "NTR2" : {}<YIELD0.082> ,
+          "GLY" : {}<YIELD0.918> ,
+          "OPEN" : {}<YIELD0.918> ,
+          "HO2" : {}<YIELD0.918> 
+        },
+        "orig params" : "2.70E-12@-360"
+      },
+      {
+        "rxn id" : "R177",
+        "reactants" : {
+          "BZO2" : {} ,
+          "C2O3" : {} 
+        },
+        "products" : {
+          "GLY" : {} ,
+          "OPEN" : {} ,
+          "HO2" : {} ,
+          "MEO2" : {} ,
+          "RO2" : {} 
+        },
+        "orig params" : "1.0*K<R58>"
+      },
+      {
+        "rxn id" : "R178",
+        "reactants" : {
+          "BZO2" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+        },
+        "orig params" : "1.90E-13@-1300"
+      },
+      {
+        "rxn id" : "R179",
+        "reactants" : {
+          "BZO2" : {} ,
+          "RO2" : {} 
+        },
+        "products" : {
+          "GLY" : {} ,
+          "OPEN" : {} ,
+          "HO2" : {} ,
+          "RO2" : {} 
+        },
+        "orig params" : "1.0*K<R70>"
+      },
+      {
+        "rxn id" : "R180",
+        "reactants" : {
+          "TOL" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "CRES" : {}<YIELD0.18> ,
+          "TO2" : {}<YIELD0.65> ,
+          "RO2" : {}<YIELD0.72> ,
+          "OPEN" : {}<YIELD0.1> ,
+          "OH" : {}<YIELD0.1> ,
+          "XO2H" : {}<YIELD0.07> ,
+          "HO2" : {}<YIELD0.18> ,
+          "TOLRO2" : {} 
+        },
+        "orig params" : "1.80E-12@-340"
+      },
+      {
+        "rxn id" : "R181",
+        "reactants" : {
+          "TO2" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "NO2" : {}<YIELD0.86> ,
+          "NTR2" : {}<YIELD0.14> ,
+          "GLY" : {}<YIELD0.417> ,
+          "MGLY" : {}<YIELD0.443> ,
+          "OPEN" : {}<YIELD0.66> ,
+          "XOPN" : {}<YIELD0.2> ,
+          "HO2" : {}<YIELD0.86> 
+        },
+        "orig params" : "2.70E-12@-360"
+      },
+      {
+        "rxn id" : "R182",
+        "reactants" : {
+          "TO2" : {} ,
+          "C2O3" : {} 
+        },
+        "products" : {
+          "GLY" : {}<YIELD0.48> ,
+          "MGLY" : {}<YIELD0.52> ,
+          "OPEN" : {}<YIELD0.77> ,
+          "XOPN" : {}<YIELD0.23> ,
+          "HO2" : {} ,
+          "MEO2" : {} ,
+          "RO2" : {} 
+        },
+        "orig params" : "1.0*K<R58>"
+      },
+      {
+        "rxn id" : "R183",
+        "reactants" : {
+          "TO2" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+        },
+        "orig params" : "1.90E-13@-1300"
+      },
+      {
+        "rxn id" : "R184",
+        "reactants" : {
+          "TO2" : {} ,
+          "RO2" : {} 
+        },
+        "products" : {
+          "GLY" : {}<YIELD0.48> ,
+          "MGLY" : {}<YIELD0.52> ,
+          "OPEN" : {}<YIELD0.77> ,
+          "XOPN" : {}<YIELD0.23> ,
+          "HO2" : {} ,
+          "RO2" : {} 
+        },
+        "orig params" : "1.0*K<R70>"
+      },
+      {
+        "rxn id" : "R185",
+        "reactants" : {
+          "XYLMN" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "CRES" : {}<YIELD0.155> ,
+          "XLO2" : {}<YIELD0.544> ,
+          "RO2" : {}<YIELD0.602> ,
+          "XOPN" : {}<YIELD0.244> ,
+          "OH" : {}<YIELD0.244> ,
+          "XO2H" : {}<YIELD0.058> ,
+          "HO2" : {}<YIELD0.155> ,
+          "XYLRO2" : {} 
+        },
+        "orig params" : "1.85E-11"
+      },
+<R185a> NAPH + OH = 0.155*CRES + 0.544*XLO2 + 0.602*RO2 + 0.244*XOPN + 0.244*OH + 0.058*XO2H + 0.155*HO2 + PAHRO2 
+        "orig params" : "1.85E-11"
+      },
+      {
+        "rxn id" : "R186",
+        "reactants" : {
+          "XLO2" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "NO2" : {}<YIELD0.86> ,
+          "NTR2" : {}<YIELD0.14> ,
+          "GLY" : {}<YIELD0.221> ,
+          "MGLY" : {}<YIELD0.675> ,
+          "OPEN" : {}<YIELD0.3> ,
+          "XOPN" : {}<YIELD0.56> ,
+          "HO2" : {}<YIELD0.86> 
+        },
+        "orig params" : "2.70E-12@-360"
+      },
+      {
+        "rxn id" : "R187",
+        "reactants" : {
+          "XLO2" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+        },
+        "orig params" : "1.90E-13@-1300"
+      },
+      {
+        "rxn id" : "R188",
+        "reactants" : {
+          "XLO2" : {} ,
+          "C2O3" : {} 
+        },
+        "products" : {
+          "GLY" : {}<YIELD0.26> ,
+          "MGLY" : {}<YIELD0.77> ,
+          "OPEN" : {}<YIELD0.35> ,
+          "XOPN" : {}<YIELD0.65> ,
+          "HO2" : {} ,
+          "MEO2" : {} ,
+          "RO2" : {} 
+        },
+        "orig params" : "1.0*K<R58>"
+      },
+      {
+        "rxn id" : "R189",
+        "reactants" : {
+          "XLO2" : {} ,
+          "RO2" : {} 
+        },
+        "products" : {
+          "GLY" : {}<YIELD0.26> ,
+          "MGLY" : {}<YIELD0.77> ,
+          "OPEN" : {}<YIELD0.35> ,
+          "XOPN" : {}<YIELD0.65> ,
+          "HO2" : {} ,
+          "RO2" : {} 
+        },
+        "orig params" : "1.0*K<R70>"
+      },
+      {
+        "rxn id" : "R190",
+        "reactants" : {
+          "CRES" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "GLY" : {}<YIELD0.025> ,
+          "OPEN" : {}<YIELD0.025> ,
+          "HO2" : {} ,
+          "CRO" : {}<YIELD0.2> ,
+          "CAT1" : {}<YIELD0.732> ,
+          "XO2N" : {}<YIELD0.02> ,
+          "RO2" : {}<YIELD0.02> 
+        },
+        "orig params" : "1.70E-12@-950"
+      },
+      {
+        "rxn id" : "R191",
+        "reactants" : {
+          "CRES" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "CRO" : {}<YIELD0.3> ,
+          "HNO3" : {} ,
+          "XO2" : {}<YIELD0.48> ,
+          "XO2H" : {}<YIELD0.12> ,
+          "GLY" : {}<YIELD0.24> ,
+          "MGLY" : {}<YIELD0.24> ,
+          "OPO3" : {}<YIELD0.48> ,
+          "XO2N" : {}<YIELD0.1> ,
+          "RO2" : {}<YIELD0.7> 
+        },
+        "orig params" : "1.40E-11"
+      },
+      {
+        "rxn id" : "R192",
+        "reactants" : {
+          "CRO" : {} ,
+          "NO2" : {} 
+        },
+        "products" : {
+          "CRON" : {} 
+        },
+        "orig params" : "2.10E-12"
+      },
+      {
+        "rxn id" : "R193",
+        "reactants" : {
+          "CRO" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "CRES" : {} 
+        },
+        "orig params" : "5.50E-12"
+      },
+      {
+        "rxn id" : "R194",
+        "reactants" : {
+          "CRON" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "NTR2" : {} ,
+          "CRO" : {}<YIELD0.5> 
+        },
+        "orig params" : "1.53E-12"
+      },
+      {
+        "rxn id" : "R195",
+        "reactants" : {
+          "CRON" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "NTR2" : {} ,
+          "CRO" : {}<YIELD0.5> ,
+          "HNO3" : {} 
+        },
+        "orig params" : "3.80E-12"
+      },
+      {
+        "rxn id" : "R196",
+        "reactants" : {
+          "CRON" : {} 
+        },
+        "products" : {
+          "HONO" : {} ,
+          "HO2" : {} ,
+          "FORM" : {} ,
+          "OPEN" : {} 
+        },
+        "orig params" : "1.0/<NTR_IUPAC10>"
+      },
+      {
+        "rxn id" : "R197",
+        "reactants" : {
+          "XOPN" : {} 
+        },
+        "products" : {
+          "GLY" : {}<YIELD0.4> ,
+          "XO2H" : {} ,
+          "HO2" : {}<YIELD0.7> ,
+          "CO" : {}<YIELD0.7> ,
+          "C2O3" : {}<YIELD0.3> 
+        },
+        "orig params" : "0.05/<NO2_IUPAC10>"
+      },
+      {
+        "rxn id" : "R198",
+        "reactants" : {
+          "XOPN" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "MGLY" : {} ,
+          "GLY" : {}<YIELD0.4> ,
+          "XO2H" : {}<YIELD2.0> ,
+          "RO2" : {}<YIELD2.0> 
+        },
+        "orig params" : "9.00E-11"
+      },
+      {
+        "rxn id" : "R199",
+        "reactants" : {
+          "XOPN" : {} ,
+          "O3" : {} 
+        },
+        "products" : {
+          "MGLY" : {}<YIELD1.2> ,
+          "OH" : {}<YIELD0.5> ,
+          "C2O3" : {}<YIELD0.6> ,
+          "ALD2" : {}<YIELD0.1> ,
+          "CO" : {}<YIELD0.5> ,
+          "XO2H" : {}<YIELD0.3> ,
+          "RO2" : {}<YIELD0.3> 
+        },
+        "orig params" : "1.08E-16@500"
+      },
+      {
+        "rxn id" : "R200",
+        "reactants" : {
+          "XOPN" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "NO2" : {}<YIELD0.5> ,
+          "NTR2" : {}<YIELD0.5> ,
+          "XO2H" : {}<YIELD0.45> ,
+          "XO2" : {}<YIELD0.45> ,
+          "XO2N" : {}<YIELD0.1> ,
+          "RO2" : {} ,
+          "OPEN" : {}<YIELD0.25> ,
+          "MGLY" : {}<YIELD0.25> 
+        },
+        "orig params" : "3.00E-12"
+      },
+      {
+        "rxn id" : "R201",
+        "reactants" : {
+          "OPEN" : {} 
+        },
+        "products" : {
+          "OPO3" : {} ,
+          "HO2" : {} ,
+          "CO" : {} 
+        },
+        "orig params" : "0.028/<NO2_IUPAC10>"
+      },
+      {
+        "rxn id" : "R202",
+        "reactants" : {
+          "OPEN" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "OPO3" : {}<YIELD0.6> ,
+          "XO2H" : {}<YIELD0.4> ,
+          "RO2" : {}<YIELD0.4> ,
+          "GLY" : {}<YIELD0.4> 
+        },
+        "orig params" : "4.40E-11"
+      },
+      {
+        "rxn id" : "R203",
+        "reactants" : {
+          "OPEN" : {} ,
+          "O3" : {} 
+        },
+        "products" : {
+          "GLY" : {}<YIELD1.4> ,
+          "MGLY" : {}<YIELD0.24> ,
+          "OH" : {}<YIELD0.5> ,
+          "C2O3" : {}<YIELD0.12> ,
+          "FORM" : {}<YIELD0.08> ,
+          "ALD2" : {}<YIELD0.02> ,
+          "CO" : {}<YIELD1.98> ,
+          "HO2" : {}<YIELD0.56> 
+        },
+        "orig params" : "5.40E-17@500"
+      },
+      {
+        "rxn id" : "R204",
+        "reactants" : {
+          "OPEN" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "OPO3" : {} ,
+          "HNO3" : {} 
+        },
+        "orig params" : "3.80E-12"
+      },
+      {
+        "rxn id" : "R205",
+        "reactants" : {
+          "CAT1" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "FORM" : {}<YIELD0.14> ,
+          "HO2" : {}<YIELD0.2> ,
+          "CRO" : {}<YIELD0.5> 
+        },
+        "orig params" : "5.00E-11"
+      },
+      {
+        "rxn id" : "R206",
+        "reactants" : {
+          "CAT1" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "CRO" : {} ,
+          "HNO3" : {} 
+        },
+        "orig params" : "1.70E-10"
+      },
+      {
+        "rxn id" : "R207",
+        "reactants" : {
+          "OPO3" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "NO2" : {} ,
+          "GLY" : {}<YIELD0.5> ,
+          "CO" : {}<YIELD0.5> ,
+          "HO2" : {}<YIELD0.8> ,
+          "CXO3" : {}<YIELD0.2> 
+        },
+        "orig params" : "1.00E+0*K<R61>"
+      },
+      {
+        "rxn id" : "R208",
+        "reactants" : {
+          "OPO3" : {} ,
+          "NO2" : {} 
+        },
+        "products" : {
+          "OPAN" : {} 
+        },
+        "orig params" : "1.00E+0*K<R62>"
+      },
+      {
+        "rxn id" : "R209",
+        "reactants" : {
+          "OPAN" : {} 
+        },
+        "products" : {
+          "OPO3" : {} ,
+          "NO2" : {} 
+        },
+        "orig params" : "1.00E+0*K<R63>"
+      },
+      {
+        "rxn id" : "R210",
+        "reactants" : {
+          "OPO3" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "PACD" : {}<YIELD0.37> ,
+          "AACD" : {}<YIELD0.13> ,
+          "O3" : {}<YIELD0.13> ,
+          "OH" : {}<YIELD0.5> ,
+          "MEO2" : {}<YIELD0.5> ,
+          "RO2" : {}<YIELD0.5> 
+        },
+        "orig params" : "1.00E+0*K<R57>"
+      },
+      {
+        "rxn id" : "R211",
+        "reactants" : {
+          "OPO3" : {} ,
+          "C2O3" : {} 
+        },
+        "products" : {
+          "MEO2" : {} ,
+          "XO2" : {} ,
+          "ALDX" : {} ,
+          "RO2" : {}<YIELD2.0> 
+        },
+        "orig params" : "1.00E+0*K<R59>"
+      },
+      {
+        "rxn id" : "R212",
+        "reactants" : {
+          "OPO3" : {} ,
+          "RO2" : {} 
+        },
+        "products" : {
+          "XO2H" : {}<YIELD0.8> ,
+          "ALDX" : {}<YIELD0.8> ,
+          "RO2" : {}<YIELD1.8> ,
+          "AACD" : {}<YIELD0.2> 
+        },
+        "orig params" : "1.00E+0*K<R58>"
+      },
+      {
+        "rxn id" : "R213",
+        "reactants" : {
+          "OPAN" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "NO2" : {}<YIELD0.5> ,
+          "GLY" : {}<YIELD0.5> ,
+          "CO" : {} ,
+          "NTR2" : {}<YIELD0.5> 
+        },
+        "orig params" : "3.60E-11"
+      },
+      {
+        "rxn id" : "R214",
+        "reactants" : {
+          "PANX" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "ALD2" : {} ,
+          "NO2" : {} 
+        },
+        "orig params" : "3.00E-12"
+      },
+      {
+        "rxn id" : "R216",
+        "reactants" : {
+          "ECH4" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "MEO2" : {} ,
+          "RO2" : {} 
+        },
+        "orig params" : "1.85E-12@1690"
+      },
+      {
+        "rxn id" : "R217",
+        "reactants" : {
+          "XPRP" : {} 
+        },
+        "products" : {
+          "XO2N" : {} ,
+          "RO2" : {} 
+        },
+        "orig params" : "2.37E-21 & 4.07E-01^-8.0 &0.41 &1.0"
+      },
+      {
+        "rxn id" : "R218",
+        "reactants" : {
+          "XPRP" : {} 
+        },
+        "products" : {
+          "ACET" : {}<YIELD0.732> ,
+          "ALDX" : {}<YIELD0.268> ,
+          "PAR" : {}<YIELD0.268> ,
+          "XO2H" : {} ,
+          "RO2" : {} 
+        },
+        "orig params" : "1.00E+00"
+      },
+      {
+        "rxn id" : "R219",
+        "reactants" : {
+          "XPAR" : {} 
+        },
+        "products" : {
+          "XO2N" : {} ,
+          "RO2" : {} 
+        },
+        "orig params" : "4.81E-20 & 4.07E-01^-8.0 &0.41 &1.0"
+      },
+      {
+        "rxn id" : "R220",
+        "reactants" : {
+          "XPAR" : {} 
+        },
+        "products" : {
+          "ALDX" : {}<YIELD0.126> ,
+          "ROR" : {}<YIELD0.874> ,
+          "XO2H" : {}<YIELD0.126> ,
+          "XO2" : {}<YIELD0.874> ,
+          "RO2" : {} <PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT>,
+          "PAR" : {}<YIELD-0.126> 
+        },
+        "orig params" : "1.00E+00"
+      },
+      {
+        "rxn id" : "R221",
+        "reactants" : {
+          "NO2" : {} ,
+          "OH" : {} ,
+          "H2O" : {} 
+        },
+        "products" : {
+          "HNO3" : {} 
+        },
+        "orig params" : "1.10E-30"
+      },
+      {
+        "rxn id" : "CL1",
+        "reactants" : {
+          "CL2" : {} 
+        },
+        "products" : {
+          "CL" : {}<YIELD2.000> 
+        },
+        "orig params" : "1.0/<CL2_IUPAC04>"
+      },
+      {
+        "rxn id" : "CL2",
+        "reactants" : {
+          "HOCL" : {} 
+        },
+        "products" : {
+          "OH" : {} ,
+          "CL" : {} 
+        },
+        "orig params" : "1.0/<HOCL_IUPAC04>"
+      },
+      {
+        "rxn id" : "CL3",
+        "reactants" : {
+          "CL" : {} ,
+          "O3" : {} 
+        },
+        "products" : {
+          "CLO" : {} 
+        },
+        "orig params" : "2.3E-11 @ 200"
+      },
+      {
+        "rxn id" : "CL4",
+        "reactants" : {
+          "CLO" : {} ,
+          "CLO" : {} 
+        },
+        "products" : {
+          "CL2" : {}<YIELD0.300> ,
+          "CL" : {}<YIELD1.400> 
+        },
+        "orig params" : "1.63E-14"
+      },
+      {
+        "rxn id" : "CL5",
+        "reactants" : {
+          "CLO" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "CL" : {} ,
+          "NO2" : {} 
+        },
+        "orig params" : "6.4E-12 @ -290"
+      },
+      {
+        "rxn id" : "CL6",
+        "reactants" : {
+          "CLO" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "HOCL" : {} 
+        },
+        "orig params" : "2.2E-12 @ -340"
+      },
+      {
+        "rxn id" : "CL7",
+        "reactants" : {
+          "CLO" : {} ,
+          "MEO2" : {} 
+        },
+        "products" : {
+          "CL" : {} ,
+          "FORM" : {} ,
+          "HO2" : {} 
+        },
+        "orig params" : "3.2E-12@110"
+      },
+      {
+        "rxn id" : "CL8",
+        "reactants" : {
+          "OH" : {} ,
+          "FMCL" : {} 
+        },
+        "products" : {
+          "CL" : {} ,
+          "CO" : {} 
+        },
+        "orig params" : "5.0E-13"
+      },
+      {
+        "rxn id" : "CL9",
+        "reactants" : {
+          "FMCL" : {} 
+        },
+        "products" : {
+          "CL" : {} ,
+          "CO" : {} ,
+          "HO2" : {} 
+        },
+        "orig params" : "1.0/<FMCL_IUPAC04>"
+      },
+      {
+        "rxn id" : "CL10",
+        "reactants" : {
+          "CL" : {} ,
+          "CH4" : {} 
+        },
+        "products" : {
+          "HCL" : {} ,
+          "MEO2" : {} ,
+          "RO2" : {} 
+        },
+        "orig params" : "6.6E-12 @ 1240"
+      },
+      {
+        "rxn id" : "CL11",
+        "reactants" : {
+          "CL" : {} ,
+          "PAR" : {} 
+        },
+        "products" : {
+          "HCL" : {} ,
+          "XPAR" : {} 
+        },
+        "orig params" : "5.0E-11"
+      },
+      {
+        "rxn id" : "CL12",
+        "reactants" : {
+          "CL" : {} ,
+          "PRPA" : {} 
+        },
+        "products" : {
+          "HCL" : {} ,
+          "ACET" : {} ,
+          "XO2H" : {}<YIELD0.97> ,
+          "XO2N" : {}<YIELD0.03> ,
+          "RO2" : {} 
+        },
+        "orig params" : "1.4E-10"
+      },
+      {
+        "rxn id" : "CL13",
+        "reactants" : {
+          "CL" : {} ,
+          "ETHA" : {} 
+        },
+        "products" : {
+          "HCL" : {} ,
+          "ALD2" : {}<YIELD0.991> ,
+          "XO2H" : {}<YIELD0.991> ,
+          "XO2N" : {}<YIELD0.009> ,
+          "RO2" : {} 
+        },
+        "orig params" : "8.3-11 @ 100"
+      },
+      {
+        "rxn id" : "CL14",
+        "reactants" : {
+          "CL" : {} ,
+          "ETH" : {} 
+        },
+        "products" : {
+          "FMCL" : {} ,
+          "XO2" : {}<YIELD2.000> ,
+          "HO2" : {}<YIELD1.000> ,
+          "FORM" : {}<YIELD1.000> 
+        },
+        "orig params" : "1.07E-10"
+      },
+      {
+        "rxn id" : "CL15",
+        "reactants" : {
+          "CL" : {} ,
+          "OLE" : {} 
+        },
+        "products" : {
+          "FMCL" : {} ,
+          "ALD2" : {}<YIELD0.330> ,
+          "ALDX" : {}<YIELD0.670> ,
+          "XO2" : {}<YIELD2.000> ,
+          "HO2" : {}<YIELD1.000> <PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT><PROD_SPLIT>,
+          "-" : {} 1.000*PAR 
+        },
+        "orig params" : "2.5E-10"
+      },
+      {
+        "rxn id" : "CL16",
+        "reactants" : {
+          "CL" : {} ,
+          "IOLE" : {} 
+        },
+        "products" : {
+          "HCL" : {}<YIELD0.300> ,
+          "FMCL" : {}<YIELD0.700> ,
+          "ALD2" : {}<YIELD0.450> ,
+          "ALDX" : {}<YIELD0.550> ,
+          "OLE" : {}<YIELD0.300> ,
+          "PAR" : {}<YIELD0.300> ,
+          "XO2" : {}<YIELD1.700> ,
+          "HO2" : {}<YIELD1.000> 
+        },
+        "orig params" : "3.5E-10"
+      },
+      {
+        "rxn id" : "CL17",
+        "reactants" : {
+          "CL" : {} ,
+          "ISOP" : {} 
+        },
+        "products" : {
+          "FMCL" : {} ,
+          "ISPD" : {} ,
+          "XO2H" : {}<YIELD0.96> ,
+          "XO2N" : {}<YIELD0.04> ,
+          "RO2" : {} 
+        },
+        "orig params" : "4.3E-10"
+      },
+      {
+        "rxn id" : "CL18",
+        "reactants" : {
+          "CL" : {} ,
+          "FORM" : {} 
+        },
+        "products" : {
+          "HCL" : {} ,
+          "HO2" : {}<YIELD1.00> ,
+          "CO" : {}<YIELD1.00> 
+        },
+        "orig params" : "8.2E-11 @ 34"
+      },
+      {
+        "rxn id" : "CL19",
+        "reactants" : {
+          "CL" : {} ,
+          "ALD2" : {} 
+        },
+        "products" : {
+          "HCL" : {} ,
+          "C2O3" : {}<YIELD1.000> 
+        },
+        "orig params" : "7.9E-11"
+      },
+      {
+        "rxn id" : "CL20",
+        "reactants" : {
+          "CL" : {} ,
+          "ALDX" : {} 
+        },
+        "products" : {
+          "HCL" : {} ,
+          "CXO3" : {}<YIELD1.000> 
+        },
+        "orig params" : "1.3E-10"
+      },
+      {
+        "rxn id" : "CL21",
+        "reactants" : {
+          "CL" : {} ,
+          "MEOH" : {} 
+        },
+        "products" : {
+          "HCL" : {} ,
+          "HO2" : {}<YIELD1.00> ,
+          "FORM" : {}<YIELD1.00> 
+        },
+        "orig params" : "5.5E-11"
+      },
+      {
+        "rxn id" : "CL22",
+        "reactants" : {
+          "CL" : {} ,
+          "ETOH" : {} 
+        },
+        "products" : {
+          "HCL" : {} ,
+          "HO2" : {}<YIELD1.00> ,
+          "ALD2" : {}<YIELD1.00> 
+        },
+        "orig params" : "8.2E-11 @ -45"
+      },
+      {
+        "rxn id" : "CL23",
+        "reactants" : {
+          "HCL" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "CL" : {} 
+        },
+        "orig params" : "6.58E-13^1.16 @ -58"
+      },
+      {
+        "rxn id" : "CL24",
+        "reactants" : {
+          "CL" : {} ,
+          "TOL" : {} 
+        },
+        "products" : {
+          "HCL" : {} ,
+          "CRES" : {}<YIELD0.18> ,
+          "TO2" : {}<YIELD0.65> ,
+          "RO2" : {}<YIELD0.72> ,
+          "OPEN" : {}<YIELD0.1> ,
+          "OH" : {}<YIELD0.1> ,
+          "XO2H" : {}<YIELD0.07> ,
+          "HO2" : {}<YIELD0.18> ,
+          "TOLRO2" : {} 
+        },
+        "orig params" : "6.1E-11"
+      },
+      {
+        "rxn id" : "CL25",
+        "reactants" : {
+          "CL" : {} ,
+          "XYLMN" : {} 
+        },
+        "products" : {
+          "HCL" : {} ,
+          "CRES" : {}<YIELD0.155> ,
+          "XLO2" : {}<YIELD0.544> ,
+          "RO2" : {}<YIELD0.602> ,
+          "XOPN" : {}<YIELD0.244> ,
+          "OH" : {}<YIELD0.244> ,
+          "XO2H" : {}<YIELD0.058> ,
+          "HO2" : {}<YIELD0.155> ,
+          "XYLRO2" : {} 
+        },
+        "orig params" : "1.2E-10"
+      },
+      {
+        "rxn id" : "CL26",
+        "reactants" : {
+          "CL" : {} ,
+          "NAPH" : {} 
+        },
+        "products" : {
+          "HCL" : {} ,
+          "CRES" : {}<YIELD0.155> ,
+          "XLO2" : {}<YIELD0.544> ,
+          "RO2" : {}<YIELD0.602> ,
+          "XOPN" : {}<YIELD0.244> ,
+          "OH" : {}<YIELD0.244> ,
+          "XO2H" : {}<YIELD0.058> ,
+          "HO2" : {}<YIELD0.155> ,
+          "PAHRO2" : {} 
+        },
+        "orig params" : "1.2E-10"
+      },
+      {
+        "rxn id" : "CL27",
+        "reactants" : {
+          "CLNO2" : {} 
+        },
+        "products" : {
+          "CL" : {} ,
+          "NO2" : {} 
+        },
+        "orig params" : "1.0/<CLNO2_IUPAC13>"
+      },
+      {
+        "rxn id" : "CL28",
+        "reactants" : {
+          "CLO" : {} ,
+          "NO2" : {} 
+        },
+        "products" : {
+          "CLNO3" : {} 
+        },
+        "orig params" : "1.8E-31^-3.4&1.5E-11^-1.9&0.6"
+      },
+      {
+        "rxn id" : "CL30",
+        "reactants" : {
+          "CLNO3" : {} 
+        },
+        "products" : {
+          "CLO" : {} ,
+          "NO2" : {} 
+        },
+        "orig params" : "1.0/<CLONO2_1>"
+      },
+      {
+        "rxn id" : "CL31",
+        "reactants" : {
+          "CLNO3" : {} 
+        },
+        "products" : {
+          "CL" : {} ,
+          "NO3" : {} 
+        },
+        "orig params" : "1.0/<CLONO2_2>"
+      },
+<HET_CLNO3_WAI> CLNO3 = HOCL + HNO3 
+        "orig params" : "1.0~<HETERO_CLNO3_WAI>"
+      },
+<HET_CLNO3_WAJ> CLNO3 = HOCL + HNO3 
+        "orig params" : "1.0~<HETERO_CLNO3_WAJ>"
+      },
+      {
+        "rxn id" : "SA01",
+        "reactants" : {
+          "TOLRO2" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "NO" : {} ,
+          "SVAVB2" : {}<YIELD0.016> ,
+          "SVAVB3" : {}<YIELD0.051> ,
+          "SVAVB4" : {}<YIELD0.047> 
+        },
+        "orig params" : "2.70e-12@-360"
+      },
+      {
+        "rxn id" : "SA02",
+        "reactants" : {
+          "TOLRO2" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "HO2" : {} ,
+          "SVAVB1" : {}<YIELD0.14> 
+        },
+        "orig params" : "1.90e-13@-1300"
+      },
+      {
+        "rxn id" : "SA03",
+        "reactants" : {
+          "XYLRO2" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "NO" : {} ,
+          "SVAVB2" : {}<YIELD0.015> ,
+          "SVAVB3" : {}<YIELD0.023> ,
+          "SVAVB4" : {}<YIELD0.06> 
+        },
+        "orig params" : "2.70e-12@-360"
+      },
+      {
+        "rxn id" : "SA04",
+        "reactants" : {
+          "XYLRO2" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "HO2" : {} ,
+          "SVAVB1" : {}<YIELD0.193> 
+        },
+        "orig params" : "1.90e-13@-1300"
+      },
+      {
+        "rxn id" : "SA06",
+        "reactants" : {
+          "BENZRO2" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "NO" : {} ,
+          "SVAVB2" : {}<YIELD0.034> ,
+          "SVAVB4" : {}<YIELD0.392> 
+        },
+        "orig params" : "2.70e-12@-360"
+      },
+      {
+        "rxn id" : "SA07",
+        "reactants" : {
+          "BENZRO2" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "HO2" : {} ,
+          "SVAVB1" : {}<YIELD0.146> 
+        },
+        "orig params" : "1.90e-13@-1300"
+      },
+      {
+        "rxn id" : "SA08",
+        "reactants" : {
+          "SESQ" : {} ,
+          "O3" : {} 
+        },
+        "products" : {
+          "O3" : {} ,
+          "SESQRXN" : {} 
+        },
+        "orig params" : "1.16E-14"
+      },
+      {
+        "rxn id" : "SA09",
+        "reactants" : {
+          "SESQ" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "OH" : {} ,
+          "SESQRXN" : {} 
+        },
+        "orig params" : "1.97E-10"
+      },
+      {
+        "rxn id" : "SA10",
+        "reactants" : {
+          "SESQ" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "NO3" : {} ,
+          "SESQRXN" : {} 
+        },
+        "orig params" : "1.90E-11"
+      },
+      {
+        "rxn id" : "SA11",
+        "reactants" : {
+          "PAHRO2" : {} ,
+          "NO" : {} 
+        },
+        "products" : {
+          "NO" : {} ,
+          "SVAVB2" : {}<YIELD0.028> ,
+          "SVAVB3" : {}<YIELD0.225> ,
+          "SVAVB4" : {}<YIELD0.191> 
+        },
+        "orig params" : "2.70e-12@-360"
+      },
+      {
+        "rxn id" : "SA12",
+        "reactants" : {
+          "PAHRO2" : {} ,
+          "HO2" : {} 
+        },
+        "products" : {
+          "HO2" : {} ,
+          "SVAVB1" : {}<YIELD0.473> 
+        },
+        "orig params" : "1.90e-13@-1300"
+      },
+      {
+        "rxn id" : "SA13",
+        "reactants" : {
+          "SOAALK" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "OH" : {} ,
+          "SVAVB2" : {}<YIELD0.006> ,
+          "SVAVB3" : {}<YIELD0.052> ,
+          "SVAVB4" : {}<YIELD0.081> 
+        },
+        "orig params" : "2.70e-12@-374"
+      },
+<HET_NTR2> NTR2 = HNO3 
+        "orig params" : "1.4~<HETERO_NTR2>"
+      },
+<HET_N2O5IJ> N2O5 = HNO3 + H2NO3PIJ 
+        "orig params" : "1.0~<HETERO_N2O5IJ>"
+      },
+<HET_N2O5K> N2O5 = HNO3 + H2NO3PK 
+        "orig params" : "1.0~<HETERO_N2O5K>"
+      },
+<HET_H2NO3PIJA> H2NO3PIJ = HNO3 
+        "orig params" : "1.0~<HETERO_H2NO3PAIJ>"
+      },
+<HET_H2NO3PKA> H2NO3PK = HNO3 
+        "orig params" : "1.0~<HETERO_H2NO3PAK>"
+      },
+<HET_H2NO3PIB> H2NO3PIJ + ACLI = CLNO2 
+        "orig params" : "1.0~<HETERO_H2NO3PBIJ>"
+      },
+<HET_H2NO3PJB> H2NO3PIJ + ACLJ = CLNO2 
+        "orig params" : "1.0~<HETERO_H2NO3PBIJ>"
+      },
+<HET_H2NO3PKB> H2NO3PK + ACLK = CLNO2 
+        "orig params" : "1.0~<HETERO_H2NO3PBK>"
+      },
+<HET_N02> NO2 = 0.5*HONO + 0.5*HNO3 
+        "orig params" : "1.0~<HETERO_NO2>"
+      },
+<HAL_Ozone> O3 = %H 
+        "orig params" : "6.7006E-11@-10.7435 & 3.4153E-08@0.6713 & 2.0E-6"
+      },
+<HET_IEPOX> EPOX = IEPOXP 
+        "orig params" : "1.0~<HETERO_IEPOX>"
+      },
+<HET_IEPOXOS> IEPOXP + ASO4J = AISO3J 
+        "orig params" : "1.0~<HETERO_IEPOXOS>"
+      },
+<HET_TETROL> IEPOXP = AISO3J 
+        "orig params" : "1.0~<HETERO_TETROL>"
+      },
+<HET_GLY> GLY = AGLYJ 
+        "orig params" : "1.0~<HETERO_GLY>"
+      },
+<HET_MGLY> MGLY = AGLYJ 
+        "orig params" : "1.0~<HETERO_MGLY>"
+      },
+<BL18a> TERPNRO2 + NO = 1.0*NO + 0.688*MTNO3 
+        "orig params" : "2.60e-12@-380"
+      },
+<BL18b> TERPNRO2 + HO2 = 1.0*HO2 + 1.0*MTNO3 
+        "orig params" : "2.65e-13@-1300"
+      },
+<BL18c> TERPNRO2 + NO3 = 1.0*NO3 + 0.422*MTNO3 
+        "orig params" : "2.30e-12"
+      },
+<BL18d> TERPNRO2 + RO2 = 1.0*RO2 + 0.711*MTNO3 
+        "orig params" : "3.50e-14"
+      },
+<CP07mtp> MTNO3 + CL = CL + 0.37*MTNO3 
+        "orig params" : "1.92e-10"
+      },
+<BP70mtp> MTNO3 + OH = OH + 0.24*MTNO3 
+        "orig params" : "7.20e-12"
+      },
+<BP71mtp> MTNO3 = 
+        "orig params" : "1.0/<IC3ONO2>"
+      },
+<HYD_MT> AMTNO3J = 1.00*AMTHYDJ 
+        "orig params" : "9.259E-5"
+      },
+<OLIG_AROMATIC1> AAVB2J = 0.907*AOLGAJ 
+        "orig params" : "9.48816E-6"
+      },
+<OLIG_AROMATIC2> AAVB3J = 0.925*AOLGAJ 
+        "orig params" : "9.48816E-6"
+      },
+<OLIG_AROMATIC3> AAVB4J = 0.943*AOLGAJ 
+        "orig params" : "9.48816E-6"
+      },
+<OLIG_ISOPRENE1> AISO1J = 0.50*AOLGBJ 
+        "orig params" : "9.48816E-6"
+      },
+<OLIG_ISOPRENE2> AISO2J = 0.50*AOLGBJ 
+        "orig params" : "9.48816E-6"
+      },
+<OLIG_SESQT1> ASQTJ = 1.50*AOLGBJ 
+        "orig params" : "9.48816E-6"
+      },
+<RPOAGEPI> APOCI + OH = 1.25*APNCOMI + APOCI + OH 
+        "orig params" : "2.5E-12"
+      },
+<RPOAGELI> APNCOMI + OH = OH 
+        "orig params" : "1.0~<HETERO_PNCOMLI>"
+      },
+<RPOAGEPJ> APOCJ + OH = 1.25*APNCOMJ + APOCJ + OH 
+        "orig params" : "2.5E-12"
+      },
+<RPOAGELJ> APNCOMJ + OH = OH 
+        "orig params" : "1.0~<HETERO_PNCOMLJ>"
+      },
+<PCSOA> PCVOC + OH = OH + PCSOARXN 
+        "orig params" : "1.25E-11"
+      },
+<POA_AGE1> VLVPO1 + OH = OH + 0.4857 * VLVPO1 + 0.0062 * VSVPO1 + 0.0025 * VSVPO2 + 0.0026 * VSVPO3 + 0.0023 * VIVPO1 + 0.2944 * VLVOO1 + 0.2021 * VLVOO2 + 0.0019 * VSVOO2 + 0.0023 * VSVOO3 
+        "orig params" : "4.0e-11"
+      },
+<POA_AGE2> VSVPO1 + OH = OH + 0.3003 * VLVPO1 + 0.2862 * VSVPO1 + 0.0041 * VSVPO2 + 0.0035 * VSVPO3 + 0.2239 * VLVOO1 + 0.1820 * VLVOO2 
+        "orig params" : "4.0e-11"
+      },
+<POA_AGE3> VSVPO2 + OH = OH + 0.3856 * VLVPO1 + 0.0950 * VSVPO1 + 0.1373 * VSVPO2 + 0.0005 * VSVPO3 + 0.2051 * VLVOO1 + 0.1764 * VLVOO2 
+        "orig params" : "4.0e-11"
+      },
+<POA_AGE4> VSVPO3 + OH = OH + 0.2181 * VLVPO1 + 0.3063 * VSVPO1 + 0.0153 * VSVPO2 + 0.1043 * VSVPO3 + 0.1893 * VLVOO1 + 0.1668 * VLVOO2 
+        "orig params" : "4.0e-11"
+      },
+<POA_AGE5> VIVPO1 + OH = OH + 0.2412 * VLVPO1 + 0.2089 * VSVPO1 + 0.3000 * VSVPO2 + 0.2028 * VLVOO1 + 0.0471 * VLVOO2 
+        "orig params" : "4.0e-11"
+      },
+<POA_AGE6> VLVOO1 + OH = OH + 0.6664 * VLVOO1 + 0.0143 * VLVOO2 + 0.0123 * VSVOO1 + 0.1239 * VSVOO2 + 0.1831 * VSVOO3 
+        "orig params" : "4.0e-11"
+      },
+<POA_AGE7> VLVOO2 + OH = OH + 0.2858 * VLVOO1 + 0.3931 * VLVOO2 + 0.0139 * VSVOO1 + 0.1027 * VSVOO2 + 0.2045 * VSVOO3 
+        "orig params" : "4.0e-11"
+      },
+<POA_AGE8> VSVOO1 + OH = OH + 0.3303 * VLVOO1 + 0.2272 * VLVOO2 + 0.2607 * VSVOO1 + 0.0702 * VSVOO2 + 0.1116 * VSVOO3 
+        "orig params" : "4.0e-11"
+      },
+<POA_AGE9> VSVOO2 + OH = OH + 0.3444 * VLVOO1 + 0.2749 * VLVOO2 + 0.0491 * VSVOO1 + 0.2577 * VSVOO2 + 0.0739 * VSVOO3 
+        "orig params" : "4.0e-11"
+      },
+<POA_AGE10> VSVOO3 + OH = OH + 0.3886 * VLVOO1 + 0.2421 * VLVOO2 + 0.0640 * VSVOO1 + 0.0385 * VSVOO2 + 0.2667 * VSVOO3 
+        "orig params" : "4.0e-11"
+      },
+      {
+        "rxn id" : "T01",
+        "reactants" : {
+          "FORM_PRIMARY" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "OH" : {} 
+        },
+        "orig params" : "5.40E-12@-135"
+      },
+      {
+        "rxn id" : "T02",
+        "reactants" : {
+          "FORM_PRIMARY" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "NO3" : {} 
+        },
+        "orig params" : "5.50E-16"
+      },
+      {
+        "rxn id" : "T03",
+        "reactants" : {
+          "FORM_PRIMARY" : {} ,
+          "O" : {} 
+        },
+        "products" : {
+          "O" : {} 
+        },
+        "orig params" : "3.4E-11 @ 1600"
+      },
+      {
+        "rxn id" : "T04",
+        "reactants" : {
+          "FORM_PRIMARY" : {} 
+        },
+        "products" : {
+        },
+        "orig params" : "1.0/<FORM_R_IUPAC13>"
+      },
+      {
+        "rxn id" : "T05",
+        "reactants" : {
+          "FORM_PRIMARY" : {} 
+        },
+        "products" : {
+        },
+        "orig params" : "1.0/<FORM_M_IUPAC13>"
+      },
+      {
+        "rxn id" : "TCL1",
+        "reactants" : {
+          "FORM_PRIMARY" : {} ,
+          "CL" : {} 
+        },
+        "products" : {
+          "CL" : {} 
+        },
+        "orig params" : "8.2E-11 @ 34"
+      },
+      {
+        "rxn id" : "T06",
+        "reactants" : {
+          "ALD2_PRIMARY" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "OH" : {} 
+        },
+        "orig params" : "4.70E-12@-345"
+      },
+      {
+        "rxn id" : "T07",
+        "reactants" : {
+          "ALD2_PRIMARY" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "NO3" : {} 
+        },
+        "orig params" : "1.40E-12@1860"
+      },
+      {
+        "rxn id" : "T08",
+        "reactants" : {
+          "ALD2_PRIMARY" : {} ,
+          "O" : {} 
+        },
+        "products" : {
+          "O" : {} 
+        },
+        "orig params" : "1.8E-11 @ 1100"
+      },
+      {
+        "rxn id" : "T09",
+        "reactants" : {
+          "ALD2_PRIMARY" : {} 
+        },
+        "products" : {
+        },
+        "orig params" : "1.0/<ALD2_R_IUPAC13>"
+      },
+      {
+        "rxn id" : "TCL2",
+        "reactants" : {
+          "ALD2_PRIMARY" : {} ,
+          "CL" : {} 
+        },
+        "products" : {
+          "CL" : {} 
+        },
+        "orig params" : "7.9E-11"
+      },
+      {
+        "rxn id" : "T10",
+        "reactants" : {
+          "BUTADIENE13" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "OH" : {} ,
+          "ACROLEIN" : {}<YIELD0.58> 
+        },
+        "orig params" : "1.48E-11@-448."
+      },
+      {
+        "rxn id" : "T11",
+        "reactants" : {
+          "BUTADIENE13" : {} ,
+          "O3" : {} 
+        },
+        "products" : {
+          "O3" : {} ,
+          "ACROLEIN" : {}<YIELD0.52> 
+        },
+        "orig params" : "1.34E-14@2283."
+      },
+      {
+        "rxn id" : "T12",
+        "reactants" : {
+          "BUTADIENE13" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "NO3" : {} ,
+          "ACROLEIN" : {}<YIELD0.045> 
+        },
+        "orig params" : "1.79E-13"
+      },
+      {
+        "rxn id" : "TCL3",
+        "reactants" : {
+          "BUTADIENE13" : {} ,
+          "CL" : {} 
+        },
+        "products" : {
+          "CL" : {} ,
+          "ACROLEIN" : {}<YIELD0.58> 
+        },
+        "orig params" : "2.51E-10"
+      },
+      {
+        "rxn id" : "T13",
+        "reactants" : {
+          "ACRO_PRIMARY" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "OH" : {} 
+        },
+        "orig params" : "2.0E-11"
+      },
+      {
+        "rxn id" : "T14",
+        "reactants" : {
+          "ACRO_PRIMARY" : {} ,
+          "O3" : {} 
+        },
+        "products" : {
+          "O3" : {} 
+        },
+        "orig params" : "2.61E-19"
+      },
+      {
+        "rxn id" : "T15",
+        "reactants" : {
+          "ACRO_PRIMARY" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "NO3" : {} 
+        },
+        "orig params" : "1.15E-15"
+      },
+      {
+        "rxn id" : "T16",
+        "reactants" : {
+          "ACRO_PRIMARY" : {} 
+        },
+        "products" : {
+        },
+        "orig params" : "1.0/<ACRO_09>"
+      },
+      {
+        "rxn id" : "TCL4",
+        "reactants" : {
+          "ACRO_PRIMARY" : {} ,
+          "CL" : {} 
+        },
+        "products" : {
+          "CL" : {} 
+        },
+        "orig params" : "2.37E-10"
+      },
+      {
+        "rxn id" : "T17",
+        "reactants" : {
+          "ACROLEIN" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "OH" : {} 
+        },
+        "orig params" : "2.0E-11"
+      },
+      {
+        "rxn id" : "T18",
+        "reactants" : {
+          "ACROLEIN" : {} ,
+          "O3" : {} 
+        },
+        "products" : {
+          "O3" : {} 
+        },
+        "orig params" : "2.61E-19"
+      },
+      {
+        "rxn id" : "T19",
+        "reactants" : {
+          "ACROLEIN" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "NO3" : {} 
+        },
+        "orig params" : "1.15E-15"
+      },
+      {
+        "rxn id" : "T20",
+        "reactants" : {
+          "ACROLEIN" : {} 
+        },
+        "products" : {
+        },
+        "orig params" : "1.0/<ACRO_09>"
+      },
+      {
+        "rxn id" : "TCL5",
+        "reactants" : {
+          "ACROLEIN" : {} ,
+          "CL" : {} 
+        },
+        "products" : {
+          "CL" : {} 
+        },
+        "orig params" : "2.37E-10"
+      },
+      {
+        "rxn id" : "T21",
+        "reactants" : {
+          "TOLU" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "OH" : {} 
+        },
+        "orig params" : "1.80E-12@-340."
+      },
+      {
+        "rxn id" : "TCL6",
+        "reactants" : {
+          "TOLU" : {} ,
+          "CL" : {} 
+        },
+        "products" : {
+          "CL" : {} 
+        },
+        "orig params" : "6.1E-11"
+      },
+      {
+        "rxn id" : "HG1",
+        "reactants" : {
+          "HG" : {} ,
+          "O3" : {} 
+        },
+        "products" : {
+          "HGIIAER" : {}<YIELD0.5> ,
+          "HGIIGAS" : {}<YIELD0.5> ,
+          "O3" : {} 
+        },
+        "orig params" : "2.11E-18 @ 1256.5"
+      },
+      {
+        "rxn id" : "HG2",
+        "reactants" : {
+          "HG" : {} ,
+          "CL2" : {} 
+        },
+        "products" : {
+          "HGIIGAS" : {} ,
+          "CL2" : {} 
+        },
+        "orig params" : "2.6E-18"
+      },
+      {
+        "rxn id" : "HG3",
+        "reactants" : {
+          "HG" : {} ,
+          "H2O2" : {} 
+        },
+        "products" : {
+          "HGIIGAS" : {} ,
+          "H2O2" : {} 
+        },
+        "orig params" : "8.5E-19"
+      },
+      {
+        "rxn id" : "HG4",
+        "reactants" : {
+          "HG" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "HGIIAER" : {}<YIELD0.5> ,
+          "HGIIGAS" : {}<YIELD0.5> ,
+          "OH" : {} 
+        },
+        "orig params" : "7.7E-14"
+      },
+      {
+        "rxn id" : "HG5",
+        "reactants" : {
+          "HG" : {} ,
+          "CL" : {} ,
+          "M" : {} 
+        },
+        "products" : {
+          "HG" : {}<YIELD0.5> ,
+          "HGIIGAS" : {}<YIELD0.5> ,
+          "M" : {} ,
+          "CL" : {} 
+        },
+        "orig params" : "2.25E-33 @ -680.0"
+      },
+      {
+        "rxn id" : "DMS1",
+        "reactants" : {
+          "DMS" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "SO2" : {} ,
+          "MEO2" : {} ,
+          "FORM" : {} 
+        },
+        "orig params" : "1.12E-11@250"
+      },
+      {
+        "rxn id" : "DMS2",
+        "reactants" : {
+          "DMS" : {} ,
+          "OH" : {} 
+        },
+        "products" : {
+          "SO2" : {}<YIELD0.75> ,
+          "MSA" : {}<YIELD0.25> ,
+          "MEO2" : {} 
+        },
+        "orig params" : "1.99E-39@-5270 & 1.26E-10@+340 &1.0 &1"
+      },
+      {
+        "rxn id" : "DMS3",
+        "reactants" : {
+          "DMS" : {} ,
+          "NO3" : {} 
+        },
+        "products" : {
+          "SO2" : {} ,
+          "HNO3" : {} ,
+          "MEO2" : {} ,
+          "FORM" : {} 
+        },
+        "orig params" : "1.9E-13@-520"
+      },
+      {
+        "rxn id" : "DMS4",
+        "reactants" : {
+          "DMS" : {} ,
+          "CL" : {} 
+        },
+        "products" : {
+          "SO2" : {}<YIELD0.86> ,
+          "MEO2" : {} ,
+          "FORM" : {}<YIELD0.45> ,
+          "HCL" : {}<YIELD0.45> ,
+          "MSA" : {}<YIELD0.14> ,
+          "CLO" : {}<YIELD0.55> 
+        },
+        "orig params" : "3.4E-13@-2081"
+      },
+END MECH CONSTANTS       {
+        "rxn id" : "C1",
+        "reactants" : {
+          "ATM_AIR" : {} 
+        },
+        "products" : {
+          "1.0E" : {},
+          "06" : {} <C2> ATM_H2 = 0.56 <C3> ATM_N2 = 0.7808E,
+          "06" : {} <C4> ATM_O2 = 0.2095E,
+          "06" : {} <C5> ATM_CH4 = 1.85 END CONSTANTS
+        },
+  }
+]}

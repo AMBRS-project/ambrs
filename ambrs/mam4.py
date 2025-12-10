@@ -8,7 +8,7 @@ from .gas import GasSpecies
 from .scenario import Scenario
 from .ppe import Ensemble
 
-from dataclasses import dataclass
+from dataclasses import dataclass, make_dataclass
 import netCDF4
 import numpy as np
 import os.path
@@ -19,6 +19,12 @@ class Input:
     """ambrs.mam4.Input -- an input dataclass for the MAM4 box model"""
     # all fields here are named identically to their respective namelist
     # parameters in the MAM4 box model
+
+    # scenario
+    scenario: Scenario
+
+    # CAMP mass fractions
+    mfs: list
 
     # timestepping parameters
     mam_dt: float
@@ -118,32 +124,50 @@ class AerosolMassFractions:
                  scenario: Scenario):
         self.accum = self.AccumMode(
             SO4 = scenario.size.modes[0].mass_fraction('SO4'),
-            POM = scenario.size.modes[0].mass_fraction("OC"),
-            SOA = scenario.size.modes[0].mass_fraction('MSA'), # FIXME: using MSA as a placeholder for SOA
+            POM = scenario.size.modes[0].mass_fraction('POM'),
+            SOA = scenario.size.modes[0].mass_fraction('SOA'),
             BC  = scenario.size.modes[0].mass_fraction("BC"),
-            DST = scenario.size.modes[0].mass_fraction("OIN"),
-            NCL = scenario.size.modes[0].mass_fraction("Na"), # FIXME: and "Cl"? Assuming 1:1 for now
+            DST = scenario.size.modes[0].mass_fraction("DST"),
+            NCL = scenario.size.modes[0].mass_fraction("NCL"),
         )
+        # self.AccumMode = make_dataclass('AccumMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[0].species])
+        # self.accum = self.AccumMode(
+        #     **{p.aliases if p.aliases else p.name : scenario.size.modes[0].mass_fraction(p.name) for p in scenario.size.modes[0].species}
+        # )
+                
         
         self.aitken = self.AitkenMode(
             SO4 = scenario.size.modes[1].mass_fraction("SO4"),
-            SOA = scenario.size.modes[1].mass_fraction("MSA"), # FIXME: using MSA as a placeholder for SOA
-            NCL = scenario.size.modes[1].mass_fraction("Na"), # FIXME: assuming 1:1 with Cl for now
+            SOA = scenario.size.modes[1].mass_fraction("SOA"),
+            NCL = scenario.size.modes[1].mass_fraction("NCL"),
         )
         self.coarse = self.CoarseMode(
-            DST = scenario.size.modes[2].mass_fraction("OIN"),
-            NCL = scenario.size.modes[2].mass_fraction("Na"), # FIXME: see above
+            DST = scenario.size.modes[2].mass_fraction("DST"),
+            NCL = scenario.size.modes[2].mass_fraction("NCL"),
             SO4 = scenario.size.modes[2].mass_fraction("SO4"),
             BC  = scenario.size.modes[2].mass_fraction("BC"),
-            POM = scenario.size.modes[2].mass_fraction("OC"),
-            SOA = scenario.size.modes[2].mass_fraction("MSA"), # FIXME: using MSA as a placeholder for SOA
+            POM = scenario.size.modes[2].mass_fraction("POM"),
+            SOA = scenario.size.modes[2].mass_fraction("SOA"),
         )
         self.pcarbon = self.PCarbonMode(
-            POM = scenario.size.modes[3].mass_fraction("OC"),
+            POM = scenario.size.modes[3].mass_fraction("POM"),
             BC  = scenario.size.modes[3].mass_fraction("BC"),
         )
-        
+        # self.AitkenMode = make_dataclass('AitkenMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[1].species])
+        # self.aitken = self.AitkenMode(
+        #     **{p.aliases if p.aliases else p.name : scenario.size.modes[1].mass_fraction(p.name) for p in scenario.size.modes[1].species}
+        # )
 
+        # self.CoarseMode = make_dataclass('CoarseMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[2].species])
+        # self.coarse = self.CoarseMode(
+        #     **{p.aliases if p.aliases else p.name : scenario.size.modes[2].mass_fraction(p.name) for p in scenario.size.modes[2].species}
+        # )
+        
+        # self.PCarbonMode = make_dataclass('PCarbonMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[3].species])
+        # self.pcarbon = self.PCarbonMode(
+        #     **{p.aliases if p.aliases else p.name : scenario.size.modes[3].mass_fraction(p.name) for p in scenario.size.modes[3].species}
+        # )
+        
 # this type handles the mapping of AMBRS gas species to MAM4 species
 class GasMixingRatios:
     def __init__(self,
@@ -154,7 +178,7 @@ class GasMixingRatios:
         ih2so4 = GasSpecies.find(scenario.gases, 'H2SO4')
         if ih2so4 == -1:
             raise ValueError("H2SO4 gas not found in gas species")
-        isoag = GasSpecies.find(scenario.gases, 'soag')
+        isoag = GasSpecies.find(scenario.gases, 'SOAG')
         self.SO2 = scenario.gas_concs[iso2]
         self.H2SO4 = scenario.gas_concs[ih2so4]
         self.SOAG = 0.0 if isoag == -1 else scenario.gas_concs[isoag]
@@ -191,26 +215,32 @@ Parameters:
         
         # translate the scenario's gas mixing ratios to MAM4-ese
         gas_mixing_ratios = GasMixingRatios(scenario)
-        
-        mftot1 = (
-            aero_mass_fracs.accum.SO4 + aero_mass_fracs.accum.POM + 
-            aero_mass_fracs.accum.SOA + aero_mass_fracs.accum.BC + 
-            aero_mass_fracs.accum.DST + aero_mass_fracs.accum.NCL)
 
-        mftot2 = (
-            aero_mass_fracs.aitken.SO4 + 
-            aero_mass_fracs.aitken.SOA + 
-            aero_mass_fracs.aitken.NCL)
-        
-        mftot3 = (
-            aero_mass_fracs.coarse.SO4 + aero_mass_fracs.coarse.POM + 
-            aero_mass_fracs.coarse.SOA + aero_mass_fracs.coarse.BC + 
-            aero_mass_fracs.coarse.DST + aero_mass_fracs.coarse.NCL)
+        mfs1 = {p.name : scenario.size.modes[0].mass_fraction(p.name) for p in scenario.size.modes[0].species}
+        mftot1 = sum(mfs1.values())
+        mfs1 = {p.name : mfs1[p.name]/mftot1 for p in scenario.size.modes[0].species} 
 
-        mftot4 = (
-            aero_mass_fracs.pcarbon.POM + aero_mass_fracs.pcarbon.BC)
+        mfs2 = {p.name : scenario.size.modes[1].mass_fraction(p.name) for p in scenario.size.modes[1].species} 
+        mftot2 = sum(mfs2.values())
+        mfs2 = {p.name : mfs2[p.name]/mftot2 for p in scenario.size.modes[1].species} 
+        
+        mfs3 = {p.name : scenario.size.modes[2].mass_fraction(p.name) for p in scenario.size.modes[2].species} 
+        mftot3 = sum(mfs3.values())
+        mfs3 = {p.name : mfs3[p.name]/mftot3 for p in scenario.size.modes[2].species} 
+
+        mfs4 = {p.name : scenario.size.modes[3].mass_fraction(p.name) for p in scenario.size.modes[3].species} 
+        mftot4 = sum(mfs4.values())
+        mfs4 = {p.name : mfs4[p.name]/mftot4 for p in scenario.size.modes[3].species} 
+
+        mfs = [mfs1, mfs2, mfs3, mfs4]
+
+        # print( 'MASS FRACS', mfs )
         
         return Input(
+            scenario = scenario,
+
+            mfs = mfs,
+            
             mam_dt = dt,
             mam_nstep = nstep,
 
@@ -229,30 +259,30 @@ Parameters:
             numc3 = scenario.size.modes[2].number,
             numc4 = scenario.size.modes[3].number,
             
-            mfso41 = aero_mass_fracs.accum.SO4/mftot1,
-            mfpom1 = aero_mass_fracs.accum.POM/mftot1,
-            mfsoa1 = aero_mass_fracs.accum.SOA/mftot1,
-            mfbc1  = aero_mass_fracs.accum.BC/mftot1,
-            mfdst1 = aero_mass_fracs.accum.DST/mftot1,
-            mfncl1 = aero_mass_fracs.accum.NCL/mftot1,
+            mfso41 = np.floor(aero_mass_fracs.accum.SO4/mftot1 * 10**12) / 10**12,
+            mfpom1 = np.floor(aero_mass_fracs.accum.POM/mftot1 * 10**12) / 10**12,
+            mfsoa1 = np.floor(aero_mass_fracs.accum.SOA/mftot1 * 10**12) / 10**12,
+            mfbc1  = np.floor(aero_mass_fracs.accum.BC/mftot1 * 10**12) / 10**12,
+            mfdst1 = np.floor(aero_mass_fracs.accum.DST/mftot1 * 10**12) / 10**12,
+            mfncl1 = np.floor(aero_mass_fracs.accum.NCL/mftot1 * 10**12) / 10**12,
 
-            mfso42 = aero_mass_fracs.aitken.SO4/mftot2,
-            mfsoa2 = aero_mass_fracs.aitken.SOA/mftot2,
-            mfncl2 = aero_mass_fracs.aitken.NCL/mftot2,
+            mfso42 = np.floor(aero_mass_fracs.aitken.SO4/mftot2 * 10**12) / 10**12,
+            mfsoa2 = np.floor(aero_mass_fracs.aitken.SOA/mftot2 * 10**12) / 10**12,
+            mfncl2 = np.floor(aero_mass_fracs.aitken.NCL/mftot2 * 10**12) / 10**12,
             
-            mfdst3 = aero_mass_fracs.coarse.DST/mftot3,
-            mfncl3 = aero_mass_fracs.coarse.NCL/mftot3,
-            mfso43 = aero_mass_fracs.coarse.SO4/mftot3,
-            mfbc3  = aero_mass_fracs.coarse.BC/mftot3,
-            mfpom3 = aero_mass_fracs.coarse.POM/mftot3,
-            mfsoa3 = aero_mass_fracs.coarse.SOA/mftot3,
+            mfdst3 = np.floor(aero_mass_fracs.coarse.DST/mftot3 * 10**12) / 10**12,
+            mfncl3 = np.floor(aero_mass_fracs.coarse.NCL/mftot3 * 10**12) / 10**12,
+            mfso43 = np.floor(aero_mass_fracs.coarse.SO4/mftot3 * 10**12) / 10**12,
+            mfbc3  = np.floor(aero_mass_fracs.coarse.BC/mftot3 * 10**12) / 10**12,
+            mfpom3 = np.floor(aero_mass_fracs.coarse.POM/mftot3 * 10**12) / 10**12,
+            mfsoa3 = np.floor(aero_mass_fracs.coarse.SOA/mftot3 * 10**12) / 10**12,
 
-            mfpom4 = aero_mass_fracs.pcarbon.POM/mftot4,
-            mfbc4  = aero_mass_fracs.pcarbon.BC/mftot4,
+            mfpom4 = np.floor(aero_mass_fracs.pcarbon.POM/mftot4 * 10**12) / 10**12,
+            mfbc4  = np.floor(aero_mass_fracs.pcarbon.BC/mftot4 * 10**12) / 10**12,
 
-            qso2 = gas_mixing_ratios.SO2,
-            qh2so4 = gas_mixing_ratios.H2SO4,
-            qsoag = gas_mixing_ratios.SOAG,
+            qso2 = gas_mixing_ratios.SO2 * 1.e-6 * 64.0648 / 28.966,
+            qh2so4 = gas_mixing_ratios.H2SO4 * 1.e-6 * 98.0784 / 28.966,
+            qsoag = gas_mixing_ratios.SOAG *  1.e-6 * 12.0109997 / 28.966,
         )
     
     def invocation(self, exe: str, prefix: str) -> str:
@@ -312,6 +342,16 @@ working directory contains any needed input files."""
   qso2           = {input.qso2},
   qh2so4         = {input.qh2so4},
   qsoag          = {input.qsoag},
+/
+&size_parameters
+    dgnum1       = {input.scenario.size.modes[0].geom_mean_diam},
+    dgnum2       = {input.scenario.size.modes[1].geom_mean_diam},
+    dgnum3       = {input.scenario.size.modes[2].geom_mean_diam},
+    dgnum4       = {input.scenario.size.modes[3].geom_mean_diam},
+    sigmag1      = {10**input.scenario.size.modes[0].log10_geom_std_dev},
+    sigmag2      = {10**input.scenario.size.modes[1].log10_geom_std_dev},
+    sigmag3      = {10**input.scenario.size.modes[2].log10_geom_std_dev},
+    sigmag4      = {10**input.scenario.size.modes[3].log10_geom_std_dev},
 /
 """
         if not os.path.exists(dir):

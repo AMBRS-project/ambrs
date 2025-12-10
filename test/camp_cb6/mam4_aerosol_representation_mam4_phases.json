@@ -1,0 +1,61 @@
+{
+    "camp-data": [
+        {
+            "name" : "MAM4",
+            "type" : "AERO_REP_MODAL_BINNED_MASS",
+            "modes/bins" :
+            {
+                "accumulation    " :
+                {
+                    "type" : "MODAL",
+                    "phases" : [ 
+                        "secondary_organic_matter",
+                        "primary_organic_matter",
+                        "aqueous_sulfate",
+                        "soot",
+                        "salt",
+                        "dust"
+                    ],
+                    "shape" : "LOG_NORMAL",
+                    "geometric mean diameter [m]" : 0.20e-6,
+                    "geometric standard deviation" : 1.8
+                },
+                "aitken          " :
+                {
+                    "type" : "MODAL",
+                    "phases" : [ 
+                        "secondary_organic_matter",
+                        "aqueous_sulfate",
+                        "salt"
+                    ],
+                    "shape" : "LOG_NORMAL",
+                    "geometric mean diameter [m]" : 0.04e-6,
+                    "geometric standard deviation" : 1.6
+                },
+                "coarse          " :
+                {
+                    "type" : "MODAL",
+                    "phases" : [ 
+                        "secondary_organic_matter",
+                        "primary_organic_matter",
+                        "aqueous_sulfate",
+                        "soot",
+                        "salt",
+                        "dust"
+                    ],
+                    "shape" : "LOG_NORMAL",
+                    "geometric mean diameter [m]" : 2.00e-6,
+                    "geometric standard deviation" : 1.8
+                },
+                "primary_carbon  " :
+                {
+                    "type" : "MODAL",
+                    "phases" : [ "primary_organic_matter" ],
+                    "shape" : "LOG_NORMAL",
+                    "geometric mean diameter [m]" : 0.08e-6,
+                    "geometric standard deviation" : 1.6
+                }
+            }
+        }
+    ]
+}

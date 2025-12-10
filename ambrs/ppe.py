@@ -17,7 +17,7 @@ from typing import Optional
 from .aerosol import \
     AerosolModalSizeState, AerosolModeState, AerosolModePopulation, \
     AerosolModalSizeDistribution, AerosolModalSizePopulation, AerosolSpecies, \
-    RVFrozenDistribution
+    RVFrozenDistribution, Delta
 from .gas import GasSpecies
 from .scenario import Scenario
 
@@ -33,8 +33,52 @@ PPE are sampled"""
     flux: RVFrozenDistribution
     relative_humidity: RVFrozenDistribution
     temperature: RVFrozenDistribution
-    pressure: float # <-- these are fixed per ensemble
-    height: float   # <--
+    pressure: RVFrozenDistribution
+    height: float
+    gas_emissions: Optional[list[tuple[float, dict]]] = None
+    gas_background: Optional[list[tuple[float, dict]]] = None
+
+    def __init__(
+        self,
+        name: str,
+        aerosols: tuple[AerosolSpecies, ...],
+        gases: tuple[GasSpecies, ...],
+        size: AerosolModalSizeDistribution,
+        gas_concs: tuple[RVFrozenDistribution, ...], # ordered like gases
+        flux: RVFrozenDistribution,
+        relative_humidity: RVFrozenDistribution,
+        temperature: RVFrozenDistribution,
+        pressure: RVFrozenDistribution,
+        height: float,
+        gas_emissions: Optional[list[tuple[float, dict]]] = None,
+        gas_background: Optional[list[tuple[float, dict]]] = None
+    ):
+        # self.name = name
+        object.__setattr__(self,'name',name)
+        object.__setattr__(self,'aerosols',aerosols)
+        object.__setattr__(self,'gases',gases)
+        object.__setattr__(self,'size',size)
+        object.__setattr__(self,'gas_concs',
+                           tuple([gas_conc if callable(getattr(gas_conc,'ppf',None)) else Delta(gas_conc) for gas_conc in gas_concs]))
+        if callable(getattr(flux,'ppf',None)):
+            object.__setattr__(self,'flux',flux)
+        elif isinstance(flux,(int,float)):
+            object.__setattr__(self,'flux',Delta(flux))
+        if callable(getattr(relative_humidity,'ppf',None)):
+            object.__setattr__(self,'relative_humidity',relative_humidity)
+        elif isinstance(relative_humidity,(int,float)):
+            object.__setattr__(self,'relative_humidity',Delta(relative_humidity))
+        if callable(getattr(temperature,'ppf',None)):
+            object.__setattr__(self,'temperature',temperature)
+        elif isinstance(temperature,(int,float)):
+            object.__setattr__(self,'temperature',Delta(temperature))
+        if callable(getattr(pressure,'ppf',None)):
+            object.__setattr__(self,'pressure',pressure)
+        elif isinstance(pressure,(int,float)):
+            object.__setattr__(self,'pressure',Delta(pressure))
+        object.__setattr__(self,'height',height)
+        object.__setattr__(self,'gas_emissions',gas_emissions)
+        object.__setattr__(self,'gas_background',gas_background)
 
 @dataclass(frozen=True)
 class Ensemble:
@@ -47,8 +91,10 @@ a specific EnsembleSpecification"""
     flux: np.array
     relative_humidity: np.array
     temperature: np.array
-    pressure: float
+    pressure: np.array
     height: float
+    gas_emissions: Optional[list[tuple[float, dict]]] = None
+    gas_background: Optional[list[tuple[float, dict]]] = None
     specification: Optional[EnsembleSpecification] = None # if used for creation
 
     def __len__(self):
@@ -60,6 +106,19 @@ a specific EnsembleSpecification"""
 
     def member(self, i: int) -> Scenario:
         """ensemble.member(i) -> extracts Scenario from ith ensemble member"""
+        for key in self.__dict__:
+            if key == 'gas_concs':
+                object.__setattr__(
+                    self,
+                    key,
+                    tuple([conc*np.ones(self.__len__()) for conc in getattr(self,key)])
+                )
+            elif key in ['flux','relative_humidity','temperature','pressure']:
+                object.__setattr__(
+                    self,
+                    key,
+                    getattr(self,key) * np.ones(self.__len__())
+                )
         return Scenario(
             aerosols = self.aerosols,
             gases = self.gases,
@@ -68,8 +127,10 @@ a specific EnsembleSpecification"""
             flux = self.flux[i],
             relative_humidity = self.relative_humidity[i],
             temperature = self.temperature[i],
-            pressure = self.pressure,
+            pressure = self.pressure[i],
             height = self.height,
+            gas_emissions = self.gas_emissions,
+            gas_background = self.gas_background,
         )
 
 #------------------------------------------------
@@ -87,6 +148,7 @@ specified scenarios (which must all have the same particle size representation)"
     flux = np.array([scenario.flux for scenario in scenarios])
     relative_humidity = np.array([scenario.relative_humidity for scenario in scenarios])
     temperature = np.array([scenario.temperature for scenario in scenarios])
+    pressure = np.array([scenario.pressure for scenario in scenarios])
 
     # handle particle size data
     size = None
@@ -125,8 +187,10 @@ specified scenarios (which must all have the same particle size representation)"
         flux = flux,
         relative_humidity = relative_humidity,
         temperature = temperature,
-        pressure = scenarios[0].pressure,
+        pressure = pressure,
         height = scenarios[0].height,
+        gas_emissions = scenarios[0].gas_emissions,
+        gas_background = scenarios[0].gas_background,
     )
 
 #-------------------------------------------------
@@ -144,7 +208,7 @@ def sample(specification: EnsembleSpecification, n: int) -> Ensemble:
                     species = mode.species,
                     number = mode.number.rvs(n),
                     geom_mean_diam = mode.geom_mean_diam.rvs(n),
-                    log10_geom_std_dev = np.array([mode.log10_geom_std_dev for i in range(n)]),
+                    log10_geom_std_dev = mode.log10_geom_std_dev.rvs(n),
                     mass_fractions = tuple([f.rvs(n) for f in mode.mass_fractions]),
                 ) for mode in specification.size.modes]),
         )
@@ -161,8 +225,10 @@ def sample(specification: EnsembleSpecification, n: int) -> Ensemble:
         flux = specification.flux.rvs(n),
         relative_humidity = specification.relative_humidity.rvs(n),
         temperature = specification.temperature.rvs(n),
-        pressure = specification.pressure,
+        pressure = specification.pressure.rvs(n),
         height = specification.height,
+        gas_emissions = specification.gas_emissions,
+        gas_background = specification.gas_background,
     )
 
 def lhs(specification: EnsembleSpecification,
@@ -174,14 +240,14 @@ generated from latin hypercube sampling applied to the given specification. The
 optional arguments are passed along to pyDOE's lhs function, which creates the
 distribution from which ensemble members are sampled."""
     num_gases = len(specification.gases)
-    n_factors = num_gases + 3 # size-independent factors: num_gases + flux + relative_humidity + temperature
+    n_factors = num_gases + 4 # size-independent factors: num_gases + flux + relative_humidity + temperature (!!!FIXME) + presssure
     lhd = None # latin hypercube distribution (created depending on particle
                # size representation)
     size = None
     if isinstance(specification.size, AerosolModalSizeDistribution):
         # count up mode-related factors
         for mode in specification.size.modes:
-            n_factors += 2 + len(mode.mass_fractions)
+            n_factors += 3 + len(mode.mass_fractions) # !!!FIXME Changed offset to 3 from 2 throughout to accommodate sigmag dist
         # lhd is a 2D array with indices (sample index, factor index)
         lhd = pyDOE.lhs(n_factors, n, criterion, iterations)
         num_species = [len(mode.mass_fractions) for mode in specification.size.modes]
@@ -190,11 +256,11 @@ distribution from which ensemble members are sampled."""
                 AerosolModePopulation(
                     name = mode.name,
                     species = mode.species,
-                    number=mode.number.ppf(lhd[:,(2+num_species[m])*m]),
-                    geom_mean_diam=mode.geom_mean_diam.ppf(lhd[:,(2+num_species[m])*m+1]),
-                    log10_geom_std_dev = np.array([mode.log10_geom_std_dev for i in range(n)]),
+                    number=mode.number.ppf(lhd[:,(3+num_species[m])*m]),
+                    geom_mean_diam=mode.geom_mean_diam.ppf(lhd[:,(3+num_species[m])*m+1]),
+                    log10_geom_std_dev=np.array(mode.log10_geom_std_dev.ppf(lhd[:,(3+num_species[m])*m+2])),
                     mass_fractions=tuple(
-                        [mass_fraction.ppf(lhd[:,(2+num_species[m])*m+f])
+                        [mass_fraction.ppf(lhd[:,(3+num_species[m])*m+f])
                          for f, mass_fraction in enumerate(mode.mass_fractions)]),
                 ) for m, mode in enumerate(specification.size.modes)]),
         )
@@ -214,18 +280,20 @@ distribution from which ensemble members are sampled."""
             
     gas_concs = []
     for g, gas_conc in enumerate(specification.gas_concs):
-        gas_concs.append(gas_conc.ppf(lhd[:,-3-(num_gases-g)]))
+        gas_concs.append(gas_conc.ppf(lhd[:,-4-(num_gases-g)]))
     return Ensemble(
         aerosols = specification.aerosols,
         gases = specification.gases,
         specification = specification,
         size = size,
         gas_concs = tuple(gas_concs),
-        flux = specification.flux.ppf(lhd[:,-3]),
-        relative_humidity = specification.relative_humidity.ppf(lhd[:,-2]),
-        temperature = specification.temperature.ppf(lhd[:,-1]),
-        pressure = specification.pressure,
+        flux = specification.flux.ppf(lhd[:,-4]), # !!!FIXME Following indices shifted down by 1 to accommodate pressure
+        relative_humidity = specification.relative_humidity.ppf(lhd[:,-3]),
+        temperature = specification.temperature.ppf(lhd[:,-2]),
+        pressure = specification.pressure.ppf(lhd[:,-1]),
         height = specification.height,
+        gas_emissions = specification.gas_emissions,
+        gas_background = specification.gas_background,
     )
 
 #---------------------------
@@ -404,6 +472,8 @@ parameter sweeps"""
             temperature = params[index + 2],
             pressure = reference_state.pressure,
             height = reference_state.height,
+            gas_emissions = reference_state.gas_emissions,
+            gas_background = reference_state.gas_background,
         )
         index += 3
         members.append(member)

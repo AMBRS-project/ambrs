@@ -1,0 +1,70 @@
+{
+    "camp-data" : [
+        {
+            "name" : "NH3",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.0170
+        },
+        {
+            "name" : "SVISO1",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1320
+        },
+        {
+            "name" : "SVISO2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1330
+        },
+        {
+            "name" : "SVSQT",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.2730
+        },
+        {
+            "name" : "LVPCSOG",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1700
+        },
+        {
+            "name" : "SVMT1",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.3000
+        },
+        {
+            "name" : "SVMT2",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.2000
+        },
+        {
+            "name" : "SVMT3",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1860
+        },
+        {
+            "name" : "SVMT4",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1840
+        },
+        {
+            "name" : "SVMT5",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1700
+        },
+        {
+            "name" : "SVMT6",
+            "type" : "CHEM_SPEC",
+            "absolute integration tolerance" : 1e-06,
+            "molecular weight [kg mol-1]" : 0.1680
+        }
+    ]
+}

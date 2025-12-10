@@ -1,0 +1,35 @@
+{
+    "description" : "These aerosol phases correspond to the MAM4 representation",
+    "camp-data": [
+        {
+            "name" : "aqueous_sulfate",
+            "type" : "AERO_PHASE",
+            "species" : [ "ASO4" ]
+        },
+                {
+            "name" : "primary_organic_matter",
+            "type" : "AERO_PHASE",
+            "species" : [ "APOC" ]
+        },
+        {
+            "name" : "secondary_organic_matter",
+            "type" : "AERO_PHASE",
+            "species" : [ "SOA" ]
+        },
+        {
+            "name" : "soot",
+            "type" : "AERO_PHASE",
+            "species" : [ "AEC" ]
+        },
+        {
+            "name" : "dust",
+            "type" : "AERO_PHASE",
+            "species" : [ "ASOIL" ]
+        },
+        {
+            "name" : "other_PM",
+            "type" : "AERO_PHASE",
+            "species" : [ "ANA" ]
+        }
+    ]
+}

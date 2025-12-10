@@ -1,4 +1,4 @@
-"""ambrs.mam4 -- data types and functions related to the MAM4 box model"""
+"""ambrs.partmc -- data types and functions related to the PartMC box model"""
 
 from .aerosol import AerosolProcesses, AerosolModalSizePopulation, \
                      AerosolModalSizeState
@@ -11,6 +11,8 @@ from typing import Dict, Optional
 import os
 import numpy as np
 from dataclasses import dataclass
+import json
+import pandas as pd
 
 @dataclass
 class AeroData:
@@ -138,12 +140,16 @@ class Input:
     aero_emissions: Optional[AerosolModeTimeSeries] = None  # aerosol emissions time series
     aero_background: Optional[AerosolModeTimeSeries] = None # aerosol background time series
 
+    # CAMP configuration
+    camp_config: Optional[str] = None
+
 class AerosolModel(BaseAerosolModel):
     def __init__(self,
                  processes: AerosolProcesses,
                  run_type = 'particle',
                  n_part = None,
-                 n_repeat = 0):
+                 n_repeat = 0,
+                 camp_config = None):
         BaseAerosolModel.__init__(self, 'partmc', processes)
         if run_type not in ['particle']:
             raise ValueError(f'Unsupported run_type: {run_type}')
@@ -154,6 +160,7 @@ class AerosolModel(BaseAerosolModel):
         self.run_type = run_type
         self.n_part = n_part
         self.n_repeat = n_repeat
+        self.camp_config = camp_config
 
     def create_input(self,
                      scenario: Scenario,
@@ -187,20 +194,19 @@ class AerosolModel(BaseAerosolModel):
             n_repeat = self.n_repeat,
 
             restart = False,
-            do_select_weighting = False,
-            #do_select_weighting = True,
-            #weight_type = 'power',
-            #weighting_exponent = 0,
+            do_select_weighting = True,
+            weight_type = 'power_source',
+            weighting_exponent = 0,
 
             t_max = nstep * dt,
             del_t = dt,
             t_output = dt, # setting t_output = dt for now, which I believe is how MAM4 works.
             t_progress = dt, # reporting progress at every time step for now. 
 
-            do_camp_chem = False,
+            do_camp_chem = True,
 
             gas_data = tuple([gas.name for gas in scenario.gases]),
-            gas_init = tuple([gas_conc*1e9 for gas_conc in scenario.gas_concs]),
+            gas_init = tuple([1.e+3 * gas_conc for gas_conc in scenario.gas_concs]),
             # FIXME: double-check that units are consistent; add unit test
             
             aerosol_data = tuple(aero_data),
@@ -211,10 +217,12 @@ class AerosolModel(BaseAerosolModel):
             pressure_profile = [(0, scenario.pressure)],
             height_profile = [(0, scenario.height)],
 
-            rel_humidity = 0.5,#scenario.relative_humidity,
+            # loss_function = 'volume',
+
+            rel_humidity = scenario.relative_humidity,
             latitude = 0,       # FIXME:
             longitude = 0,      # FIXME:
-            altitude = 0,       # FIXME:
+            altitude = 3.0e+3,  # FIXME:
             start_time = 21600, # FIXME:
             start_day = 200,    # FIXME:
 
@@ -224,11 +232,16 @@ class AerosolModel(BaseAerosolModel):
             do_optical = self.processes.optics,
             do_nucleation = self.processes.nucleation,
 
-            rand_init = 0, # FIXME: uses time to initialize random seed
-            allow_doubling = False,
-            allow_halving = False,
-            record_removals = False,
+            rand_init = 42, # FIXME: seed 0 uses clock to initialize random seed
+            allow_doubling = True,
+            allow_halving = True,
+            record_removals = True,
             do_parallel = False,
+
+            gas_emissions = scenario.gas_emissions,
+            gas_background = scenario.gas_background,
+
+            camp_config = self.camp_config,
         )
 
     def invocation(self,
@@ -260,7 +273,8 @@ class AerosolModel(BaseAerosolModel):
         if input.do_select_weighting:
             spec_content += 'do_select_weighting yes\n'
             spec_content += f'weight_type {input.weight_type}\n'
-            spec_content += f'weighting_exponent {input.weighting_exponent}\n'
+            if input.weight_type in ['power','power_source']:
+                spec_content += f'weighting_exponent {input.weighting_exponent}\n'
         else:
             spec_content += 'do_select_weighting no\n'
         spec_content += '\n'
@@ -272,16 +286,19 @@ class AerosolModel(BaseAerosolModel):
         # chemistry
         if input.do_camp_chem:
             spec_content += 'do_camp_chem yes\n'
+            # spec_content += f'camp_config {input.camp_config}\n' # FIXME: path
+            spec_content += f'camp_config {input.camp_config}/{prefix}/config.json\n' # FIXME: path
         else:
             spec_content += 'do_camp_chem no\n'
         spec_content += '\n'
 
         # gas data
-        spec_content += 'gas_data gas_data.dat\ngas_init gas_init.dat\n'
+        # spec_content += 'gas_data gas_data.dat\n'
+        spec_content += 'gas_init gas_init.dat\n'
         spec_content += '\n'
 
         # aerosol data
-        spec_content += 'aerosol_data aero_data.dat\n'
+        # spec_content += 'aerosol_data aero_data.dat\n'
         if input.do_fractal:
             spec_content += 'do_fractal yes\n'
         else:
@@ -309,7 +326,7 @@ class AerosolModel(BaseAerosolModel):
 
         # processes
         if input.do_coagulation:
-            spec_content += f'do_coagulation yes\ncoag_kernel {input.coag_kernel if input.coag_kernel else 'zero'}\n'
+            spec_content += f'do_coagulation yes\ncoag_kernel {input.coag_kernel if input.coag_kernel else 'brown'}\n'
         else:
             spec_content += 'do_coagulation no\n'
         if input.do_condensation:
@@ -388,42 +405,44 @@ class AerosolModel(BaseAerosolModel):
 
         # gas_emit.dat
         if input.gas_emissions:
-            gas_emission_species = [input.gas_emissions[0].time_series[1].keys()]
+            gas_emission_species = list(input.gas_emissions[0][1].keys())
             gas_emission_species.remove('rate')
             with open(os.path.join(dir, 'gas_emit.dat'), 'w') as f:
                 f.write('# time (s)\n# rate = scaling parameter\n# emissions (mol m^{-2} s^{-1})\n')
-                f.write('\t'.join(['time'] + [pair[0] for pair in input.gas_emissions]) + '\n')
-                f.write('\t'.join(['rate'] + [pair[1]['rate'] for pair in input.gas_emissions]) + '\n')
-                f.write('\t'.join([species_name] + [emit.pair[1][species_name] \
-                                  for species_name in gas_emission_species \
-                                  for pair in input.gas_emissions]))
+                f.write('\t'.join(['time'] + [str(pair[0]) for pair in input.gas_emissions]) + '\n')
+                f.write('\t'.join(['rate'] + [str(pair[1]['rate']) for pair in input.gas_emissions]) + '\n')
+                for species_name in gas_emission_species:
+                    f.write('\t'.join([species_name] + [str(pair[1][species_name]) for pair in input.gas_emissions]) + '\n')
         else:
             # write a gas emissions file with zero data
             with open(os.path.join(dir, 'gas_emit.dat'), 'w') as f:
                 f.write('# time (s)\n# rate = scaling parameter\n# emissions (mol m^{-2} s^{-1})\n')
                 f.write('time\t0.0\n')
-                f.write('rate\t1.0\n')
+                f.write('rate\t0.0\n')
                 for gas in input.gas_data:
                     f.write(f'{gas}\t0.0\n')
 
         # gas_back.dat
         if input.gas_background:
-            gas_background_species = [input.gas_background[0].time_series[1].keys()]
+            # gas_background_species = [input.gas_background[0].time_series[1].keys()]
+            gas_background_species = list(input.gas_background[0][1].keys())
             gas_background_species.remove('rate')
             # FIXME: convert background conc to ppb
             with open(os.path.join(dir, 'gas_back.dat'), 'w') as f:
                 f.write('# time (s)\n# rate (s^{-1})\n# concentrations (ppb)\n')
-                f.write('\t'.join(['time'] + [pair[0] for pair in input.gas_background]) + '\n')
-                f.write('\t'.join(['rate'] + [pair[1]['rate'] for pair in input.gas_background]) + '\n')
-                f.write('\t'.join([species_name] + [pair[1][species_name] \
-                                  for species_name in gas_background_species \
-                                  for pair in input.gas_background]))
+                f.write('\t'.join(['time'] + [str(pair[0]) for pair in input.gas_background]) + '\n')
+                f.write('\t'.join(['rate'] + [str(pair[1]['rate']) for pair in input.gas_background]) + '\n')
+                # f.write('\t'.join([species_name] + [str(pair[1][species_name]) \
+                #                   for species_name in gas_background_species \
+                #                   for pair in input.gas_background]))
+                for species_name in gas_background_species:
+                    f.write('\t'.join([species_name] + [str(pair[1][species_name]) for pair in input.gas_background]) + '\n')
         else:
             # write a gas background file with zero data
             with open(os.path.join(dir, 'gas_back.dat'), 'w') as f:
                 f.write('# time (s)\n# rate = scaling parameter\n# emissions (mol m^{-2} s^{-1})\n')
                 f.write('time\t0.0\n')
-                f.write('rate\t1.0\n')
+                f.write('rate\t0.0\n')
                 for gas in input.gas_data:
                     f.write(f'{gas}\t0.0\n')
 
@@ -504,6 +523,7 @@ class AerosolModel(BaseAerosolModel):
             model = self.name,
             input = input,
             dNdlnD = np.zeros([len(lnDs)]),
+            bins = None,
         )
 
     def get_ncfile(self, dir, prefix, timestep, ensemble_number=1):
