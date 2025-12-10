@@ -91,82 +91,82 @@ class Input:
 # this type handles the mapping of AMBRS aerosol species to MAM4 species
 # within all aerosol modes
 class AerosolMassFractions:
-    # @dataclass
-    # class AccumMode:
-    #     SO4: float
-    #     POM: float
-    #     SOA: float
-    #     BC: float
-    #     DST: float
-    #     NCL: float
+    @dataclass
+    class AccumMode:
+        SO4: float
+        POM: float
+        SOA: float
+        BC: float
+        DST: float
+        NCL: float
 
-    # @dataclass
-    # class AitkenMode:
-    #     SO4: float
-    #     SOA: float
-    #     NCL: float
+    @dataclass
+    class AitkenMode:
+        SO4: float
+        SOA: float
+        NCL: float
 
-    # @dataclass
-    # class CoarseMode:
-    #     DST: float
-    #     NCL: float
-    #     SO4: float
-    #     BC: float
-    #     POM: float
-    #     SOA: float
+    @dataclass
+    class CoarseMode:
+        DST: float
+        NCL: float
+        SO4: float
+        BC: float
+        POM: float
+        SOA: float
 
-    # @dataclass
-    # class PCarbonMode:
-    #     POM: float
-    #     BC: float
+    @dataclass
+    class PCarbonMode:
+        POM: float
+        BC: float
 
     def __init__(self,
                  scenario: Scenario):
-        # self.accum = self.AccumMode(
-        #     SO4 = scenario.size.modes[0].mass_fraction('ASO4'),
-        #     POM = scenario.size.modes[0].mass_fraction('APOC'),
-        #     SOA = scenario.size.modes[0].mass_fraction('SOA'), # FIXME: using MSA as a placeholder for SOA
-        #     BC  = scenario.size.modes[0].mass_fraction("AEC"),
-        #     DST = scenario.size.modes[0].mass_fraction("ASOIL"),
-        #     NCL = scenario.size.modes[0].mass_fraction("ANA"), # FIXME: and "Cl"? Assuming 1:1 for now
-        # )
-        self.AccumMode = make_dataclass('AccumMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[0].species])
         self.accum = self.AccumMode(
-            **{p.aliases if p.aliases else p.name : scenario.size.modes[0].mass_fraction(p.name) for p in scenario.size.modes[0].species}
+            SO4 = scenario.size.modes[0].mass_fraction('SO4'),
+            POM = scenario.size.modes[0].mass_fraction('POM'),
+            SOA = scenario.size.modes[0].mass_fraction('SOA'),
+            BC  = scenario.size.modes[0].mass_fraction("BC"),
+            DST = scenario.size.modes[0].mass_fraction("DST"),
+            NCL = scenario.size.modes[0].mass_fraction("NCL"),
         )
+        # self.AccumMode = make_dataclass('AccumMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[0].species])
+        # self.accum = self.AccumMode(
+        #     **{p.aliases if p.aliases else p.name : scenario.size.modes[0].mass_fraction(p.name) for p in scenario.size.modes[0].species}
+        # )
                 
         
-        # self.aitken = self.AitkenMode(
-        #     SO4 = scenario.size.modes[1].mass_fraction("ASO4"),
-        #     SOA = scenario.size.modes[1].mass_fraction("SOA"), # FIXME: using MSA as a placeholder for SOA
-        #     NCL = scenario.size.modes[1].mass_fraction("ANA"), # FIXME: assuming 1:1 with Cl for now
-        # )
-        # self.coarse = self.CoarseMode(
-        #     DST = scenario.size.modes[2].mass_fraction("ASOIL"),
-        #     NCL = scenario.size.modes[2].mass_fraction("ANA"), # FIXME: see above
-        #     SO4 = scenario.size.modes[2].mass_fraction("ASO4"),
-        #     BC  = scenario.size.modes[2].mass_fraction("AEC"),
-        #     POM = scenario.size.modes[2].mass_fraction("APOC"),
-        #     SOA = scenario.size.modes[2].mass_fraction("SOA"), # FIXME: using MSA as a placeholder for SOA
-        # )
-        # self.pcarbon = self.PCarbonMode(
-        #     POM = scenario.size.modes[3].mass_fraction("APOC"),
-        #     BC  = scenario.size.modes[3].mass_fraction("AEC"),
-        # )
-        self.AitkenMode = make_dataclass('AitkenMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[1].species])
         self.aitken = self.AitkenMode(
-            **{p.aliases if p.aliases else p.name : scenario.size.modes[1].mass_fraction(p.name) for p in scenario.size.modes[1].species}
+            SO4 = scenario.size.modes[1].mass_fraction("SO4"),
+            SOA = scenario.size.modes[1].mass_fraction("SOA"),
+            NCL = scenario.size.modes[1].mass_fraction("NCL"),
         )
-
-        self.CoarseMode = make_dataclass('CoarseMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[2].species])
         self.coarse = self.CoarseMode(
-            **{p.aliases if p.aliases else p.name : scenario.size.modes[2].mass_fraction(p.name) for p in scenario.size.modes[2].species}
+            DST = scenario.size.modes[2].mass_fraction("DST"),
+            NCL = scenario.size.modes[2].mass_fraction("NCL"),
+            SO4 = scenario.size.modes[2].mass_fraction("SO4"),
+            BC  = scenario.size.modes[2].mass_fraction("BC"),
+            POM = scenario.size.modes[2].mass_fraction("POM"),
+            SOA = scenario.size.modes[2].mass_fraction("SOA"),
         )
-        
-        self.PCarbonMode = make_dataclass('PCarbonMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[3].species])
         self.pcarbon = self.PCarbonMode(
-            **{p.aliases if p.aliases else p.name : scenario.size.modes[3].mass_fraction(p.name) for p in scenario.size.modes[3].species}
+            POM = scenario.size.modes[3].mass_fraction("POM"),
+            BC  = scenario.size.modes[3].mass_fraction("BC"),
         )
+        # self.AitkenMode = make_dataclass('AitkenMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[1].species])
+        # self.aitken = self.AitkenMode(
+        #     **{p.aliases if p.aliases else p.name : scenario.size.modes[1].mass_fraction(p.name) for p in scenario.size.modes[1].species}
+        # )
+
+        # self.CoarseMode = make_dataclass('CoarseMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[2].species])
+        # self.coarse = self.CoarseMode(
+        #     **{p.aliases if p.aliases else p.name : scenario.size.modes[2].mass_fraction(p.name) for p in scenario.size.modes[2].species}
+        # )
+        
+        # self.PCarbonMode = make_dataclass('PCarbonMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[3].species])
+        # self.pcarbon = self.PCarbonMode(
+        #     **{p.aliases if p.aliases else p.name : scenario.size.modes[3].mass_fraction(p.name) for p in scenario.size.modes[3].species}
+        # )
         
 # this type handles the mapping of AMBRS gas species to MAM4 species
 class GasMixingRatios:
