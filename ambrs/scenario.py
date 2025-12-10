@@ -21,5 +21,4 @@ in terms of state information"""
     pressure: float
     height: float
     gas_emissions: Optional[list[tuple[float, dict], ...]] = None
-    soa_source: Optional[tuple[float, ...]] = None
-    soa_loss: Optional[float] = None
+    gas_background: Optional[list[tuple[float, dict], ...]] = None

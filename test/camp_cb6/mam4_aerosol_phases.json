@@ -1,0 +1,70 @@
+{
+    "camp-data" : [
+        {
+            "name" : "secondary_organic_matter",
+            "type" : "AERO_PHASE",
+            "species" : [
+                
+                "SOA"
+
+            ]
+        },
+        {
+            "name" : "primary_organic_matter",
+            "type" : "AERO_PHASE",
+            "species" : [
+
+                "APOC"
+
+            ]
+        },
+        {
+            "name" : "aqueous_sulfate",
+            "type" : "AERO_PHASE",
+            "species" : [
+
+                "ASO4",
+                
+                "AH2O",
+
+                "H2SO4_aq",
+
+                "HSO4_aq",
+
+                "H-HSO4",
+
+                "H-SO4",
+
+                "AH3OP"
+
+            ]
+        },
+        {
+            "name" : "soot",
+            "type" : "AERO_PHASE",
+            "species" : [
+
+                "AEC"
+
+            ]
+        },
+        {
+            "name" : "salt",
+            "type" : "AERO_PHASE",
+            "species" : [
+
+                "ANA"
+
+            ]
+        },
+        {
+            "name" : "dust",
+            "type" : "AERO_PHASE",
+            "species" : [
+
+                "ASOIL"
+
+            ]
+        }
+    ]
+}

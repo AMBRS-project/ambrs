@@ -1,0 +1,141 @@
+Name,T,A,C,Min_Con,Density,Gas-Name,CTR-Name,Yield,Vol,no_M2Wet,Tracer,Charge,Visidx,Visidx_Large,OM,OptSurr,korg,notes
+'ASO4    ',T,T,T, cm_so4, 1800.0, 'SULF   ','SULRXN ',1.0  ,'IRV',F,F, -2,  2.2, 4.8,F, 'SOLUTE', 0.00, ! Sulfate
+'ANO3    ',T,T,T, cm_set, 1800.0, 'HNO3   ','       ',0.0  ,'REV',F,F, -1,  2.4, 5.1,F, 'SOLUTE', 0.00, ! Nitrate
+'ACL     ',T,T,T, cm_set, 2200.0, 'HCL    ','       ',0.0  ,'REV',F,F, -1,  1.7, 1.7,F, 'SOLUTE', 0.00, ! Chloride
+'ANH4    ',T,T,T, cm_set, 1800.0, 'NH3    ','       ',0.0  ,'REV',F,F,  1,  0.0, 0.0,F, 'SOLUTE', 0.00, ! Ammonium
+'ANA     ',T,T,F, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,F,  1,  1.7, 1.7,F, 'SOLUTE', 0.00, ! Sodium
+'AMG     ',F,T,F, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,F,  2,  1.0, 1.0,F, 'DUST  ', 0.00, ! Magnesium
+'AK      ',F,T,F, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,F,  1,  1.0, 1.0,F, 'DUST  ', 0.00, ! Potassium
+'ACA     ',F,T,F, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,F,  2,  1.0, 1.0,F, 'DUST  ', 0.00, ! Calcium
+'APOC    ',T,T,F, cm_set, 1400.0, '       ','       ',0.0  ,'NVL',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.00, ! POA Carbon
+'APNCOM  ',T,T,F, cm_set, 1400.0, '       ','       ',0.0  ,'NVL',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.00, ! POA Non-Carbon          #10
+'AEC     ',T,T,F, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,F,  0, 10.0,10.0,F, 'SOOT  ', 0.00, ! Elemental (Black) Carbon
+'AFE     ',F,T,F, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,F,  0,  1.0, 1.0,F, 'DUST  ', 0.00, ! Iron
+'AOTHR   ',T,T,F, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,F,  0,  1.0, 1.0,F, 'DUST  ', 0.00, ! Other 
+'AAL     ',F,T,F, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,F,  0,  1.0, 1.0,F, 'DUST  ', 0.00, ! Aluminum
+'ASI     ',F,T,F, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,F,  0,  1.0, 1.0,F, 'DUST  ', 0.00, ! Silicon
+'ATI     ',F,T,F, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,F,  0,  1.0, 1.0,F, 'DUST  ', 0.00, ! Titanium
+'AMN     ',F,T,F, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,F,  0,  1.0, 1.0,F, 'DUST  ', 0.00, ! Manganese
+'AH2O    ',T,T,T, cm_set, 1000.0, '       ','       ',0.0  ,'H2O',T,F,  0,  0.0, 0.0,F, 'WATER ', 0.00, ! Water
+'AORGH2O ',F,T,F, cm_set, 1000.0, '       ','       ',0.0  ,'H2O',T,F,  0,  0.0, 0.0,F, 'WATER ', 0.00, ! Organic Water
+'AH3OP   ',T,T,T, cm_set, 1000.0, '       ','       ',0.0  ,'H2O',T,T,  0,  0.0, 0.0,F, 'WATER ', 0.00, ! Hydronium               #20
+'AALK1   ',F,T,F, cm_set, 1400.0, 'SVALK1 ','ALKRXN ',.0334,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.07, ! Alkane SOA 1            
+'AALK2   ',F,T,F, cm_set, 1400.0, 'SVALK2 ','ALKRXN ',.2164,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.06, ! Alkane SOA 2
+'AXYL1   ',F,T,F, cm_set, 1480.0, 'SVXYL1 ','XYLNRXN',.0310,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.17, ! Xylene SOA 1
+'AXYL2   ',F,T,F, cm_set, 1480.0, 'SVXYL2 ','XYLNRXN',.0900,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.11, ! Xylene SOA 2
+'AXYL3   ',F,T,F, cm_set, 1330.0, '       ','XYLHRXN',.3600,'IRV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.15, ! Xylene SOA 3
+'ATOL1   ',F,T,F, cm_set, 1240.0, 'SVTOL1 ','TOLNRXN',.0580,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.15, ! Toluene SOA 1
+'ATOL2   ',F,T,F, cm_set, 1240.0, 'SVTOL2 ','TOLNRXN',.1130,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.10, ! Toluene SOA 2
+'ATOL3   ',F,T,F, cm_set, 1450.0, '       ','TOLHRXN',.3000,'IRV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.20, ! Toluene SOA 3
+'ABNZ1   ',F,T,F, cm_set, 1400.0, 'SVBNZ1 ','BNZNRXN',.0720,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.19, ! Benzene SOA 1
+'ABNZ2   ',F,T,F, cm_set, 1400.0, 'SVBNZ2 ','BNZNRXN',.8880,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.15, ! Benzene SOA 2           #30
+'ABNZ3   ',F,T,F, cm_set, 1400.0, '       ','BNZHRXN',.3700,'IRV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.23, ! Benzene SOA 3           
+'ATRP1   ',F,T,F, cm_set, 1400.0, 'SVTRP1 ','TRPRXN ',.1393,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.10, ! Terpene SOA 1
+'ATRP2   ',F,T,F, cm_set, 1400.0, 'SVTRP2 ','TRPRXN ',.4542,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.10, ! Terpene SOA 2
+'AISO1   ',F,T,F, cm_set, 1400.0, 'SVISO1 ','ISOPRXN',.2320,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.14, ! Isoprene SOA 1
+'AISO2   ',F,T,F, cm_set, 1400.0, 'SVISO2 ','ISOPRXN',.0288,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.15, ! Isoprene SOA 2
+'AISO3   ',F,T,F, cm_set, 1400.0, '       ','       ',.0000,'NVL',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.21, ! Isoprene SOA 3
+'ASQT    ',F,T,F, cm_set, 1400.0, 'SVSQT  ','SESQRXN',1.537,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.07, ! Sesquiterpene SOA
+'AHOM    ',F,T,F, cm_set, 1400.0, 'HOM    ','       ',0.0 ,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.13, ! HOM SOA
+'AELHOM  ',F,T,F, cm_set, 1400.0, 'ELHOM  ','       ',0.0 ,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.09, ! ELHOM SOA
+'APAH1   ',F,T,F, cm_set, 1480.0, 'SVPAH1 ','PAHNRXN',0.210,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.08, ! PAH SOA 1
+'APAH2   ',F,T,F, cm_set, 1480.0, 'SVPAH2 ','PAHNRXN',1.070,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.06, ! PAH SOA 2
+'APAH3   ',F,T,F, cm_set, 1550.0, '       ','PAHHRXN',0.730,'IRV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.09, ! PAH SOA 3               #40
+'AOLGA   ',F,T,F, cm_set, 1400.0, '       ','       ',0.0  ,'NVL',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.18, ! Anth. Oligomer SOA      
+'AOLGB   ',F,T,F, cm_set, 1400.0, '       ','       ',0.0  ,'NVL',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.13, ! Biogenic Oligomer SOA
+'AORGC   ',F,T,F, cm_set, 1400.0, '       ','       ',0.0  ,'NVL',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.12, ! Cloud-Processed SOA
+'ASOIL   ',F,F,T, cm_set, 2600.0, '       ','       ',0.0  ,'NVL',F,F,  0,  0.6, 0.6,F, 'DUST  ', 0.00, ! Soil
+'ACORS   ',F,F,T, cm_cor, 2200.0, '       ','       ',0.0  ,'NVL',F,F,  0,  0.6, 0.6,F, 'DUST  ', 0.00, ! Coarse PM
+'ASEACAT ',F,F,T, cm_cor, 2200.0, '       ','       ',0.0  ,'NVL',F,F,  1,  1.7, 1.7,F, 'SOLUTE', 0.00, ! SeaSpray Cations
+'ASEAST  ',F,T,F, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,T, -1,  1.7, 1.7,F, 'SOLUTE', 0.00, ! seasalt tracer        
+'AMTNO3  ',F,T,F, cm_set, 1400.0, 'MTNO3  ','       ',0.0  ,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.11, ! Monoterpene Nitrate SOA
+'AISOPNN ',F,T,F, cm_set, 1400.0, 'ISOPNN ','       ',0.0  ,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.32, ! Isoprene Nitrate SOA
+'AMTHYD  ',F,T,F, cm_set, 1400.0, '       ','       ',0.0  ,'NVL',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.07, ! 
+'AIETET  ',F,T,F, cm_set, 1400.0, '       ','       ',0.0  ,'NVL',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.15, ! Iso. Tetrol SOA         #50
+'AIEOS   ',F,T,F, cm_set, 1400.0, '       ','       ',0.0  ,'NVL',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.30, ! Iso. Organosulfate SOA  
+'ADIM    ',F,T,F, cm_set, 1400.0, '       ','       ',0.0  ,'NVL',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.13, !
+'AIMGA   ',F,T,F, cm_set, 1400.0, '       ','       ',0.0  ,'NVL',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.18, !
+'AIMOS   ',F,T,F, cm_set, 1400.0, '       ','       ',0.0  ,'NVL',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.36, !
+'AISO3NOS',F,T,F,cm_set, 1400.0, '       ','       ',0.0  ,'NVL',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.15, ! Iso. nonsulfated SOA
+'AISO3OS ',F,T,F,cm_set, 1400.0, '       ','       ',0.0  ,'NVL',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.30, ! Iso. Organosulfate SOA
+'AMT1    ',F,T,F, cm_set, 1400.0, 'SVMT1  ','TRPRXN ',0.040,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.08, ! MT SOA Lowest Volatility
+'AMT2    ',F,T,F, cm_set, 1400.0, 'SVMT2  ','TRPRXN ',0.032,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.08, ! 
+'AMT3    ',F,T,F, cm_set, 1400.0, 'SVMT3  ','TRPRXN ',0.032,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.09, !
+'AMT4    ',F,T,F, cm_set, 1400.0, 'SVMT4  ','TRPRXN ',0.103,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.07, !
+'AMT5    ',F,T,F, cm_set, 1400.0, 'SVMT5  ','TRPRXN ',0.143,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.07, !
+'AMT6    ',F,T,F, cm_set, 1400.0, 'SVMT6  ','TRPRXN ',0.285,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.05, !                         #60
+'AMT7    ',F,T,F, cm_set, 1400.0, 'SVMT7  ','TRPRXN ',0.160,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.06, ! MT SOA Highest Volatility
+'AGLY    ',F,T,F, cm_set, 1400.0, '       ','       ',0.0  ,'NVL',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.13, ! Glyoxal SOA                                                    
+'ALVPO1  ',T,T,F, cm_set, 1400.0, 'VLVPO1 ','       ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.05, ! LV-POA
+'ASVPO1  ',T,T,F, cm_set, 1400.0, 'VSVPO1 ','       ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.05, ! SV-POA 1
+'ASVPO2  ',T,T,F, cm_set, 1400.0, 'VSVPO2 ','       ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.04, ! SV-POA 2
+'ASVPO3  ',F,T,F, cm_set, 1400.0, 'VSVPO3 ','       ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.03, ! SV-POA 3
+'AIVPO1  ',F,T,F, cm_set, 1400.0, 'VIVPO1 ','       ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.03, ! IV-POA 
+'ALVOO1  ',T,T,F, cm_set, 1400.0, 'VLVOO1 ','       ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.15, ! LV-SOA 1                
+'ALVOO2  ',T,T,F, cm_set, 1400.0, 'VLVOO2 ','       ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.13, ! LV-SOA 2
+'ASVOO1  ',T,T,F, cm_set, 1400.0, 'VSVOO1 ','       ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.11, ! SV-SOA 1                #70
+'ASVOO2  ',T,T,F, cm_set, 1400.0, 'VSVOO2 ','       ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.09, ! SV-SOA 2
+'ASVOO3  ',F,T,F, cm_set, 1400.0, 'VSVOO3 ','       ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.08, ! SV-SOA 3
+'APCSO   ',F,T,F, cm_set, 1400.0, 'LVPCSOG','PCSOARXN',1.0 ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.12, ! pcSOA
+'AAVB1   ',F,T,F, cm_set, 1400.0, 'SVAVB1 ','       ',0.0  ,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.20,
+'AAVB2   ',F,T,F, cm_set, 1400.0, 'SVAVB2 ','       ',0.0  ,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.15,
+'AAVB3   ',F,T,F, cm_set, 1400.0, 'SVAVB3 ','       ',0.0  ,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.14,
+'AAVB4   ',F,T,F, cm_set, 1400.0, 'SVAVB4 ','       ',0.0  ,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.12,                                                      
+'AOP3      ',F,T,F,cm_set,1400.0,'OP3      ','      ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.05, ! 
+'AROCN2ALK ',T,T,F,cm_set,1400.0,'VROCN2ALK','      ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.05, ! 
+'AROCN1ALK ',T,T,F,cm_set,1400.0,'VROCN1ALK','      ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.05, ! 
+'AROCP0ALK ',T,T,F,cm_set,1400.0,'VROCP0ALK','      ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.04, !   
+'AROCP1ALK ',T,T,F,cm_set,1400.0,'VROCP1ALK','      ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.03, ! 
+'AROCP2ALK ',F,T,F,cm_set,1400.0,'VROCP2ALK','      ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.03, ! 
+'AROCP3ALK ',F,T,F,cm_set,1400.0,'VROCP3ALK','      ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.03, ! 
+'AROCN2OXY2',T,T,F,cm_set,1400.0,'VROCN2OXY2','     ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.15, ! 
+'AROCN2OXY4',T,T,F,cm_set,1400.0,'VROCN2OXY4','     ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.15, ! 
+'AROCN2OXY8',T,T,F,cm_set,1400.0,'VROCN2OXY8','     ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.15, ! 
+'AROCN1OXY1',T,T,F,cm_set,1400.0,'VROCN1OXY1','     ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.13, ! 
+'AROCN1OXY3',T,T,F,cm_set,1400.0,'VROCN1OXY3','     ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.13, ! 
+'AROCN1OXY6',T,T,F,cm_set,1400.0,'VROCN1OXY6','     ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.13, ! 
+'AROCP0OXY2',T,T,F,cm_set,1400.0,'VROCP0OXY2','     ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.11, !   
+'AROCP0OXY4',T,T,F,cm_set,1400.0,'VROCP0OXY4','     ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.11, ! 
+'AROCP1OXY1',T,T,F,cm_set,1400.0,'VROCP1OXY1','     ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.09, ! 
+'AROCP1OXY3',T,T,F,cm_set,1400.0,'VROCP1OXY3','     ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.09, ! 
+'AROCP2OXY2',F,T,F,cm_set,1400.0,'VROCP2OXY2','     ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.08, ! 
+'AROCP3OXY2',F,T,F,cm_set,1400.0,'VROCP3OXY2','     ',0.0  ,'REV',F,F,  0,  4.0, 6.1,T, 'DUST  ', 0.08, ! 
+'ANI     ',T,T,T, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'DUST  ', 0.00, ! Nickel
+'ACR_VI  ',T,T,T, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'DUST  ', 0.00, ! Chromium 6
+'ACR_III ',T,T,T, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'DUST  ', 0.00, ! Chromium 3              #80
+'ABE     ',T,T,T, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'DUST  ', 0.00, ! Beryllium
+'APB     ',T,T,T, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'DUST  ', 0.00, ! Lead                     
+'ADE_OTHR',T,T,F, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'DUST  ', 0.00, ! Diesel Fine PM          
+'ADE_EC  ',T,T,F, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'DUST  ', 0.00, ! Diesel Black Carbon
+'ADE_OC  ',T,T,F, cm_set, 2000.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'DUST  ', 0.00, ! Diesel Organic Carbon
+'ADE_NO3 ',F,T,F, cm_set, 1800.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'DUST  ', 0.00, ! Diesel Nitrate
+'ADE_SO4 ',F,T,F, cm_set, 1800.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'DUST  ', 0.00, ! Diesel Sulfate
+'ADE_CORS',F,F,T, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'DUST  ', 0.00, ! Diesel Coarse PM
+'ACADMIUM',T,T,T, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'DUST  ', 0.00, ! Cadmium
+'AMN_HAPS',T,T,T, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'DUST  ', 0.00, ! Manganese               #90
+'APHG    ',T,T,T, cm_set, 2200.0, 'HGIIAER','PHGRXN ',1.0  ,'IRV',F,T,  0,  0.0, 0.0,F, 'DUST  ', 0.00, ! Mercury
+'AAS     ',T,T,T, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'DUST  ', 0.00, ! Arsenic                 #92
+'ABENAPY ',T,T,F, cm_set, 1400.0, 'BENAPY ','       ',1.0  ,'REV',F,T,  0,  0.0, 0.0,T, 'DUST  ', 0.00, ! Benzo[a]pyrene          #93
+'ABR     ',F,T,T, cm_set, 2200.0, '       ','       ',0.0  ,'NVL',F,F, -1,  1.7, 1.7,F, 'SOLUTE', 0.00, ! Bromide 
+'ASOAT   ',F,T,F, cm_set, 1400.0, '       ','       ',0.0  ,'NVL',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.13, ! Lumped SOA not otherwise specified; OM/OC=2.1
+'ASO4AQH2O2',T,T,T,cm_set,1800.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'SOLUTE', 0.00, ! SO4 from aqueous H2O2 rxn
+'ASO4AQO3  ',T,T,T,cm_set,1800.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'SOLUTE', 0.00, ! SO4 from aqueous O3 rxn
+'ASO4AQFEMN',T,T,T,cm_set,1800.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'SOLUTE', 0.00, ! SO4 from aqueous FEMN cat rxn
+'ASO4AQMHP ',T,T,T,cm_set,1800.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'SOLUTE', 0.00, ! SO4 from aqueous MHP rxn
+'ASO4AQPAA ',T,T,T,cm_set,1800.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'SOLUTE', 0.00, ! SO4 from aqueous PAA rxn
+'ASO4GAS   ',T,T,T,cm_set,1800.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'SOLUTE', 0.00, ! SO4 from gas rxn
+'ASO4EMIS  ',T,T,T,cm_set,1800.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'SOLUTE', 0.00, ! emitted SO4
+'ASO4ICBC  ',T,T,T,cm_so4,1800.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'SOLUTE', 0.00, ! SO4 from ICBCs
+'OSO4      ',T,T,T,cm_set,1800.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'SOLUTE', 0.00, ! SO4 loss to organosulfate
+'OSO4AQH2O2',T,T,T,cm_set,1800.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'SOLUTE', 0.00, ! SO4 from aqueous H2O2 rxn loss to organosulfate
+'OSO4AQO3  ',T,T,T,cm_set,1800.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'SOLUTE', 0.00, ! SO4 from aqueous O3 rxn loss to organosulfate
+'OSO4AQFEMN',T,T,T,cm_set,1800.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'SOLUTE', 0.00, ! SO4 from aqueous FEMN cat rxn loss to organosulfate
+'OSO4AQMHP ',T,T,T,cm_set,1800.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'SOLUTE', 0.00, ! SO4 from aqueous MHP rxn loss to organosulfate
+'OSO4AQPAA ',T,T,T,cm_set,1800.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'SOLUTE', 0.00, ! SO4 from aqueous PAA rxn loss to organosulfate
+'OSO4GAS   ',T,T,T,cm_set,1800.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'SOLUTE', 0.00, ! SO4 from gas rxn loss to organosulfate
+'OSO4EMIS  ',T,T,T,cm_set,1800.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'SOLUTE', 0.00, ! SO4 from emitted SO4 loss to organosulfate
+'OSO4ICBC  ',T,T,T,cm_set,1800.0, '       ','       ',0.0  ,'NVL',F,T,  0,  0.0, 0.0,F, 'SOLUTE', 0.00, ! SO4 from ICBCs loss to organosulfate
+'AISO4   ',F,T,F, cm_set, 1400.0, '       ','       ',0.0  ,'NVL',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.21, ! from heterogeneous uptake of IPX
+'AISO5   ',F,T,F, cm_set, 1400.0, '       ','       ',0.0  ,'NVL',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.18, ! from heterogeneous uptake of INALD
+'ATRPN   ',F,T,F, cm_set, 1400.0, 'TRPN   ','       ',0.0  ,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.10, ! SOA from first generation monoterpene nitrate
+'AHONIT  ',F,T,F, cm_set, 1400.0, 'HONIT  ','       ',0.0  ,'REV',F,F,  0,  2.8, 6.1,T, 'DUST  ', 0.14)  ! SOA from second generation monoterpene nitrate
