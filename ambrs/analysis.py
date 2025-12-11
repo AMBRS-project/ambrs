@@ -4,7 +4,6 @@
 from dataclasses import dataclass
 import numpy as np
 import scipy.stats
-import pandas as pd
 from typing import Optional, Dict, List
 
 from part2pop import ParticlePopulation  # type: ignore
