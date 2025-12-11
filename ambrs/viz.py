@@ -455,6 +455,7 @@ def build_input_ranges_dataframe(
                 n = len(c)
                 break
             except Exception:
+                # Ignore if attribute is missing or not array-like; try next candidate
                 pass
     if n is None:
         raise ValueError("Could not infer ensemble size `n` from standard attributes.")
