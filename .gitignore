@@ -8,3 +8,5 @@ runs/
 ambrs/.ipynb_checkpoints/
 ambrs/camp.py
 test/.ipynb_checkpoints/
+
+ambrs.egg-info
