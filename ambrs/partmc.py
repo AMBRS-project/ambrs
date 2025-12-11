@@ -323,7 +323,7 @@ class AerosolModel(BaseAerosolModel):
         # chemistry
         if input.do_camp_chem:
             spec_content += 'do_camp_chem yes\n'
-            spec_content += f'camp_config {input.camp_config}\n' # FIXME: path
+            spec_content += f'camp_config {input.camp_config}\n'
         else:
             spec_content += 'do_camp_chem no\n'
         spec_content += '\n'
