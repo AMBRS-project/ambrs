@@ -126,7 +126,7 @@ def render_partmc_and_mam4_variable_grid(
     axes = np.empty((n_rows, n_cols), dtype=object)
     
     base = _base_styles()
-    if color == None:
+    if color is None:
         colors = _scenario_colors(n_rows) if row_colors is None else list(row_colors)
     elif isinstance(color, str):
         colors = [color]*n_rows
