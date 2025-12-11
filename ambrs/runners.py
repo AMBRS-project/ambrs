@@ -10,7 +10,6 @@ import os
 import subprocess
 from typing import Any
 
-import timeit
 
 logger = logging.getLogger(__name__)
 
