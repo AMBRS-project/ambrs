@@ -265,7 +265,7 @@ runner's root directory, generating a directory for each of the scenarios"""
             if os.path.exists(dir):
                 found_dir = True
             else:
-                print(dir)
+                logger.debug(f"Created scenario directory: {dir}")
                 os.mkdir(dir)
 
             # write input files and define commands
