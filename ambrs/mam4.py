@@ -438,7 +438,7 @@ def retrieve_model_state(
         Ns.append(mode.number)
         aero_spec_names_onemode = []
         aero_spec_fracs.append(mode.mass_fractions)
-        for one_spec in scenario.size.modes[0].species:
+        for one_spec in mode.species:
             aero_spec_names_onemode.append(one_spec.name)
         aero_spec_names.append(aero_spec_names_onemode)
     
