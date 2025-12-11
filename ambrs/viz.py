@@ -62,17 +62,17 @@ def _add_row_label(ax, label: str, color: str = "black"):
 # Helper functions for variable cfgs
 # -----------------------------------------------------------
 
-# fixme: add other optional argments?
+# fixme: add other optional arguments?
 def make_dNdlnD_cfg(D_range=(1e-9, 1e-6), N_bins=50, normalize=True, method="kde"):
     D_min, D_max = D_range
     D_grid = np.logspace(np.log10(D_min), np.log10(D_max), int(N_bins))
     return {"D": D_grid, "normalize": normalize, "method": method}
 
-# fixme: add other optional argments?
+# fixme: add other optional arguments?
 def make_frac_ccn_cfg(s_grid=np.logspace(-2, 1.0, 50)):
     return {"s_grid": s_grid}
 
-# fixme: add other optional argments?
+# fixme: add other optional arguments?
 def make_bscat_cfg(wvl_grid=np.linspace(0.35e-6, 0.8e-6, 30), rh_grid=[0.0]):
     wvl_grid = np.asarray(wvl_grid)
     rh_grid = np.asarray(rh_grid)
