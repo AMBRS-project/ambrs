@@ -178,9 +178,6 @@ def render_partmc_and_mam4_variable_grid(
 
             if varname == 'b_scat':
                 ax.set_ylim([0., ax.get_ylim()[1]])
-            # # column titles (top row only)
-            # if i == 0 and col_title:
-            #     ax.set_title(col_title)
 
             # legend (only once)
             if legend_loc == 'upper right' and i_row == 0 and i_col == n_cols - 1:
