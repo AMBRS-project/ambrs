@@ -90,7 +90,6 @@ f'''{{
         return self
 
     def write_mech_json(self):
-        p0_298K = 1e-10
         delta__H_v = 156e3
         log10e = np.log10(np.e)
         B1 = -delta__H_v * log10e / gas_constant
