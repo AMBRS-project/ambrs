@@ -109,7 +109,7 @@ def render_partmc_and_mam4_variable_grid(
     fig, axes : (matplotlib.figure.Figure, np.ndarray[(n_rows, n_cols)])
     """
     
-    if scenario_names == None:
+    if scenario_names is None:
         # FIXME: move this to utils module to avoid duplication
         num_scenarios = ensemble.__len__()
         max_num_digits = math.floor(math.log10(num_scenarios)) + 1
