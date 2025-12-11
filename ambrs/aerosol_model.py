@@ -99,7 +99,7 @@ Override this method to write input files for an aerosol model. Arguments:
     * prefix: a prefix used to identify the main input file"""
         raise NotImplementedError('BaseAerosolModel.write_input_files not overridden!')
     
-    def retrieve_model_state():
+    def retrieve_model_state(self):
         raise NotImplementedError('BaseAerosolModel.retrieve_model_state not overridden!')
 
 #     def read_output_files(self,
