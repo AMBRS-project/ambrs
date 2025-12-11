@@ -145,11 +145,6 @@ def build_gas_mixture(gas_cfg: dict) -> GasMixture:
         molar_mass = 98.079,
     )
     
-    # # Duncan's assumptions:
-    # soag = GasSpecies(
-    #     name='SOAG',
-    #     molar_mass = 12.011,
-    # )
 
     # Shrivastava et al., 2015 assumes 250 g/mol for https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2014JD022563
     soag = GasSpecies(
