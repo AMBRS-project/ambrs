@@ -229,7 +229,9 @@ def render_dNdlnD_grid(
     sharex=True, sharey=False,
     color=None):
     """
-    Render grid of bscat vs wavelength at specified RH values.
+    Render a grid of aerosol size distributions (dNdlnD) for multiple scenarios and timesteps.
+    Each subplot shows the size distribution for a given scenario and timestep, using data from PartMC and MAM4.
+    Options include normalization, binning, and visualization settings.
     """
     return render_partmc_and_mam4_variable_grid(
         gs, # GridSpec
