@@ -337,6 +337,24 @@ working directory contains any needed input files."""
             raise OSError(f'Directory not found: {dir}')
         
         # # ----- CAMP files (absolute) -----
+        
+        # TODO: merge with Duncan's changes
+        camp_block = ""
+        if self.camp_config:
+            cfg = pathlib.Path(self.camp_config)
+            if cfg.is_dir(): cfg = cfg / "config.json"
+            camp_block = f"""&camp_input
+        use_camp   = 1,
+        camp_files = '{cfg.resolve()}',
+        camp_mech  = '{self.camp_mech or "MAM4_SOA_partitioning"}',
+        /"""
+        elif getattr(self, "camp", None):
+            camp_files_json = self.camp.write_for_model(pathlib.Path(dir), model_name="mam4")
+            camp_block = f"""&camp_input
+        use_camp   = 1,
+        camp_files = '{camp_files_json}',
+        camp_mech  = '{self.camp_mech or "MAM4_SOA_partitioning"}',
+        /"""
 
 
         # Build the namelist content (unchanged pieces collapsed)
@@ -443,7 +461,7 @@ def retrieve_model_state(
         Ns.append(mode.number)
         aero_spec_names_onemode = []
         aero_spec_fracs.append(mode.mass_fractions)
-        for one_spec in mode.species:
+        for one_spec in scenario.size.modes[0].species:
             aero_spec_names_onemode.append(one_spec.name)
         aero_spec_names.append(aero_spec_names_onemode)
     
@@ -520,7 +538,7 @@ def retrieve_model_state(
         
         thermodynamics = { 
             'T':scenario.temperature,
-            'p':scenario.pressure,
+            'p':scenario.temperature,
             'RH':scenario.relative_humidity}
         
     # fixme: update model state
