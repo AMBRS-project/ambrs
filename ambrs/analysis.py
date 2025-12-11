@@ -67,7 +67,7 @@ def nmae(output_list1: List[Output], output_list2: List[Output], varname: str, v
     return float(np.sum(np.abs(a2 - a1)) / denom)
 
 # fixme: generalize kl_divergence to distribution wrt to any independent variable?
-# fixme: kl_divergence is comaprison between single time-step for single scenario
+# fixme: kl_divergence is comparison between single time-step for single scenario
 def kl_divergence(output1: Output, output2: Output, var_cfg: Optional[Dict] = None) -> float:
     """KL-divergence between two size distributions using part2pop dispatcher.
 
