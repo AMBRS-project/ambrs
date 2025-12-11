@@ -109,12 +109,6 @@ def render_partmc_and_mam4_variable_grid(
     fig, axes : (matplotlib.figure.Figure, np.ndarray[(n_rows, n_cols)])
     """
     
-    # # Check that GridSpec is right size
-    # if getattr(gs, "nrows", None) is not None and getattr(gs, "ncols", None) is not None:
-    #     if gs.nrows != n_rows or gs.ncols != n_cols:
-    #         raise ValueError(f"GridSpec is wrong size: needs {n_rows}×{n_cols}, "
-    #                          f"got {gs.nrows}×{gs.ncols}")
-    
     if scenario_names == None:
         # FIXME: move this to utils module to avoid duplication
         num_scenarios = ensemble.__len__()
