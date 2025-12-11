@@ -37,6 +37,7 @@ class AerosolProcesses:
     gas_phase_chemistry: bool = False
     optics: bool = False
     nucleation: bool = False
+    do_camp_chem: bool = False
 
 @dataclass(frozen=True)
 class AerosolSpecies:
@@ -71,8 +72,11 @@ specific parameters (no state information)"""
             'OIN',
             'OC',
             'BC',
+            # FIXME: Laura addition
+            'SOA',
             'H2O',
         ]
+        
         # FIXME: Hardcoded name checking?
         # if self.name not in valid_aerosol_species:
         #     raise NameError(f'Invalid aerosol species name: {self.name}\nValid names are {valid_aerosol_species}')
@@ -101,7 +105,6 @@ log-normal aerosol mode"""
     def mass_fraction(self, species_name: str):
         """returns the mass fraction corresponding to the given species name,
 or throws a ValueError."""
-        print(self.species)
         index = [s.name for s in self.species].index(species_name)
         return self.mass_fractions[index]
 

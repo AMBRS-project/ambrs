@@ -8,11 +8,15 @@ from .scenario import Scenario
 from .ppe import Ensemble
 from typing import Dict, Optional
 
+from .gas import build_gas_mixture
+
 import os
 import numpy as np
 from dataclasses import dataclass
 import json
 import pandas as pd
+from part2pop import build_population
+from netCDF4 import Dataset
 
 @dataclass
 class AeroData:
@@ -172,22 +176,53 @@ class AerosolModel(BaseAerosolModel):
             raise ValueError("nstep must be positive")
         if not isinstance(scenario.size, AerosolModalSizeState):
             raise TypeError('Non-modal aerosol particle size state cannot be used to create PartMC input!')
-        aero_data = [AeroData(
-            species = s.name,
-            density = s.density,
-            ions_in_soln = s.ions_in_soln,
-            molecular_weight = s.molar_mass / 1000.,
-            kappa = s.hygroscopicity,
-        ) for s in scenario.aerosols]
-        aero_init = [AeroMode(
-            mode_name = m.name.replace(' ', '_'),
-            mass_frac = {m.species[i].name:m.mass_fractions[i] for i in range(len(m.species))},
-            diam_type = 'geometric', # FIXME: could also be 'mobility'
-            mode_type = 'log_normal', # FIXME: could also be 'exp', 'mono', 'sampled'
-            num_conc = m.number,
-            geom_mean_diam = m.geom_mean_diam,
-            log10_geom_std_dev = m.log10_geom_std_dev,
-        ) for m in scenario.size.modes]
+        if self.processes.do_camp_chem:
+            aero_data = [AeroData(
+                species = f'core.mixed.{s.name}',
+                density = s.density,
+                ions_in_soln = s.ions_in_soln,
+                molecular_weight = s.molar_mass / 1000.,
+                kappa = s.hygroscopicity,
+            ) for s in scenario.aerosols if s.name == 'SO4' or s.name == 'H2O' or s.name == 'BC']
+            aero_init = [AeroMode(
+                mode_name = m.name.replace(' ', '_'),
+                mass_frac = {f'core.mixed.{m.species[i].name}':m.mass_fractions[i] for i in range(len(m.species)) if m.species[i].name == 'SO4' or m.species[i].name == 'H2O' or m.species[i].name == 'BC'},
+                diam_type = 'geometric', # FIXME: could also be 'mobility'
+                mode_type = 'log_normal', # FIXME: could also be 'exp', 'mono', 'sampled'
+                num_conc = m.number,
+                geom_mean_diam = m.geom_mean_diam,
+                log10_geom_std_dev = m.log10_geom_std_dev,
+            ) for m in scenario.size.modes]
+        else:
+            aero_data = [AeroData(
+                species = s.name, # f'{s.name}',
+                density = s.density,
+                ions_in_soln = s.ions_in_soln,
+                molecular_weight = s.molar_mass / 1000.,
+                kappa = s.hygroscopicity,
+            ) for s in scenario.aerosols]            
+            aero_init = [AeroMode(
+                mode_name = m.name.replace(' ', '_'),
+                # mass_frac = mam4_sulfate_to_so4_and_nh4(m.mass_fractions[0]),
+                mass_frac = {m.species[i].name:m.mass_fractions[i] for i in range(len(m.species))},
+                # mass_frac = {f'{m.species[i].name}':m.mass_fractions[i] for i in range(len(m.species)) if m.species[i].name != 'SO4' else mam4_sulfate_to_so4_and_nh4(m.mass_fractions[i])},
+                # {f'{m.species[i].name}':m.mass_fractions[i] for i in range(len(m.species))},
+                diam_type = 'geometric', # FIXME: could also be 'mobility'
+                mode_type = 'log_normal', # FIXME: could also be 'exp', 'mono', 'sampled'
+                num_conc = m.number,
+                geom_mean_diam = m.geom_mean_diam,
+                log10_geom_std_dev = m.log10_geom_std_dev,
+            ) for m in scenario.size.modes]
+            for ii in range(len(aero_init)):
+                if 'SO4' in aero_init[ii].mass_frac.keys() and 'NH4' not in aero_init[ii].mass_frac.keys():
+                    ammonium_sulfate_frac = aero_init[ii].mass_frac['SO4']
+                    nh4_per_ammonium_sulfate = 2*18./(2*18. + 96.)
+                    so4_per_ammonium_sulfate = 96./(2*18. + 96.)
+                    # nh4_frac = ammonium_sulfate_frac * nh4_per_ammonium_sulfate  # assuming all sulfate is in the form of (NH4)2SO4
+                    aero_init[ii].mass_frac['NH4'] = ammonium_sulfate_frac * nh4_per_ammonium_sulfate
+                    aero_init[ii].mass_frac['SO4'] = ammonium_sulfate_frac * so4_per_ammonium_sulfate
+        do_mosaic = self.processes.condensation and not self.processes.do_camp_chem
+        do_camp_chem = self.processes.condensation and self.processes.do_camp_chem
         return Input(
             run_type = self.run_type,
             n_part = self.n_part,
@@ -203,11 +238,13 @@ class AerosolModel(BaseAerosolModel):
             t_output = dt, # setting t_output = dt for now, which I believe is how MAM4 works.
             t_progress = dt, # reporting progress at every time step for now. 
 
-            do_camp_chem = True,
+            do_camp_chem = do_camp_chem,
 
             gas_data = tuple([gas.name for gas in scenario.gases]),
-            gas_init = tuple([1.e+3 * gas_conc for gas_conc in scenario.gas_concs]),
+            
+            gas_init = tuple([1.e9 * gas_conc for gas_conc in scenario.gas_concs]), # mol/mol-air to ppb
             # FIXME: double-check that units are consistent; add unit test
+
             
             aerosol_data = tuple(aero_data),
             do_fractal = False,
@@ -222,13 +259,14 @@ class AerosolModel(BaseAerosolModel):
             rel_humidity = scenario.relative_humidity,
             latitude = 0,       # FIXME:
             longitude = 0,      # FIXME:
-            altitude = 3.0e+3,  # FIXME:
+            altitude = 3.0e+3,       # FIXME:
             start_time = 21600, # FIXME:
             start_day = 200,    # FIXME:
 
             do_coagulation = self.processes.coagulation,
             do_condensation = False, # this is cloud condensation, not for aerosols
-            do_mosaic = False,
+            
+            do_mosaic = do_mosaic, # use MOSAIC if not using CAMP
             do_optical = self.processes.optics,
             do_nucleation = self.processes.nucleation,
 
@@ -239,7 +277,6 @@ class AerosolModel(BaseAerosolModel):
             do_parallel = False,
 
             gas_emissions = scenario.gas_emissions,
-            gas_background = scenario.gas_background,
 
             camp_config = self.camp_config,
         )
@@ -282,23 +319,25 @@ class AerosolModel(BaseAerosolModel):
         # time info
         spec_content += f't_max {input.t_max}\ndel_t {input.del_t}\nt_output {input.t_output}\nt_progress {input.t_progress}\n'
         spec_content += '\n'
-
+        
         # chemistry
         if input.do_camp_chem:
             spec_content += 'do_camp_chem yes\n'
-            # spec_content += f'camp_config {input.camp_config}\n' # FIXME: path
-            spec_content += f'camp_config {input.camp_config}/{prefix}/config.json\n' # FIXME: path
+            spec_content += f'camp_config {input.camp_config}\n'
         else:
             spec_content += 'do_camp_chem no\n'
         spec_content += '\n'
 
         # gas data
-        # spec_content += 'gas_data gas_data.dat\n'
+        if not self.processes.do_camp_chem:
+            spec_content += 'gas_data gas_data.dat\n'
         spec_content += 'gas_init gas_init.dat\n'
         spec_content += '\n'
 
         # aerosol data
-        # spec_content += 'aerosol_data aero_data.dat\n'
+        if not self.processes.do_camp_chem:
+            spec_content += 'aerosol_data aero_data.dat\n'
+        
         if input.do_fractal:
             spec_content += 'do_fractal yes\n'
         else:
@@ -504,42 +543,71 @@ class AerosolModel(BaseAerosolModel):
                 for species, mass_frac in mode.mass_frac.items():
                     f.write(f'{species}\t{mass_frac}\n')
 
-    def read_output_files(self,
-                          input,
-                          dir: str,
-                          prefix: str,
-                          lnDs = np.logspace(-9,-5,1001)) -> Output:
-        n_repeat = self.n_repeat
-        timestep = -1 # for now, we use the last timestep
-        '''
-        dNdlnD_repeat = np.zeros([len(lnDs), n_repeat])
-        for i, repeat in enumerate(range(1, n_repeat+1)):
-            output_file = self.get_ncfile(dir, prefix, timestep, repeat)
-            # FIXME: we need something equivalent to get_partmc_dsd_onefile here,
-            # FIXME: and that's a lot of code. Also: Where do we get lnDs?
-            dNdlnD_repeats[:,ii] = get_partmc_dsd_onefile(lnDs,output_file,density_type=density_type)
-        ''' 
-        return Output(
-            model = self.name,
-            input = input,
-            dNdlnD = np.zeros([len(lnDs)]),
-            bins = None,
-        )
+def retrieve_model_state(
+        scenario_name: str, 
+        scenario: Scenario,
+        timestep: int, 
+        repeat_num: int=1, # number of PartMC repeat, set to 1 if scenario just run once
+        species_modifications: dict={},
+        ensemble_output_dir: str='partmc_runs') -> Output: # data structure that allows species modifications in post-processing (e.g., treat some organics as light-absorbing)
+    
+    partmc_dir = ensemble_output_dir + '/' + scenario_name 
+    partmc_population_cfg = {
+        'type':'partmc',
+        'partmc_dir': partmc_dir,
+        'timestep':timestep,
+        'repeat':repeat_num, # number of PartMC repeat, if run multiple times
+        'species_modifications':species_modifications}
+    
+    particle_population = build_population(partmc_population_cfg)
 
-    def get_ncfile(self, dir, prefix, timestep, ensemble_number=1):
-        """helper function that returns the filename corresponding to the given
+    ncfilename = get_ncfile(
+        scenario_name, timestep, 
+        ensemble_output_dir=ensemble_output_dir, 
+        repeat_num=repeat_num)
+    currnc = Dataset(partmc_dir + '/out/' + ncfilename)
+    
+    gas_names = currnc.variables['gas_species'].names.split(',')
+    gas_mixing_ratios_ppb = currnc.variables['gas_mixing_ratio']
+    
+    gas_cfg = {}
+    for gas_name, mixing_ratio_ppb in zip(gas_names,gas_mixing_ratios_ppb):
+        gas_cfg[gas_name] = mixing_ratio_ppb # mol trace gas/mol dry air
+    gas_cfg['units'] = 'ppb'
+    gas_mixture = build_gas_mixture(gas_cfg)
+    
+    thermodynamics = { 
+        'T':currnc.variables['temperature'][:],
+        'p':currnc.variables['pressure'][:],
+        'RH':currnc.variables['relative_humidity'][:]}
+
+    return Output(
+        'partmc',
+        scenario_name=scenario_name, 
+        scenario=scenario,
+        timestep=timestep,
+        particle_population=particle_population,
+        gas_mixture=gas_mixture,
+        thermodynamics=thermodynamics,
+        )
+    
+def get_ncfile(scenario_name, timestep, ensemble_output_dir='partmc_runs', repeat_num=1):
+    """helper function that returns the filename corresponding to the given
 timestep and ensemble index, given the directory in which it resides"""
-        output_dir = os.path.join(dir, 'out')
-        full_prefix = prefix + '_' + str(int(ensemble_number)).zfill(4)
-        ncfiles = [f for f in os.listdir(output_dir) if f.startswith(full_prefix) and f.endswith('.nc')]
-        if len(ncfiles) == 0:
-            raise OSError(f'No NetCDF output found for ensemble number {ensemble_number} in {dir}!')
-        if timestep == -1: # return the most recent output file
-            ncfiles.sort()
-            return ncfiles[-1]
+    
+    # fixme: make this a Path rather than a string?
+    output_dir = ensemble_output_dir + '/' +  scenario_name + '/out'
+    full_prefix = scenario_name + '_' + str(int(repeat_num)).zfill(4)
+    ncfiles = [f for f in os.listdir(output_dir) if f.startswith(full_prefix) and f.endswith('.nc')]
+    
+    if len(ncfiles) == 0:
+        raise OSError(f'No NetCDF output found for ensemble number {repeat_num} in {ensemble_output_dir}!')
+    if timestep == -1: # return the most recent output file
+        ncfiles.sort()
+        return ncfiles[-1]
+    else:
+        ncfilename = full_prefix + '_' + str(int(timestep)).zfill(8) + '.nc'
+        if ncfilename in ncfiles:
+            return ncfilename
         else:
-            ncfile = full_prefix + str(int(timestep)).zfill(8) + '.nc'
-            if ncfile in ncfiles:
-                return ncfile
-            else:
-                raise OSError(f'No NetCDF output found for ensemble number {ensemble_number} and timestep {timestep} in {dir}!')
+            raise OSError(f'No NetCDF output found for repeat number {repeat_num} and timestep {timestep} in {ensemble_output_dir}!')
