@@ -70,7 +70,6 @@ Optional parameters:
 #                 # FIXME: LMF addition; double-check
 #                 env=(args.get('env') or os.environ), 
 #                 # env=args.get('env', None)
-#                 #env=env,
 #             )
 #             stop_time = timeit.default_timer()
 #             elapsed_time = stop_time - start_time
