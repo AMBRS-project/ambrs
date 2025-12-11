@@ -89,7 +89,6 @@ Optional parameters:
 #         #     scenario_name = self.scenario_name.format(index = formatted_index)
 #         #     output = self.model.read_output_files(input, args[i]['dir'], scenario_name)
 #         #     outputs.append(output)
-#         # return outputs
 
 #     # FIXME: LMF revised run to correct her mistakes
 #     def run(self, inputs: list[analysis.Output]) -> list[analysis.Output]:
