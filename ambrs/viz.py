@@ -258,7 +258,7 @@ def render_frac_ccn_grid(
     xscale='log', yscale='linear',
     spec_modifications={}):
     """
-    Render grid of bscat vs wavelength at specified RH values.
+    Render grid of CCN activation fraction vs supersaturation for specified scenarios and timesteps.
     """
     return render_partmc_and_mam4_variable_grid(
         gs, # GridSpec
