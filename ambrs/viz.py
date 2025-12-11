@@ -134,7 +134,7 @@ def render_partmc_and_mam4_variable_grid(
         colors = color
     
     
-    # else:
+    
     
     for i_row, scenario_name in enumerate(scenario_names):
         row_style = _row_styles(base, colors[i_row])
