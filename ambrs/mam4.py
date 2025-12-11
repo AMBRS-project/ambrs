@@ -332,32 +332,6 @@ working directory contains any needed input files."""
             raise OSError(f'Directory not found: {dir}')
         
         # # ----- CAMP files (absolute) -----
-        # camp_block = ""
-        # if getattr(self, "camp", None):
-        #     # write per-scenario CAMP files under <dir>/camp/mam4/
-        #     # from pathlib import Path
-        #     camp_files_json = self.camp.write_for_model(pathlib.Path(dir), model_name="mam4")
-        #     camp_block = f"""&camp_input
-        # use_camp      = 1,
-        # camp_files    = '{camp_files_json}',
-        # /
-        # """ 
-        camp_block = ""
-        if self.camp_config:
-            cfg = pathlib.Path(self.camp_config)
-            if cfg.is_dir(): cfg = cfg / "config.json"
-            camp_block = f"""&camp_input
-        use_camp   = 1,
-        camp_files = '{cfg.resolve()}',
-        camp_mech  = '{self.camp_mech or "MAM4_SOA_partitioning"}',
-        /"""
-        elif getattr(self, "camp", None):
-            camp_files_json = self.camp.write_for_model(pathlib.Path(dir), model_name="mam4")
-            camp_block = f"""&camp_input
-        use_camp   = 1,
-        camp_files = '{camp_files_json}',
-        camp_mech  = '{self.camp_mech or "MAM4_SOA_partitioning"}',
-        /"""
 
 
         # Build the namelist content (unchanged pieces collapsed)
