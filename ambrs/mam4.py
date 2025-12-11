@@ -11,7 +11,6 @@ from .ppe import Ensemble
 
 from .camp import CampConfig
 from typing import Optional
-import json
 #from pathlib import Path
 import pathlib
 
