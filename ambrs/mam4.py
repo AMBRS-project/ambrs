@@ -426,8 +426,8 @@ qsoag          = {input.qsoag},
 def get_mam_input(
         varname,
         mam_input='../mam_refactor-main/standalone/tests/smoke_test.nl'):
-    f_input = open(mam_input,'r')
-    input_lines = f_input.readlines()
+    with open(mam_input, 'r') as f_input:
+        input_lines = f_input.readlines()
     yep = 0
     for oneline in input_lines:
         if varname in oneline:
