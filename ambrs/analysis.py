@@ -8,7 +8,6 @@ import pandas as pd
 from typing import Optional, Dict, List
 
 from part2pop import ParticlePopulation  # type: ignore
-from part2pop.optics.builder import build_optical_population  # type: ignore
 from part2pop import analysis as ppa  # type: ignore
 
 from .gas import GasMixture
