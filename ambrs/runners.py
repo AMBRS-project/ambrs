@@ -308,11 +308,3 @@ runner's root directory, generating a directory for each of the scenarios"""
         logger.info(f'{self.model.name}: completed runs.')
         if error_occurred:
             logger.error(f'{self.model.name}: At least one run failed.')
-
-        # # gather model output
-        # outputs = []
-        # for i, input in enumerate(inputs):
-        #     scenario_name = self.scenario_name.format(index = formatted_index)
-        #     output = self.model.read_output_files(input, args[i]['dir'], scenario_name)
-        #     outputs.append(output)
-        # return outputs
