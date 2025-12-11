@@ -10,7 +10,6 @@ import os
 import subprocess
 from typing import Any
 
-
 logger = logging.getLogger(__name__)
 
 class PoolRunner:
@@ -41,7 +40,7 @@ Optional parameters:
         self.root = root
         self.num_processes = num_processes if num_processes else multiprocessing.cpu_count()
         self.scenario_name = scenario_name
-        
+
         if not os.path.exists(self.root):
             raise OSError(f"root path '{self.root}' does not exist!")
 
@@ -50,10 +49,8 @@ Optional parameters:
 runner's root directory, generating a directory for each of the scenarios"""
         if not isinstance(inputs, list):
             raise TypeError('inputs must be a list of scenario inputs')
-        
+
         # prep scenarios to run
-        
-        # FIXME: move scenario name function to a utils file to avoid code duplication
         num_inputs = len(inputs)
         max_num_digits = math.floor(math.log10(num_inputs)) + 1
         logger.info(f'{self.model.name}: generating input for {num_inputs} scenarios...')
@@ -71,7 +68,6 @@ runner's root directory, generating a directory for each of the scenarios"""
             if os.path.exists(dir):
                 found_dir = True
             else:
-                logger.debug(f"Created scenario directory: {dir}")
                 os.mkdir(dir)
 
             # write input files and define commands
@@ -114,3 +110,11 @@ runner's root directory, generating a directory for each of the scenarios"""
         logger.info(f'{self.model.name}: completed runs.')
         if error_occurred:
             logger.error(f'{self.model.name}: At least one run failed.')
+
+        # gather model output
+        outputs = []
+        for i, input in enumerate(inputs):
+            scenario_name = self.scenario_name.format(index = formatted_index)
+            output = self.model.read_output_files(input, args[i]['dir'], scenario_name)
+            outputs.append(output)
+        return outputs
