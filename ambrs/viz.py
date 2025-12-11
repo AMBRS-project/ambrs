@@ -214,7 +214,7 @@ def render_partmc_and_mam4_variable_grid(
     
     if varname == 'dNdlnD':
         yvarlab = 'normalized number density'
-        xvarlab = 'diameter [$\mu$m]'
+        xvarlab = r'diameter [$\mu$m]'
     elif varname == 'frac_ccn':
         yvarlab = 'CCN activation fraction'
         xvarlab = 'supersaturation [%]'
