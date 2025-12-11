@@ -15,7 +15,12 @@ from typing import Optional
 import pathlib
 
 
-# fixme: put this in wrapper? load wrapper with .aerosol? 
+# FIXME: Consider whether 'build_population' should be imported here directly,
+# or if it would be better to move this import into a wrapper module (e.g., a
+# dedicated wrapper or within .aerosol) to improve code organization and encapsulation.
+# The decision depends on whether 'build_population' is a core dependency of this module,
+# or if it is only needed in specific contexts. Please clarify the intended usage and
+# update the import location accordingly.
 from part2pop import build_population
 from dataclasses import dataclass, make_dataclass
 from netCDF4 import Dataset
