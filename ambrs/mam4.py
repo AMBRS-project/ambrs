@@ -15,12 +15,7 @@ from typing import Optional
 import pathlib
 
 
-# FIXME: Consider whether 'build_population' should be imported here directly,
-# or if it would be better to move this import into a wrapper module (e.g., a
-# dedicated wrapper or within .aerosol) to improve code organization and encapsulation.
-# The decision depends on whether 'build_population' is a core dependency of this module,
-# or if it is only needed in specific contexts. Please clarify the intended usage and
-# update the import location accordingly.
+# fixme: put this in wrapper? load wrapper with .aerosol? 
 from part2pop import build_population
 from dataclasses import dataclass, make_dataclass
 from netCDF4 import Dataset
@@ -142,11 +137,15 @@ class AerosolMassFractions:
                  scenario: Scenario):
         self.accum = self.AccumMode(
             SO4 = scenario.size.modes[0].mass_fraction('SO4'),
-            POM = scenario.size.modes[0].mass_fraction('POM'),
-            SOA = scenario.size.modes[0].mass_fraction('SOA'),
+            # POM = scenario.size.modes[0].mass_fraction('POM'),
+            POM = scenario.size.modes[0].mass_fraction('OC'),
+            # SOA = scenario.size.modes[0].mass_fraction('SOA'),
+            SOA = scenario.size.modes[0].mass_fraction('MSA'),
             BC  = scenario.size.modes[0].mass_fraction("BC"),
-            DST = scenario.size.modes[0].mass_fraction("DST"),
-            NCL = scenario.size.modes[0].mass_fraction("NCL"),
+            # DST = scenario.size.modes[0].mass_fraction("DST"),
+            DST = scenario.size.modes[0].mass_fraction("OIN"),
+            # NCL = scenario.size.modes[0].mass_fraction("NCL"),
+            NCL = scenario.size.modes[0].mass_fraction("Na"),
         )
         # self.AccumMode = make_dataclass('AccumMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[0].species])
         # self.accum = self.AccumMode(
@@ -156,19 +155,25 @@ class AerosolMassFractions:
         
         self.aitken = self.AitkenMode(
             SO4 = scenario.size.modes[1].mass_fraction("SO4"),
-            SOA = scenario.size.modes[1].mass_fraction("SOA"),
-            NCL = scenario.size.modes[1].mass_fraction("NCL"),
+            # SOA = scenario.size.modes[1].mass_fraction("SOA"),
+            SOA = scenario.size.modes[1].mass_fraction("MSA"),
+            # NCL = scenario.size.modes[1].mass_fraction("NCL"),
+            NCL = scenario.size.modes[1].mass_fraction("Na"),
         )
         self.coarse = self.CoarseMode(
-            DST = scenario.size.modes[2].mass_fraction("DST"),
-            NCL = scenario.size.modes[2].mass_fraction("NCL"),
+            # DST = scenario.size.modes[2].mass_fraction("DST"),
+            DST = scenario.size.modes[2].mass_fraction("OIN"),
+            # NCL = scenario.size.modes[2].mass_fraction("NCL"),
+            NCL = scenario.size.modes[2].mass_fraction("Na"),
             SO4 = scenario.size.modes[2].mass_fraction("SO4"),
             BC  = scenario.size.modes[2].mass_fraction("BC"),
-            POM = scenario.size.modes[2].mass_fraction("POM"),
-            SOA = scenario.size.modes[2].mass_fraction("SOA"),
+            POM = scenario.size.modes[2].mass_fraction("OC"),
+            SOA = scenario.size.modes[2].mass_fraction("MSA"),
+            # SOA = scenario.size.modes[2].mass_fraction("SOA"),
         )
         self.pcarbon = self.PCarbonMode(
-            POM = scenario.size.modes[3].mass_fraction("POM"),
+            POM = scenario.size.modes[3].mass_fraction("OC"),
+            # POM = scenario.size.modes[3].mass_fraction("POM"),
             BC  = scenario.size.modes[3].mass_fraction("BC"),
         )
         # self.AitkenMode = make_dataclass('AitkenMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[1].species])
