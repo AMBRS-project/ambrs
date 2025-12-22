@@ -144,6 +144,8 @@ class Input:
     aero_emissions: Optional[AerosolModeTimeSeries] = None  # aerosol emissions time series
     aero_background: Optional[AerosolModeTimeSeries] = None # aerosol background time series
 
+    # TODO: merge with Duncan's changes
+    
     # CAMP configuration
     camp_config: Optional[str] = None
 
