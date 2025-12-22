@@ -73,6 +73,7 @@ specific parameters (no state information)"""
             'OC',
             'BC',
             # FIXME: Laura addition
+            'POM',
             'SOA',
             'H2O',
         ]
