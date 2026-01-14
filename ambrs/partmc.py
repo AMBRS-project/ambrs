@@ -219,7 +219,7 @@ class AerosolModel(BaseAerosolModel):
             start_day = 200,
 
             do_coagulation = self.processes.coagulation,
-            do_condensation = self.processes.condensation,
+            do_condensation = False, # this is cloud condensation, not trace gas condensation
 
             do_mosaic = do_mosaic,
             do_optical = self.processes.optics,
