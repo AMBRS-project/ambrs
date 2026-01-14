@@ -20,6 +20,7 @@ from .aerosol import \
     RVFrozenDistribution, Delta
 from .gas import GasSpecies
 from .scenario import Scenario
+from .emissions import AerosolEmissions
 
 @dataclass(frozen=True)
 class EnsembleSpecification:
@@ -35,8 +36,12 @@ PPE are sampled"""
     temperature: RVFrozenDistribution
     pressure: RVFrozenDistribution
     height: float
+    # TODO: I'm not sure gas_emissions and gas_background work yet
     gas_emissions: Optional[list[tuple[float, dict]]] = None
     gas_background: Optional[list[tuple[float, dict]]] = None
+    # TODO: Aerosol emissions and background work only for PartMC right now
+    aerosol_emissions: Optional[list[AerosolEmissions]] = None
+    aerosol_background: Optional[list[AerosolEmissions]] = None
 
     def __init__(
         self,
@@ -51,7 +56,9 @@ PPE are sampled"""
         pressure: RVFrozenDistribution,
         height: float,
         gas_emissions: Optional[list[tuple[float, dict]]] = None,
-        gas_background: Optional[list[tuple[float, dict]]] = None
+        gas_background: Optional[list[tuple[float, dict]]] = None,
+        aerosol_emissions: Optional[list[AerosolEmissions]] = None,
+        aerosol_background: Optional[list[AerosolEmissions]] = None
     ):
         # self.name = name
         object.__setattr__(self,'name',name)
@@ -79,6 +86,8 @@ PPE are sampled"""
         object.__setattr__(self,'height',height)
         object.__setattr__(self,'gas_emissions',gas_emissions)
         object.__setattr__(self,'gas_background',gas_background)
+        object.__setattr__(self,'aerosol_emissions',aerosol_emissions)
+        object.__setattr__(self,'aerosol_background',aerosol_background)
 
 @dataclass(frozen=True)
 class Ensemble:
@@ -95,6 +104,8 @@ a specific EnsembleSpecification"""
     height: float
     gas_emissions: Optional[list[tuple[float, dict]]] = None
     gas_background: Optional[list[tuple[float, dict]]] = None
+    aerosol_emissions: Optional[list[AerosolEmissions]] = None
+    aerosol_background: Optional[list[AerosolEmissions]] = None
     specification: Optional[EnsembleSpecification] = None # if used for creation
 
     def __len__(self):
@@ -131,6 +142,8 @@ a specific EnsembleSpecification"""
             height = self.height,
             gas_emissions = self.gas_emissions,
             gas_background = self.gas_background,
+            aerosol_emissions = self.aerosol_emissions,
+            aerosol_background = self.aerosol_background,
         )
 
 #------------------------------------------------
@@ -190,6 +203,8 @@ specified scenarios (which must all have the same particle size representation)"
         height = scenarios[0].height,
         gas_emissions = scenarios[0].gas_emissions,
         gas_background = scenarios[0].gas_background,
+        aerosol_emissions = scenarios[0].aerosol_emissions,
+        aerosol_background = scenarios[0].aerosol_background,
     )
 
 #-------------------------------------------------
@@ -228,6 +243,8 @@ def sample(specification: EnsembleSpecification, n: int) -> Ensemble:
         height = specification.height,
         gas_emissions = specification.gas_emissions,
         gas_background = specification.gas_background,
+        aerosol_emissions = specification.aerosol_emissions,
+        aerosol_background = specification.aerosol_background,
     )
 
 def lhs(specification: EnsembleSpecification,
@@ -472,6 +489,8 @@ parameter sweeps"""
             height = reference_state.height,
             gas_emissions = reference_state.gas_emissions,
             gas_background = reference_state.gas_background,
+            aerosol_emissions = reference_state.aerosol_emissions,
+            aerosol_background = reference_state.aerosol_background,
         )
         index += 3
         members.append(member)
