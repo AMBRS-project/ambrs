@@ -1,10 +1,10 @@
 """ambrs.partmc -- data types and functions related to the PartMC box model"""
 
 from .aerosol import AerosolProcesses, AerosolModalSizePopulation, \
-                     AerosolModalSizeState
+                     AerosolModalSizeState, AerosolSpecies
 from .aerosol_model import BaseAerosolModel
 from .analysis import Output
-from .scenario import Scenario
+from .scenario import Scenario, AerosolEmissions
 from .ppe import Ensemble
 from typing import Dict, Optional
 
@@ -70,7 +70,7 @@ class AeroMode:
 # time series data types
 type ScalarTimeSeries = list[tuple[float, float], ...] # list of (t, value) pairs
 type DictTimeSeries = list[tuple[float, dict], ...] # list of (t, dict) pairs
-type AerosolModeTimeSeries = list[tuple[float, AeroMode], ...] # list of (t, mode) pairs
+type AerosolModeTimeSeries = list[AerosolEmissions]
 
 @dataclass
 class Input:
@@ -131,6 +131,7 @@ class Input:
     loss_function: Optional[str] = None # loss function specification
 
     # TODO: analytic-specific fields??
+
     # TODO: sectional-specific fields??
 
     # TODO: fractal-specific fields??
@@ -178,51 +179,8 @@ class AerosolModel(BaseAerosolModel):
             raise ValueError("nstep must be positive")
         if not isinstance(scenario.size, AerosolModalSizeState):
             raise TypeError('Non-modal aerosol particle size state cannot be used to create PartMC input!')
-        if self.processes.do_camp_chem:
-            aero_data = [AeroData(
-                species = f'core.mixed.{s.name}',
-                density = s.density,
-                ions_in_soln = s.ions_in_soln,
-                molecular_weight = s.molar_mass / 1000.,
-                kappa = s.hygroscopicity,
-            ) for s in scenario.aerosols if s.name == 'SO4' or s.name == 'H2O' or s.name == 'BC']
-            aero_init = [AeroMode(
-                mode_name = m.name.replace(' ', '_'),
-                mass_frac = {f'core.mixed.{m.species[i].name}':m.mass_fractions[i] for i in range(len(m.species)) if m.species[i].name == 'SO4' or m.species[i].name == 'H2O' or m.species[i].name == 'BC'},
-                diam_type = 'geometric', # FIXME: could also be 'mobility'
-                mode_type = 'log_normal', # FIXME: could also be 'exp', 'mono', 'sampled'
-                num_conc = m.number,
-                geom_mean_diam = m.geom_mean_diam,
-                log10_geom_std_dev = m.log10_geom_std_dev,
-            ) for m in scenario.size.modes]
-        else:
-            aero_data = [AeroData(
-                species = s.name, # f'{s.name}',
-                density = s.density,
-                ions_in_soln = s.ions_in_soln,
-                molecular_weight = s.molar_mass / 1000.,
-                kappa = s.hygroscopicity,
-            ) for s in scenario.aerosols]            
-            aero_init = [AeroMode(
-                mode_name = m.name.replace(' ', '_'),
-                # mass_frac = mam4_sulfate_to_so4_and_nh4(m.mass_fractions[0]),
-                mass_frac = {m.species[i].name:m.mass_fractions[i] for i in range(len(m.species))},
-                # mass_frac = {f'{m.species[i].name}':m.mass_fractions[i] for i in range(len(m.species)) if m.species[i].name != 'SO4' else mam4_sulfate_to_so4_and_nh4(m.mass_fractions[i])},
-                # {f'{m.species[i].name}':m.mass_fractions[i] for i in range(len(m.species))},
-                diam_type = 'geometric', # FIXME: could also be 'mobility'
-                mode_type = 'log_normal', # FIXME: could also be 'exp', 'mono', 'sampled'
-                num_conc = m.number,
-                geom_mean_diam = m.geom_mean_diam,
-                log10_geom_std_dev = m.log10_geom_std_dev,
-            ) for m in scenario.size.modes]
-            for ii in range(len(aero_init)):
-                if 'SO4' in aero_init[ii].mass_frac.keys() and 'NH4' not in aero_init[ii].mass_frac.keys():
-                    ammonium_sulfate_frac = aero_init[ii].mass_frac['SO4']
-                    nh4_per_ammonium_sulfate = 2*18./(2*18. + 96.)
-                    so4_per_ammonium_sulfate = 96./(2*18. + 96.)
-                    # nh4_frac = ammonium_sulfate_frac * nh4_per_ammonium_sulfate  # assuming all sulfate is in the form of (NH4)2SO4
-                    aero_init[ii].mass_frac['NH4'] = ammonium_sulfate_frac * nh4_per_ammonium_sulfate
-                    aero_init[ii].mass_frac['SO4'] = ammonium_sulfate_frac * so4_per_ammonium_sulfate
+        aero_data = self._build_aero_data(scenario.aerosols)
+        aero_init = self._modal_state_to_aeromodes(scenario.size)
         do_mosaic = self.processes.condensation and not self.processes.do_camp_chem
         do_camp_chem = self.processes.condensation and self.processes.do_camp_chem
         return Input(
@@ -237,51 +195,101 @@ class AerosolModel(BaseAerosolModel):
 
             t_max = nstep * dt,
             del_t = dt,
-            t_output = dt, # setting t_output = dt for now, which I believe is how MAM4 works.
-            t_progress = dt, # reporting progress at every time step for now. 
+            t_output = dt,
+            t_progress = dt,
 
             do_camp_chem = do_camp_chem,
 
             gas_data = tuple([gas.name for gas in scenario.gases]),
-            
-            gas_init = tuple([1.e9 * gas_conc for gas_conc in scenario.gas_concs]), # mol/mol-air to ppb
-            # FIXME: double-check that units are consistent; add unit test
+            gas_init = tuple([1.e9 * gas_conc for gas_conc in scenario.gas_concs]),
 
-            
-            aerosol_data = tuple(aero_data),
+            aerosol_data = aero_data,
             do_fractal = False,
-            aerosol_init = tuple(aero_init),
+            aerosol_init = aero_init,
 
             temp_profile = [(0, scenario.temperature)],
             pressure_profile = [(0, scenario.pressure)],
             height_profile = [(0, scenario.height)],
 
-            # loss_function = 'volume',
-
             rel_humidity = scenario.relative_humidity,
-            latitude = 0,       # FIXME:
-            longitude = 0,      # FIXME:
-            altitude = 3.0e+3,       # FIXME:
-            start_time = 21600, # FIXME:
-            start_day = 200,    # FIXME:
+            latitude = 0,
+            longitude = 0,
+            altitude = 3.0e+3,
+            start_time = 21600,
+            start_day = 200,
 
             do_coagulation = self.processes.coagulation,
-            do_condensation = False, # this is cloud condensation, not for aerosols
-            
-            do_mosaic = do_mosaic, # use MOSAIC if not using CAMP
+            do_condensation = False, # this is cloud condensation, not trace gas condensation
+
+            do_mosaic = do_mosaic,
             do_optical = self.processes.optics,
             do_nucleation = self.processes.nucleation,
 
-            rand_init = 42, # FIXME: seed 0 uses clock to initialize random seed
+            rand_init = 42,
             allow_doubling = True,
             allow_halving = True,
             record_removals = True,
             do_parallel = False,
 
             gas_emissions = scenario.gas_emissions,
+            aero_emissions = scenario.aerosol_emissions,
+            aero_background = scenario.aerosol_background,
 
             camp_config = self.camp_config,
         )
+
+    def _build_aero_data(self, aerosols: tuple[AerosolSpecies, ...]) -> tuple[AeroData, ...]:
+        if self.processes.do_camp_chem:
+            camp_species = {'SO4', 'H2O', 'BC'}
+            return tuple(AeroData(
+                species = f'core.mixed.{s.name}',
+                density = s.density,
+                ions_in_soln = s.ions_in_soln,
+                molecular_weight = s.molar_mass / 1000.,
+                kappa = s.hygroscopicity,
+            ) for s in aerosols if s.name in camp_species)
+        return tuple(AeroData(
+            species = s.name,
+            density = s.density,
+            ions_in_soln = s.ions_in_soln,
+            molecular_weight = s.molar_mass / 1000.,
+            kappa = s.hygroscopicity,
+        ) for s in aerosols)
+
+    def _modal_state_to_aeromodes(self, modal_state: AerosolModalSizeState) -> tuple[AeroMode, ...]:
+        modes = []
+        use_camp_chem = self.processes.do_camp_chem
+        camp_species = {'SO4', 'H2O', 'BC'}
+        for mode in modal_state.modes:
+            mass_frac = {}
+            for idx, species in enumerate(mode.species):
+                if use_camp_chem and species.name not in camp_species:
+                    continue
+                key = f'core.mixed.{species.name}' if use_camp_chem else species.name
+                mass_frac[key] = mode.mass_fractions[idx]
+            if not mass_frac:
+                continue
+            modes.append(AeroMode(
+                mode_name = mode.name.replace(' ', '_'),
+                mass_frac = mass_frac,
+                diam_type = 'geometric',
+                mode_type = 'log_normal',
+                num_conc = mode.number,
+                geom_mean_diam = mode.geom_mean_diam,
+                log10_geom_std_dev = mode.log10_geom_std_dev,
+            ))
+        if not use_camp_chem:
+            self._ensure_ammonium_sulfate(modes)
+        return tuple(modes)
+
+    def _ensure_ammonium_sulfate(self, modes: list[AeroMode]) -> None:
+        for mode in modes:
+            if 'SO4' in mode.mass_frac and 'NH4' not in mode.mass_frac:
+                ammonium_sulfate_frac = mode.mass_frac['SO4']
+                nh4_per_ammonium_sulfate = 2*18./(2*18. + 96.)
+                so4_per_ammonium_sulfate = 96./(2*18. + 96.)
+                mode.mass_frac['NH4'] = ammonium_sulfate_frac * nh4_per_ammonium_sulfate
+                mode.mass_frac['SO4'] = ammonium_sulfate_frac * so4_per_ammonium_sulfate
 
     def invocation(self,
                    exe: str,
@@ -487,39 +495,8 @@ class AerosolModel(BaseAerosolModel):
                 for gas in input.gas_data:
                     f.write(f'{gas}\t0.0\n')
 
-        # aero_emit.dat, aero_emit_dist_*.dat, aero_emit_comp_*.dat
-        if input.aero_emissions:
-            with open(os.path.join(dir, 'aero_emit.dat'), 'w') as f:
-                f.write('# time (s)\n# rate (s^{-1})\n# aerosol distribution filename\n')
-                f.write('\t'.join(['time'] + [time_series[0] for time_series in input.aero_emissions]) + '\n')
-                f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in input.aero_emissions]) + '\n')
-                f.write('\t'.join(['dist'] + [f'aero_emit_dist_{i+1}.dat' for i in range(len(input.aero_emissions))]))
-            for i, time_series in enumerate(input.aero_emissions):
-                input._write_aero_modes(dir, f'aero_emit_dist_{i+1}', input.aero_emissions)
-        else:
-            # write a zero-scaled aerosol emissions file
-            with open(os.path.join(dir, 'aero_emit.dat'), 'w') as f:
-                f.write('# time (s)\n# rate (s^{-1})\n# aerosol distribution filename\n')
-                f.write('time\t0.0\n')
-                f.write('rate\t0.0\n')
-                f.write('dist\taero_init_dist.dat\n')
-
-        # aero_back.dat, aero_back_dist.dat, aero_back_comp.dat
-        if input.aero_background:
-            with open(os.path.join(dir, 'aero_back.dat'), 'w') as f:
-                f.write('# time (s)\n# rate (s^{-1})\n# aerosol distribution filename\n')
-                f.write('\t'.join(['time'] + [time_series[0] for time_series in input.aero_background]) + '\n')
-                f.write('\t'.join(['rate'] + [time_series[1]['rate'] for time_series in input.aero_background]) + '\n')
-                f.write('\t'.join(['dist'] + [f'aero_emit_dist_{i+1}.dat' for i in range(len(input.aero_background))]))
-            for i, time_series in enumerate(input.aero_background):
-                input._write_aero_modes(dir, f'aero_back_dist_{i+1}', input.aero_background)
-        else:
-            # write a zero-scaled aerosol background file
-            with open(os.path.join(dir, 'aero_back.dat'), 'w') as f:
-                f.write('# time (s)\n# rate (s^{-1})\n# aerosol distribution filename\n')
-                f.write('time\t0.0\n')
-                f.write('rate\t0.0\n')
-                f.write('dist\taero_init_dist.dat\n')
+        self._write_aerosol_time_series(dir, 'aero_emit', input.aero_emissions)
+        self._write_aerosol_time_series(dir, 'aero_back', input.aero_background)
 
     def _write_aero_modes(self,
                           dir: str,
@@ -544,6 +521,29 @@ class AerosolModel(BaseAerosolModel):
                 f.write('#\tproportion\n')
                 for species, mass_frac in mode.mass_frac.items():
                     f.write(f'{species}\t{mass_frac}\n')
+
+    def _write_aerosol_time_series(self,
+                                   dir: str,
+                                   prefix: str,
+                                   events: Optional[AerosolModeTimeSeries]):
+        file_path = os.path.join(dir, f'{prefix}.dat')
+        if not events:
+            with open(file_path, 'w') as f:
+                f.write('# time (s)\n# rate (s^{-1})\n# aerosol distribution filename\n')
+                f.write('time\t0.0\n')
+                f.write('rate\t0.0\n')
+                f.write('dist\taero_init_dist.dat\n')
+            return
+        mode_prefixes = [f'{prefix}_dist_{i+1}' for i in range(len(events))]
+        dist_files = [f'{mode_prefix}_dist.dat' for mode_prefix in mode_prefixes]
+        with open(file_path, 'w') as f:
+            f.write('# time (s)\n# rate (s^{-1})\n# aerosol distribution filename\n')
+            f.write('\t'.join(['time'] + [str(event.time) for event in events]) + '\n')
+            f.write('\t'.join(['rate'] + [str(event.rate) for event in events]) + '\n')
+            f.write('\t'.join(['dist'] + dist_files) + '\n')
+        for i, event in enumerate(events):
+            modes = self._modal_state_to_aeromodes(event.size)
+            self._write_aero_modes(dir, mode_prefixes[i], modes)
 
 def retrieve_model_state(
         scenario_name: str, 

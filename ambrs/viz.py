@@ -88,8 +88,8 @@ def render_partmc_and_mam4_variable_grid(
     var_cfg: Dict,                    # e.g., make_dNdlnD_cfg(...)
     ensemble: Ensemble,
     timesteps: Sequence[int],
-    partmc_dir: str,
-    mam4_dir: str,
+    partmc_dir: str | None = None, # if None, don't read PartMC data
+    mam4_dir: str | None = None,  # if None, don't read MAM4 data
     scenario_names: Sequence[str] | None = None,
     legend_loc: str | None = None,
     row_colors: Sequence[str] | None = None,
@@ -143,21 +143,23 @@ def render_partmc_and_mam4_variable_grid(
                 sharey=axes[i_row-1,i_col] if sharey and i_row > 0 else None)
             axes[i_row, i_col] = ax
             
-            partmc_output = partmc.retrieve_model_state(
-                scenario_name=scenario_name,
-                scenario=ensemble.member(int(scenario_name)-1),
-                timestep=timestep,
-                repeat_num=1, # fixme: hardcoded for single repeat
-                species_modifications=species_modifications,
-                ensemble_output_dir=partmc_dir,
-            )
-            mam4_output = mam4.retrieve_model_state(
-                scenario_name=scenario_name,
-                scenario=ensemble.member(int(scenario_name)-1),
-                timestep=timestep,
-                species_modifications=species_modifications,
-                ensemble_output_dir=mam4_dir,
-            )
+            if partmc_dir is not None:
+                partmc_output = partmc.retrieve_model_state(
+                    scenario_name=scenario_name,
+                    scenario=ensemble.member(int(scenario_name)-1),
+                    timestep=timestep,
+                    repeat_num=1, # fixme: hardcoded for single repeat
+                    species_modifications=species_modifications,
+                    ensemble_output_dir=partmc_dir,
+                )
+            if mam4_dir is not None:
+                mam4_output = mam4.retrieve_model_state(
+                    scenario_name=scenario_name,
+                    scenario=ensemble.member(int(scenario_name)-1),
+                    timestep=timestep,
+                    species_modifications=species_modifications,
+                    ensemble_output_dir=mam4_dir,
+                )
 
             series = (
                 ("partmc", partmc_output.particle_population, "PartMC"),
@@ -217,8 +219,11 @@ def render_partmc_and_mam4_variable_grid(
 
     return fig, axes
 
+# FIXME: add better typing
 def render_dNdlnD_grid(
-    gs, *, ensemble, scenario_names, timesteps, partmc_dir, mam4_dir,
+    gs, *, ensemble, scenario_names, timesteps, 
+    partmc_dir : str | None = None, 
+    mam4_dir : str | None = None, 
     D_range=(1e-9, 1e-6), N_bins=50, normalize=True, method="kde",
     legend_loc=None, row_colors=None,
     xscale='log', yscale='linear',
@@ -251,7 +256,9 @@ def render_dNdlnD_grid(
         )
 
 def render_frac_ccn_grid(
-    gs, *, ensemble, scenario_names, timesteps, partmc_dir, mam4_dir,
+    gs, *, ensemble, scenario_names, timesteps,
+    partmc_dir : str | None = None, 
+    mam4_dir : str | None = None, 
     s_grid=np.logspace(-2, 1.0, 50),
     legend_loc=None, row_colors=None,
     xscale='log', yscale='linear',
@@ -276,7 +283,9 @@ def render_frac_ccn_grid(
         )
 
 def render_bscat_grid(
-    gs, *, ensemble, scenario_names, timesteps, partmc_dir, mam4_dir,
+    gs, *, ensemble, scenario_names, timesteps, 
+    partmc_dir : str | None = None, 
+    mam4_dir : str | None = None, 
     wvl_grid=np.linspace(0.35e-6, 0.8e-6, 30), rh_grid=[0.0],
     legend_loc='upper right', row_colors=None,
     xscale='linear', yscale='linear',
