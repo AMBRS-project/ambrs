@@ -245,8 +245,6 @@ def sample(specification: EnsembleSpecification, n: int) -> Ensemble:
         gas_background = specification.gas_background,
         aerosol_emissions = specification.aerosol_emissions,
         aerosol_background = specification.aerosol_background,
-        aerosol_emissions = specification.aerosol_emissions,
-        aerosol_background = specification.aerosol_background,
     )
 
 def lhs(specification: EnsembleSpecification,
