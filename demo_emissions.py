@@ -78,7 +78,7 @@ def build_scenario() -> Scenario:
 
 
 def main():
-    run_dir = Path('tmp/partmc_demo')
+    run_dir = Path('runs/partmc_simple_emissions')
     if run_dir.exists():
         shutil.rmtree(run_dir)
     run_dir.mkdir(parents=True)
@@ -101,7 +101,7 @@ def main():
     for fname in ['aero_emit.dat', 'aero_back.dat']:
         print(f"\n>>> {fname} contents:")
         print(textwrap.indent(Path(run_dir, fname).read_text().strip(), "    "))
-
+    
     emit_dist = run_dir / 'aero_emit_dist_1_dist.dat'
     print(f"\n>>> {emit_dist} contents:")
     print(textwrap.indent(emit_dist.read_text().strip(), "    "))
@@ -111,7 +111,7 @@ def main():
     if not partmc_exe:
         raise RuntimeError("partmc executable not found in PATH")
     result = subprocess.run(
-        [partmc_exe, 'demo_emission.spec'],
+        [partmc_exe, run_dir / 'demo_emission.spec'],
         cwd = run_dir,
         capture_output = True,
         text = True,
