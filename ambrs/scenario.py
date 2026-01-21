@@ -4,6 +4,7 @@ simulation scenarios.
 
 from dataclasses import dataclass
 from .aerosol import AerosolModalSizeState, AerosolSpecies
+from .emissions import AerosolEmissions
 from .gas import GasSpecies
 from typing import Dict, Optional
 
@@ -21,5 +22,6 @@ in terms of state information"""
     pressure: float
     height: float
     gas_emissions: Optional[list[tuple[float, dict], ...]] = None
-    soa_source: Optional[tuple[float, ...]] = None
-    soa_loss: Optional[float] = None
+    gas_background: Optional[list[tuple[float, dict], ...]] = None
+    aerosol_emissions: Optional[list[AerosolEmissions]] = None
+    aerosol_background: Optional[list[AerosolEmissions]] = None
