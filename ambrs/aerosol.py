@@ -15,6 +15,17 @@ from typing import Optional, TypeVar
 # (this frozen type isn't made available by the scipy.stats package)
 RVFrozenDistribution = TypeVar('RVFrozenDistribution')
 
+class Delta:
+    '''
+    Constant "random variable" to fix parameters if perturbation is not desired
+    '''
+    def __init__(self, value:float):
+        self.value = value
+    def ppf(self, q:float):
+        return self.value
+    def rvs(self, size:int|tuple[int]):
+        return self.value * np.ones(size)
+
 @dataclass
 class AerosolProcesses:
     """AerosolProcesses: a definition of a set of aerosol processes under consideration"""
@@ -26,8 +37,9 @@ class AerosolProcesses:
     gas_phase_chemistry: bool = False
     optics: bool = False
     nucleation: bool = False
+    do_camp_chem: bool = False
 
-@dataclass(frozen=False) # Unfroze. Reason for frozen?
+@dataclass(frozen=True)
 class AerosolSpecies:
     """AerosolSpecies: the definition of an aerosol species in terms of species-
 specific parameters (no state information)"""
@@ -60,9 +72,13 @@ specific parameters (no state information)"""
             'OIN',
             'OC',
             'BC',
+            # FIXME: Laura addition
+            'POM',
+            'SOA',
             'H2O',
         ]
         
+        # FIXME: Hardcoded name checking?
         # if self.name not in valid_aerosol_species:
         #     raise NameError(f'Invalid aerosol species name: {self.name}\nValid names are {valid_aerosol_species}')
         if self.molar_mass <= 0.0:
@@ -90,7 +106,6 @@ log-normal aerosol mode"""
     def mass_fraction(self, species_name: str):
         """returns the mass fraction corresponding to the given species name,
 or throws a ValueError."""
-        #print(self.species)
         index = [s.name for s in self.species].index(species_name)
         return self.mass_fractions[index]
 
@@ -100,10 +115,36 @@ class AerosolModeDistribution:
 log-normal aerosol mode (distribution only--no state information)"""
     name: str
     species: tuple[AerosolSpecies, ...]
-    number: RVFrozenDistribution                     # modal number concentration distribution
-    geom_mean_diam: RVFrozenDistribution             # geometric mean diameter distribution
-    log10_geom_std_dev: RVFrozenDistribution #float                        # mode-specific logarithmic diameter std dev # FIXME: changed to RV
+    number: RVFrozenDistribution             # modal number concentration distribution
+    geom_mean_diam: RVFrozenDistribution      # geometric mean diameter distribution
+    log10_geom_std_dev: RVFrozenDistribution # mode-specific logarithmic diameter std dev
     mass_fractions: tuple[RVFrozenDistribution, ...] # species mass fraction distributions
+
+    def __init__(
+        self,
+        name: str,
+        species: tuple[AerosolSpecies, ...],
+        number: RVFrozenDistribution,             # modal number concentration distribution
+        geom_mean_diam: RVFrozenDistribution,      # geometric mean diameter distribution
+        log10_geom_std_dev: RVFrozenDistribution, # mode-specific logarithmic diameter std dev
+        mass_fractions: tuple[RVFrozenDistribution, ...] # species mass fraction distributions
+    ):
+        object.__setattr__(self,'name',name)
+        object.__setattr__(self,'species',species)
+        if callable(getattr(number,'ppf',None)):
+            object.__setattr__(self,'number',number)
+        elif isinstance(number,(int,float)):
+            object.__setattr__(self,'number',Delta(number))
+        if callable(getattr(geom_mean_diam,'ppf',None)):
+            object.__setattr__(self,'geom_mean_diam',geom_mean_diam)
+        elif isinstance(geom_mean_diam,(int,float)):
+            object.__setattr__(self,'geom_mean_diam',Delta(geom_mean_diam))
+        if callable(getattr(log10_geom_std_dev,'ppf',None)):
+            object.__setattr__(self,'log10_geom_std_dev',log10_geom_std_dev)
+        elif isinstance(log10_geom_std_dev,(int,float)):
+            object.__setattr__(self,'log10_geom_std_dev',Delta(log10_geom_std_dev))
+        object.__setattr__(self,'mass_fractions',
+                           tuple([mass_fraction if callable(getattr(mass_fraction,'ppf',None)) else Delta(mass_fraction) for mass_fraction in mass_fractions]))
 
 @dataclass
 class AerosolModePopulation:
@@ -127,6 +168,19 @@ distribution"""
     def member(self, i: int) -> AerosolModeState:
         """population.member(i) -> extracts mode state information from ith
 population member"""
+        for key in self.__dict__:
+            if key == 'mass_fractions':
+                object.__setattr__(
+                    self,
+                    key,
+                    tuple([frac*np.ones(self.__len__()) for frac in getattr(self,key)])
+                )
+            elif key in ['number','geom_mean_diam','log10_geom_std_dev']:
+                object.__setattr__(
+                    self,
+                    key,
+                    getattr(self,key) * np.ones(self.__len__())
+                )
         return AerosolModeState(
             name = self.name,
             species = self.species,
