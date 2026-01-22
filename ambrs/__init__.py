@@ -5,7 +5,7 @@ from .emissions import AerosolEmissions
 from .ppe import EnsembleSpecification, Ensemble, ensemble_from_scenarios, \
                  sample, lhs, LinearParameterSweep, LogarithmicParameterSweep, \
                  AerosolModeParameterSweeps, AerosolModalSizeParameterSweeps, \
-                 AerosolParameterSweeps, sweep, constvar
+                 AerosolParameterSweeps, sweep
 from .runners import PoolRunner
 from .scenario import Scenario
 
