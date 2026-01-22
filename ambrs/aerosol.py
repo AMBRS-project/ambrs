@@ -21,8 +21,8 @@ class Delta:
     '''
     def __init__(self, value:float):
         self.value = value
-    def ppf(self, q:float):
-        return self.value
+    def ppf(self, q):
+        return self.value * np.ones_like(q)
     def rvs(self, size:int|tuple[int]):
         return self.value * np.ones(size)
 
@@ -144,7 +144,8 @@ log-normal aerosol mode (distribution only--no state information)"""
         elif isinstance(log10_geom_std_dev,(int,float)):
             object.__setattr__(self,'log10_geom_std_dev',Delta(log10_geom_std_dev))
         object.__setattr__(self,'mass_fractions',
-                           tuple([mass_fraction if callable(getattr(mass_fraction,'ppf',None)) else Delta(mass_fraction) for mass_fraction in mass_fractions]))
+                           tuple([mass_fraction if callable(getattr(mass_fraction,'ppf',None)) \
+                            else Delta(mass_fraction) for mass_fraction in mass_fractions]))
 
 @dataclass
 class AerosolModePopulation:

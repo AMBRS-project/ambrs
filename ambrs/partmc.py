@@ -182,7 +182,7 @@ class AerosolModel(BaseAerosolModel):
         aero_data = self._build_aero_data(scenario.aerosols)
         aero_init = self._modal_state_to_aeromodes(scenario.size)
         do_mosaic = self.processes.condensation and not self.processes.do_camp_chem
-        do_camp_chem = self.processes.condensation and self.processes.do_camp_chem
+        do_camp_chem = self.processes.do_camp_chem
         return Input(
             run_type = self.run_type,
             n_part = self.n_part,
@@ -259,7 +259,7 @@ class AerosolModel(BaseAerosolModel):
     def _modal_state_to_aeromodes(self, modal_state: AerosolModalSizeState) -> tuple[AeroMode, ...]:
         modes = []
         use_camp_chem = self.processes.do_camp_chem
-        camp_species = {'SO4', 'H2O', 'BC'}
+        camp_species = {'SO4', 'H2O', 'BC', 'POM', 'SOA','DST','NCL','MOM'}
         for mode in modal_state.modes:
             mass_frac = {}
             for idx, species in enumerate(mode.species):
@@ -286,10 +286,10 @@ class AerosolModel(BaseAerosolModel):
         for mode in modes:
             if 'SO4' in mode.mass_frac and 'NH4' not in mode.mass_frac:
                 ammonium_sulfate_frac = mode.mass_frac['SO4']
-                nh4_per_ammonium_sulfate = 2*18./(2*18. + 96.)
-                so4_per_ammonium_sulfate = 96./(2*18. + 96.)
-                mode.mass_frac['NH4'] = ammonium_sulfate_frac * nh4_per_ammonium_sulfate
-                mode.mass_frac['SO4'] = ammonium_sulfate_frac * so4_per_ammonium_sulfate
+            #     nh4_per_ammonium_sulfate = 2*18./(2*18. + 96.)
+            #     so4_per_ammonium_sulfate = 96./(2*18. + 96.)
+            #     mode.mass_frac['NH4'] = ammonium_sulfate_frac * nh4_per_ammonium_sulfate
+            #     mode.mass_frac['SO4'] = ammonium_sulfate_frac * so4_per_ammonium_sulfate
 
     def invocation(self,
                    exe: str,
