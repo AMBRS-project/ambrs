@@ -7,7 +7,7 @@ from .analysis import Output
 from .scenario import Scenario, AerosolEmissions
 from .ppe import Ensemble
 from typing import Dict, Optional
-from .camp_ import CAMP
+from .camp import CAMP
 from .gas import build_gas_mixture
 
 import os
