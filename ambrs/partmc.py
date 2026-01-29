@@ -172,7 +172,8 @@ class AerosolModel(BaseAerosolModel):
     def create_input(self,
                      scenario: Scenario,
                      dt: float,
-                     nstep: int) -> Input:
+                     nstep: int, 
+                     t_output: float | None = None) -> Input:
         if dt <= 0.0:
             raise ValueError("dt must be positive")
         if nstep <= 0:
@@ -182,7 +183,10 @@ class AerosolModel(BaseAerosolModel):
         aero_data = self._build_aero_data(scenario.aerosols)
         aero_init = self._modal_state_to_aeromodes(scenario.size)
         do_mosaic = self.processes.condensation and not self.processes.do_camp_chem
-        do_camp_chem = self.processes.do_camp_chem
+        do_camp_chem = self.processes.condensation and self.processes.do_camp_chem
+
+        if t_output == None:
+            t_output = dt
         return Input(
             run_type = self.run_type,
             n_part = self.n_part,
@@ -195,7 +199,7 @@ class AerosolModel(BaseAerosolModel):
 
             t_max = nstep * dt,
             del_t = dt,
-            t_output = dt,
+            t_output = t_output,
             t_progress = dt,
 
             do_camp_chem = do_camp_chem,
@@ -552,8 +556,10 @@ class AerosolModel(BaseAerosolModel):
             f.write('\t'.join(['time'] + [str(event.time) for event in events]) + '\n')
             f.write('\t'.join(['rate'] + [str(event.rate) for event in events]) + '\n')
             f.write('\t'.join(['dist'] + dist_files) + '\n')
+        
         for i, event in enumerate(events):
-            modes = self._modal_state_to_aeromodes(event.size)
+            # modes = self._modal_state_to_aeromodes(event.size)
+            modes = event.modes
             self._write_aero_modes(dir, mode_prefixes[i], modes)
 
 def retrieve_model_state(
