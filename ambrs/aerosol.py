@@ -142,7 +142,8 @@ log-normal aerosol mode (distribution only--no state information)"""
         elif isinstance(log10_geom_std_dev,(int,float)):
             object.__setattr__(self,'log10_geom_std_dev',Delta(log10_geom_std_dev))
         object.__setattr__(self,'mass_fractions',
-                           tuple([mass_fraction if callable(getattr(mass_fraction,'ppf',None)) else Delta(mass_fraction) for mass_fraction in mass_fractions]))
+                           tuple([mass_fraction if callable(getattr(mass_fraction,'ppf',None)) \
+                            else Delta(mass_fraction) for mass_fraction in mass_fractions]))
 
 @dataclass
 class AerosolModePopulation:
@@ -218,3 +219,16 @@ modal particle size distribution"""
 population member"""
         return AerosolModalSizeState(
             modes = tuple([mode.member(i) for mode in self.modes]))
+    
+
+#----------------------------------------
+# Aerosol Conversion Utility Functions
+#----------------------------------------
+
+def vol_to_num(v, Dgn, sigmag):
+    '''
+    Convert volume concentration to number concentration based on lognormal mode statistics.
+    '''
+    # n = 6*m / (np.pi * rho * Dgn**3 * np.exp(4.5 * np.log(sigmag)**2))
+    n = v / (Dgn**3 * (np.pi / 6.0) * np.exp(4.5*(np.log(sigmag))**2))
+    return n

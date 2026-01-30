@@ -1,5 +1,5 @@
 from .aerosol import AerosolProcesses, AerosolSpecies, AerosolModeDistribution, \
-                     AerosolModalSizeDistribution
+                     AerosolModalSizeDistribution, vol_to_num
 from .gas import GasSpecies
 from .emissions import AerosolEmissions
 from .ppe import EnsembleSpecification, Ensemble, ensemble_from_scenarios, \

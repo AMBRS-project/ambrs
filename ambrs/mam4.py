@@ -96,8 +96,15 @@ class Input:
     qso2: float
     qh2so4: float
     qsoag: float
+
+    #---------------------------------------
+    # CAMP control
+    #---------------------------------------
+
+    camp_control_file: str
+    camp_mech: str
     
-    # --- CAMP helper fields (names only; used when writing CAMP config) ---
+    # CAMP names; used when writing CAMP config
     aero_spec_names: list[str]
     gas_spec_names: list[str]
 
@@ -216,11 +223,13 @@ class AerosolModel(BaseAerosolModel):
                  processes: AerosolProcesses,
                  camp: Optional[CampConfig] = None,
                  camp_config: Optional[dict] = None,
+                 camp_control_file: Optional[str] = None,
                  camp_mech: Optional[str] = None):
         
         BaseAerosolModel.__init__(self, 'mam4', processes)
         self.camp = camp  # None means “don’t use CAMP”
         self.camp_config = camp_config
+        self.camp_control_file = camp_control_file
         self.camp_mech = camp_mech
     
     def create_input(self,
@@ -300,33 +309,37 @@ Parameters:
             numc3 = scenario.size.modes[2].number,
             numc4 = scenario.size.modes[3].number,
             
-            mfso41 = aero_mass_fracs.accum.SO4/mftot1,
-            mfpom1 = aero_mass_fracs.accum.POM/mftot1,
-            mfsoa1 = aero_mass_fracs.accum.SOA/mftot1,
-            mfbc1  = aero_mass_fracs.accum.BC/mftot1,
-            mfdst1 = aero_mass_fracs.accum.DST/mftot1,
-            mfncl1 = aero_mass_fracs.accum.NCL/mftot1,
+            mfso41 = np.floor(aero_mass_fracs.accum.SO4/mftot1 * 10**12) / 10**12,
+            mfpom1 = np.floor(aero_mass_fracs.accum.POM/mftot1 * 10**12) / 10**12,
+            mfsoa1 = np.floor(aero_mass_fracs.accum.SOA/mftot1 * 10**12) / 10**12,
+            mfbc1  = np.floor(aero_mass_fracs.accum.BC/mftot1 * 10**12) / 10**12,
+            mfdst1 = np.floor(aero_mass_fracs.accum.DST/mftot1 * 10**12) / 10**12,
+            mfncl1 = np.floor(aero_mass_fracs.accum.NCL/mftot1 * 10**12) / 10**12,
 
-            mfso42 = aero_mass_fracs.aitken.SO4/mftot2,
-            mfsoa2 = aero_mass_fracs.aitken.SOA/mftot2,
-            mfncl2 = aero_mass_fracs.aitken.NCL/mftot2,
+            mfso42 = np.floor(aero_mass_fracs.aitken.SO4/mftot2 * 10**12) / 10**12,
+            mfsoa2 = np.floor(aero_mass_fracs.aitken.SOA/mftot2 * 10**12) / 10**12,
+            mfncl2 = np.floor(aero_mass_fracs.aitken.NCL/mftot2 * 10**12) / 10**12,
             
-            mfdst3 = aero_mass_fracs.coarse.DST/mftot3,
-            mfncl3 = aero_mass_fracs.coarse.NCL/mftot3,
-            mfso43 = aero_mass_fracs.coarse.SO4/mftot3,
-            mfbc3  = aero_mass_fracs.coarse.BC/mftot3,
-            mfpom3 = aero_mass_fracs.coarse.POM/mftot3,
-            mfsoa3 = aero_mass_fracs.coarse.SOA/mftot3,
+            mfdst3 = np.floor(aero_mass_fracs.coarse.DST/mftot3 * 10**12) / 10**12,
+            mfncl3 = np.floor(aero_mass_fracs.coarse.NCL/mftot3 * 10**12) / 10**12,
+            mfso43 = np.floor(aero_mass_fracs.coarse.SO4/mftot3 * 10**12) / 10**12,
+            mfbc3  = np.floor(aero_mass_fracs.coarse.BC/mftot3 * 10**12) / 10**12,
+            mfpom3 = np.floor(aero_mass_fracs.coarse.POM/mftot3 * 10**12) / 10**12,
+            mfsoa3 = np.floor(aero_mass_fracs.coarse.SOA/mftot3 * 10**12) / 10**12,
 
-            mfpom4 = aero_mass_fracs.pcarbon.POM/mftot4,
-            mfbc4  = aero_mass_fracs.pcarbon.BC/mftot4,
+            mfpom4 = np.floor(aero_mass_fracs.pcarbon.POM/mftot4 * 10**12) / 10**12,
+            mfbc4  = np.floor(aero_mass_fracs.pcarbon.BC/mftot4 * 10**12) / 10**12,
 
-            qso2 = gas_mixing_ratios.SO2,
-            qh2so4 = gas_mixing_ratios.H2SO4,
-            qsoag = gas_mixing_ratios.SOAG,
+            qso2 = gas_mixing_ratios.SO2 * 1.e-6 * 64.0648 / 28.966,
+            qh2so4 = gas_mixing_ratios.H2SO4 * 1.e-6 * 98.0784 / 28.966,
+            qsoag = gas_mixing_ratios.SOAG *  1.e-6 * 12.0109997 / 28.966,
 
             aero_spec_names = aero_names,
-            gas_spec_names = gas_names
+            gas_spec_names = gas_names,
+
+            camp_control_file = self.camp_control_file,
+            camp_mech = self.camp_mech,
+            
         )
 
 
