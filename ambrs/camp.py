@@ -10,257 +10,231 @@ from scipy.constants import gas_constant
 ####################################################################################################
 #> CAMP configuration
 ####################################################################################################
+from .ppe import Ensemble
+
+import json
+import math
+
+def activity_coefficient(N_star, T, target=0.65):
+    """CAMP acitivity coefficient formulation to compute Nstar by root finding.
+       Defaults to MAM4 value of 0.65."""
+    del_H = 4.184e3 * (-10.0*(N_star - 1.0) + 7.53*(N_star**(2.0/3.0) - 1.0) - 1.0)
+    del_S = 4.184e0 * (-32.0*(N_star - 1.0) + 9.21*(N_star**(2.0/3.0) - 1.0) - 1.3)
+    del_G = del_H - T * del_S
+    alpha = math.exp(-del_G / (gas_constant * T))
+    alpha = alpha / (1.0 + alpha)
+    return alpha - target
+
 class CAMP:
-    """ambrs.CAMP -- a helper to write CAMP configuration files for a single scenrio"""
-    def __init__(self, spec: EnsembleSpecification, scenario:int):
-        self.temps = spec.temperature
-        self.pres = spec.pressure
-        self.n = self.temps.size
-        self.scenario = scenario
-
-    def write_config_json(self, n_part_max:int=1100):
-        for member in range(self.n):
-            path = f'/Users/duncancq/Research/AMBRS/aero_unit_tests/alpha-pinene/camp_config/scenarios/{self.scenario}/{member+1:0>3}'
-            json = \
-'''{
-    "camp-data" : [
-        {
-            "name" : "mixed",
-            "type" : "AERO_PHASE",
-            "species" : [
-                "SO4",
-                "POM",
-                "SOA",
-                "BC",
-                "DST",
-                "NCL",
-                "MOM"
-            ]
-        }
-    ]
-}
-'''
-            if not os.path.exists(path):
-                os.mkdir(path)
-            with open(f'{path}/aero_phases.json', 'w') as f:
-                f.write(json)
-            f.close()
-
-            json = \
-f'''{{
-  "camp-data" : [
-    {{
-      "name" : "PartMC single particle",
-      "type" : "AERO_REP_SINGLE_PARTICLE",
-      "layers": [
-	      {{
-		      "name": "core",
-		      "covers": "none",
-		      "phases": [
-			      "mixed"
-		      ]
-	      }}
-      ],
-      "maximum computational particles" : {n_part_max}
-    }}
-  ]
-}}
-'''
-            if not os.path.exists(path):
-                os.mkdir(path)
-            with open(f'{path}/aero_rep.json', 'w') as f:
-                f.write(json)
-            f.close()
-
-            json = \
-f'''{{
-    "camp-files" : [
-        "{path}/aero_phases.json",
-        "{path}/aero_rep.json",
-        "{path}/species.json",
-        "{path}/mech.json"
-    ]
-}}
-'''
-            if not os.path.exists(path):
-                os.mkdir(path)
-            with open(f'{path}/config.json', 'w') as f:
-                f.write(json)
-            f.close()
-        return self
-
-    def write_mech_json(self):
-        delta__H_v = 156e3
-        log10e = np.log10(np.e)
-        B1 = -delta__H_v * log10e / gas_constant
-        B2 = -10 + delta__H_v * log10e / (298*gas_constant)
-        for member in range(self.n):
-            N_star = fsolve(accoef, 1.1, args=(self.temps[member],))
-            json = \
-f'''{{
-    "camp-data" : [
-        {{
-            "type" : "RELATIVE_TOLERANCE",
-            "value" : 1.0e-10
-        }},
-        {{
-            "name" : "MAM4_SOA_partitioning",
-            "type" : "MECHANISM",
-            "reactions" : [
-                {{
-                    "type" : "SIMPOL_PHASE_TRANSFER",
-                    "gas-phase species" : "SOAG",
-                    "aerosol phase" : "mixed",
-                    "aerosol-phase species" : "SOA",
-                    "B" : [ {B1}, {B2}, 0.0, 0.0 ],
-                    "N star" : {N_star}
-                }}
-            ]
-        }}
-    ]
-}}
-'''
-            if not os.path.exists(path):
-                os.mkdir(path)
-            with open(f'{path}/mech.json', 'w') as f:
-                f.write(json)
-            f.close()
-        return self
-    
-    # fixme: hard-coded for MAM4 species for now, add flexibility later
-    def write_species_json(self):
-        diffus = 0.557e-4 * (self.temps**1.75) / self.pres
-        mam_spec = [
+    """CAMP: configures CAMP from ambrs PPEs"""
+    def __init__(
+            self,
+            ppe: Ensemble
+    ):
+        self.ppe = ppe
+        self.species = None
+        self.aerosol_phases = None
+        self.aerosol_representation = None
+        self.mechanism = None
+        self.ambient_conditions = [
             {
-                "name" : "SO2",
-                "molecular weight [kg mol-1]" : 0.0640
-            },
-            {
-                "name" : "SO4",
-                "phase" : "AEROSOL",
-                "molecular weight [kg mol-1]" : 0.115107340,
-                "density [kg m-3]" : 1770.0000,
-                "num_ions" : 2,
-                "charge" : -2,
-                "kappa" : 0.0
-            },
-            {
-                "name" : "H2O",
-                "molecular weight [kg mol-1]" : 0.018,
-                "is gas-phase water" : True
-            },
-            {
-                "name" : "POM",
-                "phase" : "AEROSOL",
-                "molecular weight [kg mol-1]" : 0.012011,
-                "density [kg m-3]" : 1000.0000,
-                "num_ions" : 0,
-                "charge" : 0,
-                "kappa" : 0.010
-            },
-            {
-                "name" : "SOA",
-                "phase" : "AEROSOL",
-                "molecular weight [kg mol-1]" : 0.012011,
-                "density [kg m-3]" : 1000.0000,
-                "num_ions" : 0,
-                "charge" : 0,
-                "kappa" : 0.140
-            },
-            {
-                "name" : "BC",
-                "phase" : "AEROSOL",
-                "molecular weight [kg mol-1]" : 0.012011,
-                "density [kg m-3]" : 1700.0000,
-                "num_ions" : 0,
-                "charge" : 0,
-                "kappa" : 1.0e-10
-            },
-            {
-                "name" : "DST",
-                "phase" : "AEROSOL",
-                "molecular weight [kg mol-1]" : 0.135064039,
-                "density [kg m-3]" : 2600.0000,
-                "num_ions" : 0,
-                "charge" : 0,
-                "kappa" : 0.068
-            },
-            {
-                "name" : "NCL",
-                "phase" : "AEROSOL",
-                "molecular weight [kg mol-1]" : 0.058442468,
-                "density [kg m-3]" : 1900.0000,
-                "num_ions" : 0,
-                "charge" : 0,
-                "kappa" : 1.160
-            },
-            {
-                "name" : "MOM",
-                "phase" : "AEROSOL",
-                "molecular weight [kg mol-1]" : 250.092672000,
-                "density [kg m-3]" : 1601.0000,
-                "num_ions" : 0,
-                "charge" : 0,
-                "kappa" : 0.100
+                'relative_humidity': member.relative_humidity,
+                'temperature': member.temperature,
+                'pressure': member.pressure,
             }
+            for member in self.ppe
         ]
-        for member in range(self.n):
-            json = \
-'''{
-    "camp-data": ['''
-            tdep_mam_spec = [
+
+    def configure_species(
+            self,
+            absolute_integration_tolerance=1e-6,
+            diffusion_coeff:dict=None,
+    ):
+        gases = [
+            {
+                'name': gas.name,
+                'type': 'CHEM_SPEC',
+                'absolute integration tolerance': absolute_integration_tolerance,
+                'molecular weight [kg mol-1]': 1e-3 * gas.molar_mass,
+            }
+            for gas in self.ppe.gases
+        ]
+        if diffusion_coeff:
+            for gas in gases:
+                if gas['name'] in diffusion_coeff.keys():
+                    gas['diffusion coeff [m2 s-1]'] = diffusion_coeff[gas['name']]
+        gases.append(
+            {
+                'name': 'H2O',
+                'type': 'CHEM_SPEC',
+                'absolute integration tolerance': absolute_integration_tolerance,
+                'molecular weight [kg mol-1]': 0.018,
+                'is gas-phase water': True
+            }
+        )
+
+        aerosols = [
+            {
+                'name': aerosol.name,
+                'type': 'CHEM_SPEC',
+                'phase': 'AEROSOL',
+                'absolute integration tolerance': absolute_integration_tolerance,
+                'molecular weight [kg mol-1]': 1e-3 * aerosol.molar_mass,
+                'density [kg m-3]': aerosol.density,
+                'num_ions': aerosol.ions_in_soln,
+                'kappa': aerosol.hygroscopicity,
+            }
+            for aerosol in self.ppe.aerosols
+        ]
+        self.species = gases + aerosols
+        return self
+
+    def configure_aerosol_phases(
+            self,
+            phase_names:list[str]=None,
+            phase_species:list[list[str]]=None,
+    ):
+        if not self.species:
+            raise NotImplementedError(
+                'Please configure CAMP species before aerosol phases.'
+            )
+        if phase_names and phase_species:
+            phases = [
                 {
-                    'name': 'SOAG',
-                    'molecular weight [kg mol-1]': 0.012011,
-                    'diffusion coeff [m2 s-1]': 0.81 * diffus[member]
-                },
+                    'name': name,
+                    'type': 'AERO_PHASE',
+                    'species': [s['name'] for s in species if 'phase' in s.keys()]
+                }
+                for name, species in zip(phase_names,phase_species)
+            ]
+        else:
+            phases = [
                 {
-                    'name': 'H2SO4',
-                    'molecular weight [kg mol-1]': 0.098,
-                    'diffusion coeff [m2 s-1]': diffus[member],
+                    'name': 'mixed',
+                    'type': 'AERO_PHASE',
+                    'species': [s['name'] for s in self.species if 'phase' in s.keys()]
                 }
             ]
-            for species in [*mam_spec,*tdep_mam_spec]:
-                json += \
-'''
-        {
-                "type": "CHEM_SPEC",
-                "absolute integration tolerance" : 1e-06,'''
-                for key, value in species.items():
-                    if type(value)==str:
-                        json += \
-f'''
-                "{key}": "{value}",'''
-                    elif type(value)==bool and value:
-                        json += \
-f'''
-                "{key}": true,'''
-
-                    else:
-                        json += \
-f'''
-                "{key}": {value},'''
-                json = json[:-1] + \
-'''
-        },'''
-            json = json[:-1] + \
-'''
-    ]
-}
-'''
-            path = f'/Users/duncancq/Research/AMBRS/aero_unit_tests/alpha-pinene/camp_config/scenarios/{self.scenario}/{member+1:0>3}'
-            if not os.path.exists(path):
-                os.mkdir(path)
-            with open(f'{path}/species.json', 'w') as f:
-                f.write(json)
-            f.close()
+        self.aerosol_phases = phases
         return self
+    
+    def configure_aerosol_representation(
+            self,
+            type:str,
+            layers:list[dict]=None,
+            maximum_computational_particles:int=None,
+    ):
+        if not self.aerosol_phases:
+            raise NotImplementedError(
+                'Please configure CAMP aerosol phases before aerosol representation.'
+            )
+        if type not in ['AERO_REP_SINGLE_PARTICLE','AERO_REP_MODAL_BINNED_MASS']:
+            raise ValueError(
+                'type must be AERO_REP_SINGLE_PARTICLE or AERO_REP_MODAL_BINNED_MASS.'
+            )
+        if type=='AERO_REP_SINGLE_PARTICLE' and not maximum_computational_particles:
+            raise NotImplementedError(
+                'For AERO_REP_SINGLE_PARTICLE representation, need to specify maximum_computational_particles.'
+            )
+        if type=='AERO_REP_SINGLE_PARTICLE':
+            if layers:
+                aero_rep = {
+                    'name': 'PartMC single particle',
+                    'type': type,
+                    'layers': layers,
+                    'maximum computational particles': maximum_computational_particles,
+                }
+            else:
+                aero_rep = {
+                    'name': 'PartMC single particle',
+                    'type': type,
+                    'layers': [
+                        {
+                            'name': 'core',
+                            'covers': 'none',
+                            'phases': [phase['name'] for phase in self.aerosol_phases]
+                        }
+                    ],
+                    'maximum computational particles': maximum_computational_particles,
+                }
+        elif type=='AERO_REP_MODAL_BINNED_MASS':
+            aero_rep = {
+                'name': 'Modal/binned',
+                'type': type,
+                'modes/bins':
+                {
+                    mode.name: {
+                        'type': 'MODAL',
+                        'phases': self.aerosol_phases,
+                        'shape': 'LOG_NORMAL',
+                        'geometric mean diameter [m]': mode.geom_mean_diam,
+                        'geometric standard deviation': 10**mode.log10_geom_std_dev,
+                    }
+                    for mode in self.ppe.size.modes
+                }
+            }
+        self.aerosol_representation = aero_rep
+        return self
+    
+    def configure_mechanism(
+            self,
+            name:str='Mechanism',
+            reactions:list[dict]=None
+    ):
+        if not reactions:
+            raise ValueError(
+                'Need to specify mechanism reactions'
+            )
+        mech = {
+            'name': name,
+            'type': 'MECHANISM',
+            'reactions': reactions
+        }
+        self.mechanism = mech
+        return self
+
+    def configure(
+            self,
+            dir:str,
+    ):
+        for i, member in enumerate(self.ppe):
+
+            for species in self.species:
+                for key,value in species.items():
+                    if callable(value):
+                        species[key] = value(**self.ambient_conditions[i])
+            for reaction in self.mechanism['reactions']:
+                for key,value in reaction.items():
+                    if isinstance(value,list):
+                        for i,subvalue in enumerate(value):
+                            if callable(subvalue):
+                                reaction[key][i] = subvalue(**self.ambient_conditions[i])
+                    elif callable(value):
+                        reaction[key] = value(**self.ambient_conditions[i])
+
+            camp = {
+                'camp-data': [
+                    self.aerosol_representation,
+                    *self.aerosol_phases,
+                    *self.species,
+                    self.mechanism,
+                    {
+                        'type': 'RELATIVE_TOLERANCE',
+                        'value': 1e-6
+                    }
+                ],
+                'camp-files': [
+                    f'{dir}/camp.json'
+                ]
+            }
+            with open(f'{dir}/camp.json', 'w') as f:
+                json.dump(camp, f, indent=4)
+            f.close()
+
 
 ####################################################################################################
 #> End
 ####################################################################################################
-
-
 
 # orig: 
 # from __future__ import annotations

@@ -29,7 +29,7 @@ PPE are sampled"""
     name: str
     aerosols: tuple[AerosolSpecies, ...]
     gases: tuple[GasSpecies, ...]
-    size: AerosolModalSizeDistribution
+    initial_aerosol: AerosolModalSizeDistribution
     gas_concs: tuple[RVFrozenDistribution, ...] # ordered like gases
     flux: RVFrozenDistribution
     relative_humidity: RVFrozenDistribution

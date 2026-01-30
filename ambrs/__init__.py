@@ -9,7 +9,7 @@ from .ppe import EnsembleSpecification, Ensemble, ensemble_from_scenarios, \
 from .runners import PoolRunner
 from .scenario import Scenario
 
-from .camp import CAMP
+from .camp import CAMP, activity_coefficient
 from . import mam4
 from . import partmc
 from . import mphys

@@ -161,10 +161,21 @@ def render_partmc_and_mam4_variable_grid(
                     ensemble_output_dir=mam4_dir,
                 )
 
-            series = (
-                ("partmc", partmc_output.particle_population, "PartMC"),
-                ("mam4",   mam4_output.particle_population,   "MAM4"),
-            )
+            if partmc_dir is not None and mam4_dir is not None:
+                series = (
+                    ("partmc", partmc_output.particle_population, "PartMC"),
+                    ("mam4",   mam4_output.particle_population,   "MAM4"),
+                )
+            elif partmc_dir is not None and mam4_dir is None:
+                series = (
+                    ("partmc", partmc_output.particle_population, "PartMC"),
+                )
+            elif partmc_dir is None and mam4_dir is not None:
+                series = (
+                    ("mam4",   mam4_output.particle_population,   "MAM4"),
+                )
+            else:
+                raise ValueError("At least one of partmc_dir or mam4_dir must be provided.")
 
             # Plot both series
             for key, population, label in series:

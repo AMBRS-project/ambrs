@@ -7,7 +7,7 @@ from .analysis import Output
 from .scenario import Scenario, AerosolEmissions
 from .ppe import Ensemble
 from typing import Dict, Optional
-
+from .camp import CAMP
 from .gas import build_gas_mixture
 
 import os
@@ -122,7 +122,7 @@ class Input:
     do_parallel: bool           # whether to run in parallel
 
     # weighting fields
-    weight_type: str = ''       # type of weighting to use (power, power_source)
+    weight_type: str = 'power_source'       # type of weighting to use (power, power_source)
     weighting_exponent: int = 0 # exponent to use in weighting curve (-3 to 0)
 
     # particle-specific fields
@@ -156,7 +156,7 @@ class AerosolModel(BaseAerosolModel):
                  run_type = 'particle',
                  n_part = None,
                  n_repeat = 0,
-                 camp_config = None):
+                 camp_config: CAMP = None):
         BaseAerosolModel.__init__(self, 'partmc', processes)
         if run_type not in ['particle']:
             raise ValueError(f'Unsupported run_type: {run_type}')
@@ -172,7 +172,8 @@ class AerosolModel(BaseAerosolModel):
     def create_input(self,
                      scenario: Scenario,
                      dt: float,
-                     nstep: int) -> Input:
+                     nstep: int, 
+                     t_output: float | None = None) -> Input:
         if dt <= 0.0:
             raise ValueError("dt must be positive")
         if nstep <= 0:
@@ -182,7 +183,10 @@ class AerosolModel(BaseAerosolModel):
         aero_data = self._build_aero_data(scenario.aerosols)
         aero_init = self._modal_state_to_aeromodes(scenario.size)
         do_mosaic = self.processes.condensation and not self.processes.do_camp_chem
-        do_camp_chem = self.processes.do_camp_chem
+        do_camp_chem = self.processes.condensation and self.processes.do_camp_chem
+
+        if t_output == None:
+            t_output = dt
         return Input(
             run_type = self.run_type,
             n_part = self.n_part,
@@ -195,10 +199,11 @@ class AerosolModel(BaseAerosolModel):
 
             t_max = nstep * dt,
             del_t = dt,
-            t_output = dt,
+            t_output = t_output,
             t_progress = dt,
 
             do_camp_chem = do_camp_chem,
+            camp_config = self.camp_config,
 
             gas_data = tuple([gas.name for gas in scenario.gases]),
             gas_init = tuple([1.e9 * gas_conc for gas_conc in scenario.gas_concs]),
@@ -234,20 +239,24 @@ class AerosolModel(BaseAerosolModel):
             gas_emissions = scenario.gas_emissions,
             aero_emissions = scenario.aerosol_emissions,
             aero_background = scenario.aerosol_background,
-
-            camp_config = self.camp_config,
         )
 
     def _build_aero_data(self, aerosols: tuple[AerosolSpecies, ...]) -> tuple[AeroData, ...]:
         if self.processes.do_camp_chem:
-            camp_species = {'SO4', 'H2O', 'BC'}
+            camp_species = [f'{l['name']}.{p['name']}.{s['name']}'\
+                            for s in self.camp_config.species\
+                                for p in self.camp_config.aerosol_phases\
+                                    for l in self.camp_config.aerosol_representation['layers']\
+                                        if 'phase' in s]
+            aerosol_by_name = {aerosol.name: aerosol for aerosol in aerosols}
             return tuple(AeroData(
-                species = f'core.mixed.{s.name}',
-                density = s.density,
-                ions_in_soln = s.ions_in_soln,
-                molecular_weight = s.molar_mass / 1000.,
-                kappa = s.hygroscopicity,
-            ) for s in aerosols if s.name in camp_species)
+                # species = f'core.mixed.{s.name}',
+                species = s,
+                density = aerosol_by_name[s.split('.')[-1]].density,
+                ions_in_soln = aerosol_by_name[s.split('.')[-1]].ions_in_soln,
+                molecular_weight = aerosol_by_name[s.split('.')[-1]].molar_mass / 1000.,
+                kappa = aerosol_by_name[s.split('.')[-1]].hygroscopicity,
+            ) for s in camp_species)
         return tuple(AeroData(
             species = s.name,
             density = s.density,
@@ -259,13 +268,20 @@ class AerosolModel(BaseAerosolModel):
     def _modal_state_to_aeromodes(self, modal_state: AerosolModalSizeState) -> tuple[AeroMode, ...]:
         modes = []
         use_camp_chem = self.processes.do_camp_chem
-        camp_species = {'SO4', 'H2O', 'BC', 'POM', 'SOA','DST','NCL','MOM'}
+#         camp_species = {'SO4', 'H2O', 'BC', 'POM', 'SOA','DST','NCL','MOM'}
+        if use_camp_chem:
+            camp_species = {s['name']: f'{l['name']}.{p['name']}.{s['name']}'\
+                            for s in self.camp_config.species\
+                                for p in self.camp_config.aerosol_phases\
+                                    for l in self.camp_config.aerosol_representation['layers']\
+                                        if 'phase' in s}
         for mode in modal_state.modes:
             mass_frac = {}
             for idx, species in enumerate(mode.species):
-                if use_camp_chem and species.name not in camp_species:
-                    continue
-                key = f'core.mixed.{species.name}' if use_camp_chem else species.name
+                if use_camp_chem:
+                    key = camp_species[species.name]
+                else:
+                    key = species.name
                 mass_frac[key] = mode.mass_fractions[idx]
             if not mass_frac:
                 continue
@@ -332,22 +348,22 @@ class AerosolModel(BaseAerosolModel):
         
         # chemistry
         if input.do_camp_chem:
+            input.camp_config.configure(dir)
             spec_content += 'do_camp_chem yes\n'
-            spec_content += f'camp_config {input.camp_config}\n'
+            spec_content += f'camp_config camp.json\n'
         else:
             spec_content += 'do_camp_chem no\n'
         spec_content += '\n'
-
+        
         # gas data
-        if not self.processes.do_camp_chem:
+        if not input.do_camp_chem:
             spec_content += 'gas_data gas_data.dat\n'
         spec_content += 'gas_init gas_init.dat\n'
         spec_content += '\n'
 
         # aerosol data
-        if not self.processes.do_camp_chem:
+        if  not input.do_camp_chem:
             spec_content += 'aerosol_data aero_data.dat\n'
-        
         if input.do_fractal:
             spec_content += 'do_fractal yes\n'
         else:
@@ -541,8 +557,10 @@ class AerosolModel(BaseAerosolModel):
             f.write('\t'.join(['time'] + [str(event.time) for event in events]) + '\n')
             f.write('\t'.join(['rate'] + [str(event.rate) for event in events]) + '\n')
             f.write('\t'.join(['dist'] + dist_files) + '\n')
+        
         for i, event in enumerate(events):
-            modes = self._modal_state_to_aeromodes(event.size)
+            # modes = self._modal_state_to_aeromodes(event.size)
+            modes = event.modes
             self._write_aero_modes(dir, mode_prefixes[i], modes)
 
 def retrieve_model_state(
