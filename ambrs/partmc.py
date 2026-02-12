@@ -183,7 +183,8 @@ class AerosolModel(BaseAerosolModel):
         aero_data = self._build_aero_data(scenario.aerosols)
         aero_init = self._modal_state_to_aeromodes(scenario.size)
         do_mosaic = self.processes.condensation and not self.processes.do_camp_chem
-        do_camp_chem = self.processes.condensation and self.processes.do_camp_chem
+        # do_camp_chem = self.processes.condensation and self.processes.do_camp_chem
+        do_camp_chem = self.processes.do_camp_chem
 
         if t_output == None:
             t_output = dt
