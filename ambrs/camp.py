@@ -4,6 +4,8 @@ import numpy as np
 from scipy.optimize import fsolve
 from scipy.constants import gas_constant
 
+from math import floor, log10
+
 
 # FIXME: IN PROGRESS!
 
@@ -44,6 +46,7 @@ class CAMP:
             }
             for member in self.ppe
         ]
+        self.config = None
 
     def configure_species(
             self,
@@ -165,10 +168,10 @@ class CAMP:
                 {
                     mode.name: {
                         'type': 'MODAL',
-                        'phases': self.aerosol_phases,
+                        'phases': [phase['name'] for phase in self.aerosol_phases],
                         'shape': 'LOG_NORMAL',
-                        'geometric mean diameter [m]': mode.geom_mean_diam,
-                        'geometric standard deviation': 10**mode.log10_geom_std_dev,
+                        'geometric mean diameter [m]': mode.geom_mean_diam.item(),
+                        'geometric standard deviation': 10**mode.log10_geom_std_dev.item(),
                     }
                     for mode in self.ppe.size.modes
                 }
@@ -195,9 +198,25 @@ class CAMP:
 
     def configure(
             self,
-            dir:str,
-    ):
+            root:str
+        ):
+
+        # prep scenarios to run
+        num_inputs = len(self.ppe)
+        max_num_digits = math.floor(math.log10(num_inputs)) + 1
+
         for i, member in enumerate(self.ppe):
+
+            # zero-pad the 1-based scenario index
+            num_digits = floor(log10(i+1)) + 1
+            formatted_index = '0' * (max_num_digits - num_digits) + f'{i+1}'
+
+            # make the scenario directory if needed
+            dir = os.path.join(root, formatted_index)
+            if not os.path.exists(dir):
+                os.mkdir(dir)
+
+            self.config = f'{dir}/camp.json'
 
             for species in self.species:
                 for key,value in species.items():
@@ -206,9 +225,9 @@ class CAMP:
             for reaction in self.mechanism['reactions']:
                 for key,value in reaction.items():
                     if isinstance(value,list):
-                        for i,subvalue in enumerate(value):
+                        for j,subvalue in enumerate(value):
                             if callable(subvalue):
-                                reaction[key][i] = subvalue(**self.ambient_conditions[i])
+                                reaction[key][j] = subvalue(**self.ambient_conditions[i])
                     elif callable(value):
                         reaction[key] = value(**self.ambient_conditions[i])
 
@@ -224,13 +243,12 @@ class CAMP:
                     }
                 ],
                 'camp-files': [
-                    f'{dir}/camp.json'
+                    self.config
                 ]
             }
-            with open(f'{dir}/camp.json', 'w') as f:
+            with open(self.config, 'w') as f:
                 json.dump(camp, f, indent=4)
             f.close()
-
 
 ####################################################################################################
 #> End
