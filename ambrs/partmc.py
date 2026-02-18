@@ -322,6 +322,11 @@ class AerosolModel(BaseAerosolModel):
         if not os.path.exists(output_dir):
             os.mkdir(output_dir)
 
+        # write CAMP configuration
+
+        if self.camp_config:
+            self.camp_config.configure(dir)
+
         # write the main (.spec) file
         output_prefix = os.path.join('out', prefix)
         spec_content = f'run_type {input.run_type}\noutput_prefix {output_prefix}\n'
