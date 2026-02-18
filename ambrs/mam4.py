@@ -348,6 +348,9 @@ working directory contains any needed input files."""
         
         # # ----- CAMP files (absolute) -----
         
+        if self.camp:
+            self.camp.configure(dir)
+
         # TODO: merge with Duncan's changes
         # camp_block = ""
         # if self.camp_config:
@@ -422,7 +425,7 @@ working directory contains any needed input files."""
     sigmag4      = {10**input.scenario.size.modes[3].log10_geom_std_dev},
 /
 &camp_config
-    config_key      = '{self.camp_config}',
+    config_key      = 'camp.json',
     mech_key        = '{self.camp_mech}',
 /
 

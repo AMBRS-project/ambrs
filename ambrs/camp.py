@@ -31,11 +31,21 @@ class CAMP:
     """CAMP: configures CAMP from ambrs PPEs"""
     def __init__(
             self,
-            ppe: Ensemble
+            ppe:Ensemble,
+            aero_rep_type:str,
+            reactions:list[dict],
+            absolute_integration_tolerance:float=1e-6,
+            diffusion_coeff:dict=None,
+            phase_names:list[str]=None,
+            phase_species:list[list[str]]=None,
+            layers:list[dict]=None,
+            maximum_computational_particles:int=None,
+            mechanism_name:str='Mechanism',
     ):
         self.ppe = ppe
         self.species = None
         self.aerosol_phases = None
+        self.aero_rep_type = aero_rep_type
         self.aerosol_representation = None
         self.mechanism = None
         self.ambient_conditions = [
@@ -47,6 +57,24 @@ class CAMP:
             for member in self.ppe
         ]
         self.config = None
+
+        self.configure_species(
+            absolute_integration_tolerance=absolute_integration_tolerance,
+            diffusion_coeff=diffusion_coeff
+        )
+        self.configure_aerosol_phases(
+            phase_names=phase_names,
+            phase_species=phase_species
+        )
+        self.configure_aerosol_representation(
+            aero_rep_type,
+            layers=layers,
+            maximum_computational_particles=maximum_computational_particles
+        )
+        self.configure_mechanism(
+            name=mechanism_name,
+            reactions=reactions
+        )
 
     def configure_species(
             self,
@@ -66,15 +94,20 @@ class CAMP:
             for gas in gases:
                 if gas['name'] in diffusion_coeff.keys():
                     gas['diffusion coeff [m2 s-1]'] = diffusion_coeff[gas['name']]
-        gases.append(
-            {
-                'name': 'H2O',
-                'type': 'CHEM_SPEC',
-                'absolute integration tolerance': absolute_integration_tolerance,
-                'molecular weight [kg mol-1]': 0.018,
-                'is gas-phase water': True
-            }
-        )
+        is_there_water = False
+        for gas in gases:
+            if gas['name']=='H2O' or gas['name']=='h2o':
+                is_there_water = True
+        if not is_there_water:
+            gases.append(
+                {
+                    'name': 'H2O',
+                    'type': 'CHEM_SPEC',
+                    'absolute integration tolerance': absolute_integration_tolerance,
+                    'molecular weight [kg mol-1]': 0.018,
+                    'is gas-phase water': True
+                }
+            )
 
         aerosols = [
             {
@@ -139,6 +172,9 @@ class CAMP:
             raise NotImplementedError(
                 'For AERO_REP_SINGLE_PARTICLE representation, need to specify maximum_computational_particles.'
             )
+        
+        self.aero_rep_type = type
+
         if type=='AERO_REP_SINGLE_PARTICLE':
             if layers:
                 aero_rep = {
@@ -161,7 +197,7 @@ class CAMP:
                     'maximum computational particles': maximum_computational_particles,
                 }
         elif type=='AERO_REP_MODAL_BINNED_MASS':
-            aero_rep = {
+            aero_rep = [{
                 'name': 'Modal/binned',
                 'type': type,
                 'modes/bins':
@@ -173,9 +209,9 @@ class CAMP:
                         'geometric mean diameter [m]': mode.geom_mean_diam.item(),
                         'geometric standard deviation': 10**mode.log10_geom_std_dev.item(),
                     }
-                    for mode in self.ppe.size.modes
+                    for mode in scenario.size.modes
                 }
-            }
+            } for scenario in self.ppe]
         self.aerosol_representation = aero_rep
         return self
     
@@ -207,16 +243,7 @@ class CAMP:
 
         for i, member in enumerate(self.ppe):
 
-            # zero-pad the 1-based scenario index
-            num_digits = floor(log10(i+1)) + 1
-            formatted_index = '0' * (max_num_digits - num_digits) + f'{i+1}'
-
-            # make the scenario directory if needed
-            dir = os.path.join(root, formatted_index)
-            if not os.path.exists(dir):
-                os.mkdir(dir)
-
-            self.config = f'{dir}/camp.json'
+            self.config = f'{root}/camp.json'
 
             for species in self.species:
                 for key,value in species.items():
@@ -231,21 +258,39 @@ class CAMP:
                     elif callable(value):
                         reaction[key] = value(**self.ambient_conditions[i])
 
-            camp = {
-                'camp-data': [
-                    self.aerosol_representation,
-                    *self.aerosol_phases,
-                    *self.species,
-                    self.mechanism,
-                    {
-                        'type': 'RELATIVE_TOLERANCE',
-                        'value': 1e-6
-                    }
-                ],
-                'camp-files': [
-                    self.config
-                ]
-            }
+            if self.aero_rep_type=='AERO_REP_MODAL_BINNED_MASS':
+                camp = {
+                    'camp-data': [
+                        self.aerosol_representation[i],
+                        *self.aerosol_phases,
+                        *self.species,
+                        self.mechanism,
+                        {
+                            'type': 'RELATIVE_TOLERANCE',
+                            'value': 1e-6
+                        }
+                    ],
+                    'camp-files': [
+                        self.config
+                    ]
+                }
+            else:
+                camp = {
+                    'camp-data': [
+                        self.aerosol_representation,
+                        *self.aerosol_phases,
+                        *self.species,
+                        self.mechanism,
+                        {
+                            'type': 'RELATIVE_TOLERANCE',
+                            'value': 1e-6
+                        }
+                    ],
+                    'camp-files': [
+                        self.config
+                    ]
+                }
+
             with open(self.config, 'w') as f:
                 json.dump(camp, f, indent=4)
             f.close()
