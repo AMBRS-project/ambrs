@@ -159,8 +159,7 @@ class TestCAMPInput(unittest.TestCase):
     def test_create_particle_input(self):
         n_part = 1000
         processes = aerosol.AerosolProcesses(
-            aging = True,
-            coagulation = True,
+            do_camp_chem=True,
         )
         scenario = self.ensemble.member(0)
         dt = 4.0
@@ -187,8 +186,7 @@ class TestCAMPInput(unittest.TestCase):
 
     def test_create_particle_inputs(self):
         processes = aerosol.AerosolProcesses(
-            aging = True,
-            coagulation = True,
+            do_camp_chem=True,
         )
         dt = 4.0
         nstep = 100
@@ -218,8 +216,7 @@ class TestCAMPInput(unittest.TestCase):
     def test_write_input_files(self):
         n_part = 1000
         processes = aerosol.AerosolProcesses(
-            aging = True,
-            coagulation = True,
+            do_camp_chem=True,
         )
         scenario = self.ensemble.member(0)
         dt = 4.0
