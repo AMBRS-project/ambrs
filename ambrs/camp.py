@@ -1,4 +1,6 @@
 from .ppe import EnsembleSpecification
+from .aerosol import AerosolSpecies, AerosolModalSizePopulation
+from .gas import GasSpecies
 import os
 import numpy as np
 from scipy.optimize import fsolve
@@ -31,16 +33,18 @@ class CAMP:
     """CAMP: configures CAMP from ambrs PPEs"""
     def __init__(
             self,
-            ppe:Ensemble,
-            aero_rep_type:str,
-            reactions:list[dict],
-            absolute_integration_tolerance:float=1e-6,
-            diffusion_coeff:dict=None,
-            phase_names:list[str]=None,
-            phase_species:list[list[str]]=None,
-            layers:list[dict]=None,
-            maximum_computational_particles:int=None,
-            mechanism_name:str='Mechanism',
+            ppe: Ensemble,
+            aero_rep_type: str,
+            reactions: list[dict],
+            species: list[GasSpecies | AerosolSpecies]=None,
+            absolute_integration_tolerance: float=1e-6,
+            diffusion_coeff: dict=None,
+            phase_names: list[str]=None,
+            phase_species: list[list[str]]=None,
+            layers: list[dict]=None,
+            maximum_computational_particles: int=None,
+            modes: list[str]=None,
+            mechanism_name: str='Mechanism',
     ):
         self.ppe = ppe
         self.species = None
@@ -59,6 +63,7 @@ class CAMP:
         self.config = None
 
         self.configure_species(
+            species=species,
             absolute_integration_tolerance=absolute_integration_tolerance,
             diffusion_coeff=diffusion_coeff
         )
@@ -69,7 +74,8 @@ class CAMP:
         self.configure_aerosol_representation(
             aero_rep_type,
             layers=layers,
-            maximum_computational_particles=maximum_computational_particles
+            maximum_computational_particles=maximum_computational_particles,
+            modes=modes
         )
         self.configure_mechanism(
             name=mechanism_name,
@@ -78,9 +84,17 @@ class CAMP:
 
     def configure_species(
             self,
+            species: list[GasSpecies | AerosolSpecies]=None,
             absolute_integration_tolerance=1e-6,
-            diffusion_coeff:dict=None,
+            diffusion_coeff: dict=None,
     ):
+        if species:
+            gases_in = [s for s in species if not hasattr(s,'density')]
+            aerosols_in = [s for s in species if hasattr(s,'density')]
+        else:
+            gases_in = self.ppe.gases
+            aerosols_in = self.ppe.aerosols
+
         gases = [
             {
                 'name': gas.name,
@@ -88,7 +102,7 @@ class CAMP:
                 'absolute integration tolerance': absolute_integration_tolerance,
                 'molecular weight [kg mol-1]': 1e-3 * gas.molar_mass,
             }
-            for gas in self.ppe.gases
+            for gas in gases_in
         ]
         if diffusion_coeff:
             for gas in gases:
@@ -120,15 +134,15 @@ class CAMP:
                 'num_ions': aerosol.ions_in_soln,
                 'kappa': aerosol.hygroscopicity,
             }
-            for aerosol in self.ppe.aerosols
+            for aerosol in aerosols_in
         ]
         self.species = gases + aerosols
         return self
 
     def configure_aerosol_phases(
             self,
-            phase_names:list[str]=None,
-            phase_species:list[list[str]]=None,
+            phase_names: list[str]=None,
+            phase_species: dict[list[str]]=None,
     ):
         if not self.species:
             raise NotImplementedError(
@@ -139,9 +153,9 @@ class CAMP:
                 {
                     'name': name,
                     'type': 'AERO_PHASE',
-                    'species': [s['name'] for s in species if 'phase' in s.keys()]
+                    'species': [s for s in phase_species[name]]
                 }
-                for name, species in zip(phase_names,phase_species)
+                for name in phase_names
             ]
         else:
             phases = [
@@ -156,9 +170,10 @@ class CAMP:
     
     def configure_aerosol_representation(
             self,
-            type:str,
-            layers:list[dict]=None,
-            maximum_computational_particles:int=None,
+            type: str,
+            layers: list[dict]=None,
+            maximum_computational_particles: int=None,
+            modes: list[AerosolModalSizePopulation]=None,
     ):
         if not self.aerosol_phases:
             raise NotImplementedError(
@@ -174,6 +189,9 @@ class CAMP:
             )
         
         self.aero_rep_type = type
+
+        if not modes:
+            modes = self.ppe.size.modes
 
         if type=='AERO_REP_SINGLE_PARTICLE':
             if layers:
@@ -204,7 +222,7 @@ class CAMP:
                 {
                     mode.name: {
                         'type': 'MODAL',
-                        'phases': [phase['name'] for phase in self.aerosol_phases],
+                        'phases': [phase['name'] for phase in self.aerosol_phases if phase['name']==mode.name],
                         'shape': 'LOG_NORMAL',
                         'geometric mean diameter [m]': mode.geom_mean_diam.item(),
                         'geometric standard deviation': 10**mode.log10_geom_std_dev.item(),
@@ -217,8 +235,8 @@ class CAMP:
     
     def configure_mechanism(
             self,
-            name:str='Mechanism',
-            reactions:list[dict]=None
+            name: str='Mechanism',
+            reactions: list[dict]=None
     ):
         if not reactions:
             raise ValueError(
@@ -234,7 +252,7 @@ class CAMP:
 
     def configure(
             self,
-            root:str
+            root: str
         ):
 
         # prep scenarios to run
