@@ -183,7 +183,10 @@ class AerosolModel(BaseAerosolModel):
         aero_data = self._build_aero_data(scenario.aerosols)
         aero_init = self._modal_state_to_aeromodes(scenario.size)
         do_mosaic = self.processes.condensation and not self.processes.do_camp_chem
-        do_camp_chem = self.processes.condensation and self.processes.do_camp_chem
+        # do_camp_chem = self.processes.condensation and self.processes.do_camp_chem
+        do_camp_chem = self.processes.do_camp_chem and isinstance(self.camp_config, CAMP)
+        if self.processes.do_camp_chem and not isinstance(self.camp_config, CAMP):
+            raise Exception('CAMP chemistry requires configuration')
 
         if t_output == None:
             t_output = dt
@@ -247,7 +250,7 @@ class AerosolModel(BaseAerosolModel):
                             for s in self.camp_config.species\
                                 for p in self.camp_config.aerosol_phases\
                                     for l in self.camp_config.aerosol_representation['layers']\
-                                        if 'phase' in s]
+                                        if ('phase' in s) and (s['phase']=='AEROSOL') and (s['name'] in p['species'])]
             aerosol_by_name = {aerosol.name: aerosol for aerosol in aerosols}
             return tuple(AeroData(
                 # species = f'core.mixed.{s.name}',
@@ -269,16 +272,16 @@ class AerosolModel(BaseAerosolModel):
         modes = []
         use_camp_chem = self.processes.do_camp_chem
         if use_camp_chem:
-            camp_species = {s['name']: f'{l['name']}.{p['name']}.{s['name']}'\
+            camp_species = {(l['name'],p['name'],s['name']): f'{l['name']}.{p['name']}.{s['name']}'\
                             for s in self.camp_config.species\
                                 for p in self.camp_config.aerosol_phases\
                                     for l in self.camp_config.aerosol_representation['layers']\
-                                        if 'phase' in s}
+                                        if ('phase' in s) and (s['phase']=='AEROSOL') and (s['name'] in p['species'])}
         for mode in modal_state.modes:
             mass_frac = {}
             for idx, species in enumerate(mode.species):
                 if use_camp_chem:
-                    key = camp_species[species.name]
+                    key = camp_species[('core',mode.name,species.name)]
                 else:
                     key = species.name
                 mass_frac[key] = mode.mass_fractions[idx]
@@ -320,6 +323,11 @@ class AerosolModel(BaseAerosolModel):
         output_dir = os.path.join(dir, 'out')
         if not os.path.exists(output_dir):
             os.mkdir(output_dir)
+
+        # write CAMP configuration
+
+        if self.camp_config:
+            self.camp_config.configure(dir)
 
         # write the main (.spec) file
         output_prefix = os.path.join('out', prefix)
