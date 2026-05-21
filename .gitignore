@@ -6,7 +6,12 @@ runs/
 
 .ipynb_checkpoints/
 ambrs/.ipynb_checkpoints/
-ambrs/camp.py
 test/.ipynb_checkpoints/
 
 ambrs.egg-info
+
+# Generated root-level figures
+/*.png
+/*.jpg
+/*.jpeg
+/*.pdf

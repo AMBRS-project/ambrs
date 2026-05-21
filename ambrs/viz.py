@@ -50,7 +50,6 @@ def _add_row_label(ax, label: str, color: str = "black"):
         xlims[1] - 0.2*(xlims[1]-xlims[0]),
         0.95*(ylims[0]+ylims[1]),
         label,
-        # rotation=90,
         ha='left',
         va='center',
         fontsize=12,
@@ -517,5 +516,4 @@ def build_input_ranges_dataframe(
                 pass  # silently ignore if structure is unknown
     
     return pd.DataFrame(rows, columns=["variable", "value", "sample"])
-
 
