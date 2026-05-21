@@ -11,7 +11,6 @@ from .ppe import Ensemble
 
 from .camp import CampConfig
 from typing import Optional
-#from pathlib import Path
 import pathlib
 
 
@@ -135,48 +134,11 @@ class AerosolMassFractions:
 
     def __init__(self,
                  scenario: Scenario):
-        # self.accum = self.AccumMode(
-        #     SO4 = scenario.size.modes[0].mass_fraction('SO4'),
-        #     POM = scenario.size.modes[0].mass_fraction('POM'),
-        #     # POM = scenario.size.modes[0].mass_fraction('OC'),
-        #     SOA = scenario.size.modes[0].mass_fraction('SOA'),
-        #     # SOA = scenario.size.modes[0].mass_fraction('MSA'),
-        #     BC  = scenario.size.modes[0].mass_fraction("BC"),
-        #     DST = scenario.size.modes[0].mass_fraction("DST"),
-        #     # DST = scenario.size.modes[0].mass_fraction("OIN"),
-        #     NCL = scenario.size.modes[0].mass_fraction("NCL"),
-        #     # NCL = scenario.size.modes[0].mass_fraction("Na"),
-        # )
         self.AccumMode = make_dataclass('AccumMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[0].species])
         self.accum = self.AccumMode(
             **{p.aliases if p.aliases else p.name : scenario.size.modes[0].mass_fraction(p.name) for p in scenario.size.modes[0].species}
         )
-                
-        
-        # self.aitken = self.AitkenMode(
-        #     SO4 = scenario.size.modes[1].mass_fraction("SO4"),
-        #     SOA = scenario.size.modes[1].mass_fraction("SOA"),
-        #     # SOA = scenario.size.modes[1].mass_fraction("MSA"),
-        #     NCL = scenario.size.modes[1].mass_fraction("NCL"),
-        #     # NCL = scenario.size.modes[1].mass_fraction("Na"),
-        # )
-        # self.coarse = self.CoarseMode(
-        #     DST = scenario.size.modes[2].mass_fraction("DST"),
-        #     # DST = scenario.size.modes[2].mass_fraction("OIN"),
-        #     NCL = scenario.size.modes[2].mass_fraction("NCL"),
-        #     # NCL = scenario.size.modes[2].mass_fraction("Na"),
-        #     SO4 = scenario.size.modes[2].mass_fraction("SO4"),
-        #     BC  = scenario.size.modes[2].mass_fraction("BC"),
-        #     # POM = scenario.size.modes[2].mass_fraction("OC"),
-        #     POM = scenario.size.modes[2].mass_fraction("POM"),
-        #     # SOA = scenario.size.modes[2].mass_fraction("MSA"),
-        #     SOA = scenario.size.modes[2].mass_fraction("SOA"),
-        # )
-        # self.pcarbon = self.PCarbonMode(
-        #     # POM = scenario.size.modes[3].mass_fraction("OC"),
-        #     POM = scenario.size.modes[3].mass_fraction("POM"),
-        #     BC  = scenario.size.modes[3].mass_fraction("BC"),
-        # )
+
         self.AitkenMode = make_dataclass('AitkenMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[1].species])
         self.aitken = self.AitkenMode(
             **{p.aliases if p.aliases else p.name : scenario.size.modes[1].mass_fraction(p.name) for p in scenario.size.modes[1].species}
@@ -341,10 +303,7 @@ working directory contains any needed input files."""
         dir = pathlib.Path(dir)
         if not dir.exists():
             raise OSError(f'Directory not found: {dir}')
-        
-        # # ----- CAMP files (absolute) -----
-        
-        # TODO: merge with Duncan's changes
+
         camp_block = ""
         if self.camp_config:
             cfg = pathlib.Path(self.camp_config)
@@ -447,8 +406,6 @@ def retrieve_model_state(
         scenario_name: str, 
         scenario: Scenario, 
         timestep: int, 
-        # t_eval: float, 
-        # model_times: np.array,
         # fixme: remove this next entry? quick fix for now
         repeat_num: int=1, # option for Partmc; set to 1 for MAM4
         species_modifications: dict={},
@@ -476,7 +433,6 @@ def retrieve_model_state(
         raise ValueError('timestep=0 is invalid. Specify timestep = 1 for initial conditions')
     elif timestep == 1:
         scenario_dir = ensemble_output_dir + '/' + scenario_name + '/'
-        # mam_input = scenario_dir + 'mam_input.nl'
         mam_input = scenario_dir + 'namelist'
         Ns = np.zeros([len(GSDs)])
         for kk in range(len(Ns)):
@@ -522,7 +478,6 @@ def retrieve_model_state(
         mam4_population_cfg = {
             'type':'mam4',
             'mam4_dir': ensemble_output_dir + '/' + scenario_name + '/',
-            #'output_filename': output_filename,
             'timestep':timestep,
             'GSD':GSDs, #fixme: put in the correct GSD values!
             'N_sigmas': 10,
@@ -536,10 +491,7 @@ def retrieve_model_state(
         
         particle_population = build_population(mam4_population_cfg)
         gas_cfg = {'H2SO4':currnc.variables['h2so4_gas'][timestep]}        
-        # gas_cfg = {'SO2':currnc.variables['so2_gas'][timestep]}
-        # gas_cfg = {'SOAG':currnc.variables['soa_gas'][timestep]}
         gas_cfg['units'] = 'kg_per_kg' # todo: double-check
-        # gas_cfg['units'] = 'mole_ratio' # todo: double-check
         gas_mixture = build_gas_mixture(gas_cfg)
         
         thermodynamics = { 
@@ -552,7 +504,6 @@ def retrieve_model_state(
         model_name='mam4',
         scenario_name=scenario_name, 
         scenario=scenario,
-        # time=t_eval,
         timestep=timestep,
         particle_population=particle_population,
         gas_mixture=gas_mixture,

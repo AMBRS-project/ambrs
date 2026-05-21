@@ -60,7 +60,6 @@ PPE are sampled"""
         aerosol_emissions: Optional[list[AerosolEmissions]] = None,
         aerosol_background: Optional[list[AerosolEmissions]] = None
     ):
-        # self.name = name
         object.__setattr__(self,'name',name)
         object.__setattr__(self,'aerosols',aerosols)
         object.__setattr__(self,'gases',gases)

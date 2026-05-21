@@ -477,7 +477,6 @@ class AerosolModel(BaseAerosolModel):
 
         # gas_back.dat
         if input.gas_background:
-            # gas_background_species = [input.gas_background[0].time_series[1].keys()]
             gas_background_species = list(input.gas_background[0][1].keys())
             gas_background_species.remove('rate')
             # FIXME: convert background conc to ppb
@@ -485,9 +484,6 @@ class AerosolModel(BaseAerosolModel):
                 f.write('# time (s)\n# rate (s^{-1})\n# concentrations (ppb)\n')
                 f.write('\t'.join(['time'] + [str(pair[0]) for pair in input.gas_background]) + '\n')
                 f.write('\t'.join(['rate'] + [str(pair[1]['rate']) for pair in input.gas_background]) + '\n')
-                # f.write('\t'.join([species_name] + [str(pair[1][species_name]) \
-                #                   for species_name in gas_background_species \
-                #                   for pair in input.gas_background]))
                 for species_name in gas_background_species:
                     f.write('\t'.join([species_name] + [str(pair[1][species_name]) for pair in input.gas_background]) + '\n')
         else:
@@ -547,7 +543,6 @@ class AerosolModel(BaseAerosolModel):
             f.write('\t'.join(['dist'] + dist_files) + '\n')
         
         for i, event in enumerate(events):
-            # modes = self._modal_state_to_aeromodes(event.size)
             modes = event.modes
             self._write_aero_modes(dir, mode_prefixes[i], modes)
 
