@@ -147,5 +147,4 @@ Chunking support (optional):
         if error_state["error"]:
             logger.error(f"{self.model.name}: At least one run failed.")
 
-        # NOTE: outputs collection remains commented out as in your original.
         return []
