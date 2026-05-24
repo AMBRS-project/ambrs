@@ -44,5 +44,5 @@ keywords:
   - process-level verification
   - uncertainty quantification
 
-license: "BSD-3-Clause"
+license: "BSD-2-Clause"
 repository-code: "https://github.com/AMBRS-project/ambrs"
