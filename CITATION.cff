@@ -1,0 +1,48 @@
+cff-version: 1.2.0
+message: "If you use AMBRS, please cite the associated AMBRS paper. Until the paper is published, cite this archived software release."
+
+title: "Aerosol Model Benchmarking Repository and Standards (AMBRS)"
+type: software
+version: 1.0.0
+date-released: 2026-05-21
+url: "https://github.com/AMBRS-project/ambrs"
+
+authors:
+  - family-names: "Fierce"
+    given-names: "Laura"
+    affiliation: "Pacific Northwest National Laboratory, Richland, WA"
+    email: "laura.fierce@pnnl.gov"
+
+  - family-names: "Johnson"
+    given-names: "Jeffrey"
+    affiliation: "Cohere Consulting LLC, Seattle, WA"
+
+  - family-names: "Quevedo"
+    given-names: "Duncan"
+    affiliation: "University of California, Berkeley, CA"
+
+  - family-names: "Murphy"
+    given-names: "Benjamin"
+    affiliation: "EMEP MSC-W, Norwegian Meteorological Institute, Oslo, Norway"
+
+  - family-names: "Riemer"
+    given-names: "Nicole"
+    affiliation: "University of Illinois Urbana-Champaign, IL"
+
+  - family-names: "Dawson"
+    given-names: "Matthew"
+    affiliation: "Cohere Consulting LLC, Seattle, WA"
+
+abstract: "AMBRS provides a framework for building, running, and evaluating aerosol chemical and microphysical schemes at the box-model level. The toolkit supports standardized process-level benchmarking of aerosol model representations using harmonized initial conditions, model output, and diagnostics."
+
+keywords:
+  - aerosol
+  - aerosol modeling
+  - atmospheric chemistry
+  - box models
+  - model benchmarking
+  - process-level verification
+  - uncertainty quantification
+
+license: "BSD-2-Clause"
+repository-code: "https://github.com/AMBRS-project/ambrs"
