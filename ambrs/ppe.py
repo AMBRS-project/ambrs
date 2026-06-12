@@ -249,11 +249,13 @@ def sample(specification: EnsembleSpecification, n: int) -> Ensemble:
 def lhs(specification: EnsembleSpecification,
         n: int,
         criterion = None,
-        iterations = None) -> Ensemble:
-    """lhs(specification, n, [criterion, iterations]) -> n-member ensemble
+        iterations = None,
+        seed: Optional[int] = None) -> Ensemble:
+    """lhs(specification, n, [criterion, iterations, seed]) -> n-member ensemble
 generated from latin hypercube sampling applied to the given specification. The
 optional arguments are passed along to pyDOE's lhs function, which creates the
-distribution from which ensemble members are sampled."""
+distribution from which ensemble members are sampled. If seed is provided, the
+Latin hypercube design is reproducible."""
     num_gases = len(specification.gases)
     n_factors = num_gases + 4 # size-independent factors: num_gases + flux + relative_humidity + temperature (!!!FIXME) + presssure
     lhd = None # latin hypercube distribution (created depending on particle
@@ -264,7 +266,15 @@ distribution from which ensemble members are sampled."""
         for mode in specification.size.modes:
             n_factors += 3 + len(mode.mass_fractions) # !!!FIXME Changed offset to 3 from 2 throughout to accommodate sigmag dist
         # lhd is a 2D array with indices (sample index, factor index)
-        lhd = pyDOE.lhs(n_factors, n, criterion, iterations)
+        if seed is None:
+            lhd = pyDOE.lhs(n_factors, n, criterion, iterations)
+        else:
+            rng_state = np.random.get_state()
+            try:
+                np.random.seed(seed)
+                lhd = pyDOE.lhs(n_factors, n, criterion, iterations)
+            finally:
+                np.random.set_state(rng_state)
         num_species = [len(mode.mass_fractions) for mode in specification.size.modes]
         size = AerosolModalSizePopulation(
             modes=tuple([
