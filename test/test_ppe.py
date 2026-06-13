@@ -236,6 +236,44 @@ class TestSampling(unittest.TestCase):
                 self.assertTrue(mode.geom_mean_diam <= 2e-6)
                 self.assertTrue(sum(mode.mass_fractions) - 1.0 < 1e-12)
 
+    def test_lhs_seed_reproducibility(self):
+        """Same seed produces identical ensembles."""
+        ensemble1 = ppe.lhs(self.ensemble_spec, self.n, seed=42)
+        ensemble2 = ppe.lhs(self.ensemble_spec, self.n, seed=42)
+        self.assertEqual(len(ensemble1), len(ensemble2))
+        for m1, m2 in zip(ensemble1, ensemble2):
+            self.assertEqual(m1.temperature, m2.temperature)
+            self.assertEqual(m1.relative_humidity, m2.relative_humidity)
+            self.assertEqual(m1.flux, m2.flux)
+            self.assertEqual(m1.pressure, m2.pressure)
+            for mode1, mode2 in zip(m1.size.modes, m2.size.modes):
+                self.assertEqual(mode1.number, mode2.number)
+                self.assertEqual(mode1.geom_mean_diam, mode2.geom_mean_diam)
+                np.testing.assert_array_equal(
+                    np.array(mode1.mass_fractions),
+                    np.array(mode2.mass_fractions),
+                )
+
+    def test_lhs_different_seeds_produce_different_results(self):
+        """Different seeds produce different ensembles."""
+        ensemble1 = ppe.lhs(self.ensemble_spec, self.n, seed=1)
+        ensemble2 = ppe.lhs(self.ensemble_spec, self.n, seed=2)
+        temperatures1 = [m.temperature for m in ensemble1]
+        temperatures2 = [m.temperature for m in ensemble2]
+        self.assertFalse(
+            all(t1 == t2 for t1, t2 in zip(temperatures1, temperatures2)),
+            "Ensembles generated with different seeds should differ",
+        )
+
+    def test_lhs_seed_preserves_rng_state(self):
+        """lhs() with a seed does not alter the global NumPy RNG state."""
+        np.random.seed(0)
+        reference = np.random.random(10)
+        np.random.seed(0)
+        ppe.lhs(self.ensemble_spec, self.n, seed=42)
+        after = np.random.random(10)
+        np.testing.assert_array_equal(reference, after)
+
     def test_temperature_sweep(self):
         ref_state = ppe.sample(self.ensemble_spec, 1).member(0)
         sweeps = ppe.AerosolParameterSweeps(
