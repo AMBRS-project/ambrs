@@ -15,3 +15,5 @@ ambrs.egg-info
 /*.jpg
 /*.jpeg
 /*.pdf
+
+*span_seeds*
