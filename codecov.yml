@@ -1,9 +1,11 @@
 # This file configures CodeCov. New PRs can increase or decrease coverage--only
 # the total coverage threshold matters.
+ignore:
+  - "**/part2pop/**"
+
 coverage:
   status:
     project:
       default:
         target: 80%
     patch: off # we can enable this if we figure out a reasonable policy
-

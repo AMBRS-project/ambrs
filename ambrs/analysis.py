@@ -35,11 +35,20 @@ class Output:
         var_cfg : dict, optional
             Configuration overrides (axes, ranges, etc.).
         """
-        return ppa.compute_variable(
-            population=self.particle_population,  # part2pop >= latest uses keyword 'population'
-            varname=varname,
-            var_cfg=var_cfg or {}
+        var_cfg = var_cfg or {}
+        if hasattr(ppa, "compute_variable"):
+            return ppa.compute_variable(
+                population=self.particle_population,
+                varname=varname,
+                var_cfg=var_cfg,
+            )
+
+        variable = ppa.build_variable(
+            varname,
+            scope="population",
+            var_cfg=var_cfg,
         )
+        return variable.compute(self.particle_population)
 
 def nmae(output_list1: List[Output], output_list2: List[Output], varname: str, var_cfg: Optional[Dict] = None) -> float:
     """Normalized mean absolute error between two lists of Output objects.
@@ -53,8 +62,8 @@ def nmae(output_list1: List[Output], output_list2: List[Output], varname: str, v
     for o1, o2 in zip(output_list1, output_list2):
         d1 = o1.compute_variable(varname, var_cfg)
         d2 = o2.compute_variable(varname, var_cfg)
-        v1 = d1.get(varname, d1)
-        v2 = d2.get(varname, d2)
+        v1 = d1.get(varname, d1) if hasattr(d1, "get") else d1
+        v2 = d2.get(varname, d2) if hasattr(d2, "get") else d2
         x1.append(np.ravel(v1))
         x2.append(np.ravel(v2))
     if not x1:
@@ -83,8 +92,8 @@ def kl_divergence(output1: Output, output2: Output, var_cfg: Optional[Dict] = No
     backward = bool(var_cfg.pop('backward', False))
     d1 = output1.compute_variable('dNdlnD', var_cfg)
     d2 = output2.compute_variable('dNdlnD', var_cfg)
-    v1 = np.asarray(d1.get('dNdlnD', d1))
-    v2 = np.asarray(d2.get('dNdlnD', d2))
+    v1 = np.asarray(d1.get('dNdlnD', d1) if hasattr(d1, "get") else d1)
+    v2 = np.asarray(d2.get('dNdlnD', d2) if hasattr(d2, "get") else d2)
     s1 = np.sum(v1)
     s2 = np.sum(v2)
     if s1 <= 0 or s2 <= 0:
@@ -92,4 +101,3 @@ def kl_divergence(output1: Output, output2: Output, var_cfg: Optional[Dict] = No
     P1 = v1 / s1
     P2 = v2 / s2
     return float(scipy.stats.entropy(P2, P1) if backward else scipy.stats.entropy(P1, P2))
-

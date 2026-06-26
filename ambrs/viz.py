@@ -77,6 +77,14 @@ def make_bscat_cfg(wvl_grid=np.linspace(0.35e-6, 0.8e-6, 30), rh_grid=[0.0]):
     rh_grid = np.asarray(rh_grid)
     return ({"wvl_grid": wvl_grid, "rh_grid": rh_grid})
 
+def _as_array(value, n):
+    arr = np.asarray(value)
+    if arr.ndim == 0:
+        return np.full(n, arr.item())
+    if len(arr) == n:
+        return arr
+    return None
+
 # -----------------------------------------------------------
 # Functions for rendering grids of PartMC vs MAM4 comparisons
 # -----------------------------------------------------------
@@ -516,4 +524,3 @@ def build_input_ranges_dataframe(
                 pass  # silently ignore if structure is unknown
     
     return pd.DataFrame(rows, columns=["variable", "value", "sample"])
-
