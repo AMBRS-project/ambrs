@@ -236,6 +236,32 @@ class TestSampling(unittest.TestCase):
                 self.assertTrue(mode.geom_mean_diam <= 2e-6)
                 self.assertTrue(sum(mode.mass_fractions) - 1.0 < 1e-12)
 
+    def test_lhs_seed_reproduces_ensemble(self):
+        ensemble_a = ppe.lhs(self.ensemble_spec, self.n, seed=12345)
+        ensemble_b = ppe.lhs(self.ensemble_spec, self.n, seed=12345)
+
+        self._assert_ensembles_close(ensemble_a, ensemble_b)
+
+    def test_lhs_different_seed_changes_ensemble(self):
+        ensemble_a = ppe.lhs(self.ensemble_spec, self.n, seed=12345)
+        ensemble_b = ppe.lhs(self.ensemble_spec, self.n, seed=54321)
+        
+        self.assertFalse(np.allclose(ensemble_a.relative_humidity, ensemble_b.relative_humidity))
+
+    def _assert_ensembles_close(self, actual, expected):
+        for actual_mode, expected_mode in zip(actual.size.modes, expected.size.modes):
+            np.testing.assert_allclose(actual_mode.number, expected_mode.number)
+            np.testing.assert_allclose(actual_mode.geom_mean_diam, expected_mode.geom_mean_diam)
+            np.testing.assert_allclose(actual_mode.log10_geom_std_dev, expected_mode.log10_geom_std_dev)
+            for actual_mf, expected_mf in zip(actual_mode.mass_fractions, expected_mode.mass_fractions):
+                np.testing.assert_allclose(actual_mf, expected_mf)
+        for actual_conc, expected_conc in zip(actual.gas_concs, expected.gas_concs):
+            np.testing.assert_allclose(actual_conc, expected_conc)
+        np.testing.assert_allclose(actual.flux, expected.flux)
+        np.testing.assert_allclose(actual.relative_humidity, expected.relative_humidity)
+        np.testing.assert_allclose(actual.temperature, expected.temperature)
+        np.testing.assert_allclose(actual.pressure, expected.pressure)
+
     def test_temperature_sweep(self):
         ref_state = ppe.sample(self.ensemble_spec, 1).member(0)
         sweeps = ppe.AerosolParameterSweeps(
