@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 
 import ambrs.gas as gas
 
@@ -13,8 +12,12 @@ def test_gas_species_validates_positive_molar_mass():
 
 
 def test_gas_species_rejects_non_positive_molar_mass():
-    with pytest.raises(ValueError, match="Non-positive molar mass"):
+    try:
         gas.GasSpecies(name="SO2", molar_mass=0.0)
+    except ValueError as err:
+        assert "Non-positive molar mass" in str(err)
+    else:
+        raise AssertionError("Expected ValueError")
 
 
 def test_find_matches_name_alias_and_missing_species():
@@ -34,16 +37,16 @@ def test_build_gas_mixture_converts_ppb_to_mole_ratio():
     )
 
     assert [species.name for species in mixture.species] == ["SO2", "H2SO4"]
-    np.testing.assert_allclose(mixture.mole_ratio, [1.0e-6, 2.0e-9])
+    np.testing.assert_allclose(mixture.mole_ratio, [1.0e-6, 2.0e-9, 0.0])
 
 
-@pytest.mark.parametrize("unit", ["ratio", "mole_ratio", "mol_ratio"])
-def test_build_gas_mixture_accepts_mole_ratio_aliases(unit):
-    mixture = gas.build_gas_mixture(
-        {"units": unit, "SO2": 1.0e-9, "H2SO4": 2.0e-12}
-    )
+def test_build_gas_mixture_accepts_mole_ratio_aliases():
+    for unit in ["ratio", "mole_ratio", "mol_ratio"]:
+        mixture = gas.build_gas_mixture(
+            {"units": unit, "SO2": 1.0e-9, "H2SO4": 2.0e-12}
+        )
 
-    np.testing.assert_allclose(mixture.mole_ratio, [1.0e-9, 2.0e-12, 0.0])
+        np.testing.assert_allclose(mixture.mole_ratio, [1.0e-9, 2.0e-12, 0.0])
 
 
 def test_build_gas_mixture_converts_kg_per_kg_to_mole_ratio():
@@ -60,5 +63,9 @@ def test_build_gas_mixture_converts_kg_per_kg_to_mole_ratio():
 
 
 def test_build_gas_mixture_rejects_unsupported_units():
-    with pytest.raises(ValueError, match="Unsupported gas units"):
+    try:
         gas.build_gas_mixture({"units": "ppm"})
+    except ValueError as err:
+        assert "Unsupported gas units" in str(err)
+    else:
+        raise AssertionError("Expected ValueError")

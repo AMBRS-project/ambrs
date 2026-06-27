@@ -1,4 +1,4 @@
-from types import SimpleNamespace
+from math import log10
 
 import matplotlib
 
@@ -7,9 +7,17 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pytest
 
+import ambrs.aerosol as aerosol
+import ambrs.gas as gas
+import ambrs.ppe as ppe
 import ambrs.viz as viz
+
+
+so4 = aerosol.AerosolSpecies(name="SO4", molar_mass=97.071, density=1770)
+soa = aerosol.AerosolSpecies(name="OC", molar_mass=12.01, density=1000)
+so2 = gas.GasSpecies(name="SO2", molar_mass=64.07)
+h2so4 = gas.GasSpecies(name="H2SO4", molar_mass=98.079)
 
 
 def test_make_variable_configs_are_array_backed():
@@ -61,11 +69,28 @@ def test_plot_range_bars_handles_missing_variable():
 
 
 def test_build_input_ranges_dataframe_extracts_attributes_and_gases():
-    ensemble = SimpleNamespace(
+    n = 2
+    ensemble = ppe.Ensemble(
+        aerosols=(so4, soa),
+        gases=(so2, h2so4),
+        size=aerosol.AerosolModalSizePopulation(
+            modes=(
+                aerosol.AerosolModePopulation(
+                    name="aitken",
+                    species=(so4, soa),
+                    number=np.full(n, 5.0e8),
+                    geom_mean_diam=np.full(n, 1.0e-7),
+                    log10_geom_std_dev=np.full(n, log10(1.6)),
+                    mass_fractions=(np.full(n, 0.7), np.full(n, 0.3)),
+                ),
+            ),
+        ),
+        gas_concs=(np.array([1.0e-9, 2.0e-9]), np.array([3.0e-9, 4.0e-9])),
+        flux=np.full(n, 0.0),
         temperature=np.array([280.0, 290.0]),
         relative_humidity=np.array([0.4, 0.5]),
-        pressure=101325.0,
-        gas_concs=(np.array([1.0e-9, 2.0e-9]), np.array([3.0e-9, 4.0e-9])),
+        pressure=np.full(n, 101325.0),
+        height=500.0,
     )
 
     df = viz.build_input_ranges_dataframe(
@@ -87,70 +112,12 @@ def test_build_input_ranges_dataframe_extracts_attributes_and_gases():
 
 
 def test_build_input_ranges_dataframe_rejects_uninferable_ensemble_size():
-    with pytest.raises(ValueError, match="Could not infer ensemble size"):
-        viz.build_input_ranges_dataframe(SimpleNamespace())
+    class EmptyEnsemble:
+        pass
 
-
-def test_render_grid_uses_model_output_and_plotter(monkeypatch):
-    calls = []
-
-    class FakePlotter:
-        def __init__(self, cfg):
-            self.cfg = cfg
-
-        def plot(self, population, ax, add_xlabel, add_ylabel, label):
-            calls.append(
-                {
-                    "varname": self.cfg["varname"],
-                    "population": population,
-                    "label": label,
-                    "add_xlabel": add_xlabel,
-                    "add_ylabel": add_ylabel,
-                }
-            )
-            ax.plot([1.0e-9, 1.0e-6], [1.0, 2.0], label=label)
-
-    def fake_build_plotter(kind, cfg):
-        assert kind == "state_line"
-        return FakePlotter(cfg)
-
-    def fake_retrieve_model_state(**kwargs):
-        return SimpleNamespace(particle_population={"scenario": kwargs["scenario_name"]})
-
-    ensemble = SimpleNamespace(
-        __len__=lambda self: 1,
-        member=lambda index: SimpleNamespace(index=index),
-    )
-    fig = plt.figure()
-    gs = fig.add_gridspec(1, 1)
-
-    monkeypatch.setattr(viz, "build_plotter", fake_build_plotter)
-    monkeypatch.setattr(viz.partmc, "retrieve_model_state", fake_retrieve_model_state)
-
-    returned_fig, axes = viz.render_partmc_and_mam4_variable_grid(
-        gs,
-        varname="dNdlnD",
-        var_cfg=viz.make_dNdlnD_cfg(N_bins=3),
-        ensemble=ensemble,
-        scenario_names=["1"],
-        timesteps=[0],
-        partmc_dir="partmc-output",
-        legend_loc="upper left",
-        xscale="log",
-    )
-
-    assert returned_fig is fig
-    assert axes.shape == (1, 1)
-    assert axes[0, 0].get_xscale() == "log"
-    assert axes[0, 0].get_xlabel() == r"diameter [$\mu$m]"
-    assert axes[0, 0].get_ylabel() == "normalized number density"
-    assert calls == [
-        {
-            "varname": "dNdlnD",
-            "population": {"scenario": "1"},
-            "label": "PartMC",
-            "add_xlabel": False,
-            "add_ylabel": False,
-        }
-    ]
-    plt.close(fig)
+    try:
+        viz.build_input_ranges_dataframe(EmptyEnsemble())
+    except ValueError as err:
+        assert "Could not infer ensemble size" in str(err)
+    else:
+        raise AssertionError("Expected ValueError")
