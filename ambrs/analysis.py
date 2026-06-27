@@ -4,7 +4,7 @@
 from dataclasses import dataclass
 import numpy as np
 import scipy.stats
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Any
 
 from part2pop import ParticlePopulation  # type: ignore
 from part2pop import analysis as ppa  # type: ignore
@@ -25,7 +25,7 @@ class Output:
     environment: dict = None
     species_modifications: dict = None
     # diagnostics: Optional(dict)
-    def compute_variable(self, varname: str, var_cfg: Optional[Dict] = None) -> Dict:
+    def compute_variable(self, varname: str, var_cfg: Optional[Dict] = None) -> Any:
         """Delegate variable computation to part2pop.analysis.
 
         Parameters
@@ -35,14 +35,9 @@ class Output:
         var_cfg : dict, optional
             Configuration overrides (axes, ranges, etc.).
         """
-        var_cfg = var_cfg or {}
-        if hasattr(ppa, "compute_variable"):
-            return ppa.compute_variable(
-                population=self.particle_population,
-                varname=varname,
-                var_cfg=var_cfg,
-            )
-
+        if var_cfg is None:
+            var_cfg = {}
+        
         variable = ppa.build_variable(
             varname,
             scope="population",
