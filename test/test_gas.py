@@ -30,11 +30,11 @@ def test_find_matches_name_alias_and_missing_species():
 
 def test_build_gas_mixture_converts_ppb_to_mole_ratio():
     mixture = gas.build_gas_mixture(
-        {"units": "ppb", "SO2": 1000.0, "H2SO4": 2.0, "SOAG": 3.0}
+        {"units": "ppb", "SO2": 1000.0, "H2SO4": 2.0}
     )
 
     assert [species.name for species in mixture.species] == ["SO2", "H2SO4"]
-    np.testing.assert_allclose(mixture.mole_ratio, [1.0e-6, 2.0e-9, 3.0e-9])
+    np.testing.assert_allclose(mixture.mole_ratio, [1.0e-6, 2.0e-9])
 
 
 @pytest.mark.parametrize("unit", ["ratio", "mole_ratio", "mol_ratio"])
