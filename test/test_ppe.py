@@ -12,7 +12,7 @@ import unittest
 # relevant aerosol and gas species
 so4 = aerosol.AerosolSpecies(
     name='SO4',
-    molar_mass = 97.071, # NOTE: 1000x smaller than "molecular weight"!
+    molar_mass = 97.071,
     density = 1770,
     hygroscopicity = 0.507,
 )
@@ -236,31 +236,43 @@ class TestSampling(unittest.TestCase):
                 self.assertTrue(mode.geom_mean_diam <= 2e-6)
                 self.assertTrue(sum(mode.mass_fractions) - 1.0 < 1e-12)
 
-    def test_lhs_seed_reproduces_ensemble(self):
-        ensemble_a = ppe.lhs(self.ensemble_spec, self.n, seed=12345)
-        ensemble_b = ppe.lhs(self.ensemble_spec, self.n, seed=12345)
+    def test_lhs_seed_reproducibility(self):
+        """Same seed produces identical ensembles."""
+        ensemble1 = ppe.lhs(self.ensemble_spec, self.n, seed=42)
+        ensemble2 = ppe.lhs(self.ensemble_spec, self.n, seed=42)
+        self.assertEqual(len(ensemble1), len(ensemble2))
+        for m1, m2 in zip(ensemble1, ensemble2):
+            self.assertEqual(m1.temperature, m2.temperature)
+            self.assertEqual(m1.relative_humidity, m2.relative_humidity)
+            self.assertEqual(m1.flux, m2.flux)
+            self.assertEqual(m1.pressure, m2.pressure)
+            for mode1, mode2 in zip(m1.size.modes, m2.size.modes):
+                self.assertEqual(mode1.number, mode2.number)
+                self.assertEqual(mode1.geom_mean_diam, mode2.geom_mean_diam)
+                np.testing.assert_array_equal(
+                    np.array(mode1.mass_fractions),
+                    np.array(mode2.mass_fractions),
+                )
 
-        self._assert_ensembles_close(ensemble_a, ensemble_b)
+    def test_lhs_different_seeds_produce_different_results(self):
+        """Different seeds produce different ensembles."""
+        ensemble1 = ppe.lhs(self.ensemble_spec, self.n, seed=1)
+        ensemble2 = ppe.lhs(self.ensemble_spec, self.n, seed=2)
+        temperatures1 = [m.temperature for m in ensemble1]
+        temperatures2 = [m.temperature for m in ensemble2]
+        self.assertFalse(
+            all(t1 == t2 for t1, t2 in zip(temperatures1, temperatures2)),
+            "Ensembles generated with different seeds should differ",
+        )
 
-    def test_lhs_different_seed_changes_ensemble(self):
-        ensemble_a = ppe.lhs(self.ensemble_spec, self.n, seed=12345)
-        ensemble_b = ppe.lhs(self.ensemble_spec, self.n, seed=54321)
-        
-        self.assertFalse(np.allclose(ensemble_a.relative_humidity, ensemble_b.relative_humidity))
-
-    def _assert_ensembles_close(self, actual, expected):
-        for actual_mode, expected_mode in zip(actual.size.modes, expected.size.modes):
-            np.testing.assert_allclose(actual_mode.number, expected_mode.number)
-            np.testing.assert_allclose(actual_mode.geom_mean_diam, expected_mode.geom_mean_diam)
-            np.testing.assert_allclose(actual_mode.log10_geom_std_dev, expected_mode.log10_geom_std_dev)
-            for actual_mf, expected_mf in zip(actual_mode.mass_fractions, expected_mode.mass_fractions):
-                np.testing.assert_allclose(actual_mf, expected_mf)
-        for actual_conc, expected_conc in zip(actual.gas_concs, expected.gas_concs):
-            np.testing.assert_allclose(actual_conc, expected_conc)
-        np.testing.assert_allclose(actual.flux, expected.flux)
-        np.testing.assert_allclose(actual.relative_humidity, expected.relative_humidity)
-        np.testing.assert_allclose(actual.temperature, expected.temperature)
-        np.testing.assert_allclose(actual.pressure, expected.pressure)
+    def test_lhs_seed_preserves_rng_state(self):
+        """lhs() with a seed does not alter the global NumPy RNG state."""
+        np.random.seed(0)
+        reference = np.random.random(10)
+        np.random.seed(0)
+        ppe.lhs(self.ensemble_spec, self.n, seed=42)
+        after = np.random.random(10)
+        np.testing.assert_array_equal(reference, after)
 
     def test_temperature_sweep(self):
         ref_state = ppe.sample(self.ensemble_spec, 1).member(0)
