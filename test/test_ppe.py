@@ -12,7 +12,7 @@ import unittest
 # relevant aerosol and gas species
 so4 = aerosol.AerosolSpecies(
     name='SO4',
-    molar_mass = 97.071, # NOTE: 1000x smaller than "molecular weight"!
+    molar_mass = 97.071,
     density = 1770,
     hygroscopicity = 0.507,
 )
