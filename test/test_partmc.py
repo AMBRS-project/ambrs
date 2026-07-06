@@ -324,6 +324,46 @@ class TestPartMCHelpers(unittest.TestCase):
             with self.assertRaisesRegex(OSError, "Directory not found"):
                 self.make_model().write_input_files(None, missing_dir, "partmc")
 
+    def test_write_input_files_writes_non_default_spec_options(self):
+        model = self.make_model()
+        scenario = self.make_scenario(
+            aerosol.AerosolModalSizeState(
+                modes=(
+                    aerosol.AerosolModeState(
+                        name="aitken",
+                        species=(so4,),
+                        number=1.0e8,
+                        geom_mean_diam=1.0e-7,
+                        log10_geom_std_dev=log10(1.6),
+                        mass_fractions=(1.0,),
+                    ),
+                ),
+            )
+        )
+        input = model.create_input(scenario, 1.0, 1)
+        input.restart = True
+        input.do_select_weighting = False
+        input.do_coagulation = False
+        input.do_nucleation = True
+        input.record_removals = False
+        input.allow_doubling = False
+        input.allow_halving = False
+        input.loss_function = "none"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            model.write_input_files(input, temp_dir, "partmc")
+            with open(os.path.join(temp_dir, "partmc.spec")) as f:
+                spec_content = f.read()
+
+        self.assertIn("restart yes", spec_content)
+        self.assertIn("do_select_weighting no", spec_content)
+        self.assertIn("do_coagulation no", spec_content)
+        self.assertIn("do_nucleation yes", spec_content)
+        self.assertIn("allow_doubling no", spec_content)
+        self.assertIn("allow_halving no", spec_content)
+        self.assertIn("record_removals no", spec_content)
+        self.assertIn("loss_function none", spec_content)
+
     def test_get_ncfile_finds_specific_and_latest_outputs(self):
         scenario_name = "scenario"
         with tempfile.TemporaryDirectory() as temp_dir:

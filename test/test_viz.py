@@ -77,6 +77,18 @@ class TestVizHelpers(unittest.TestCase):
         self.assertEqual(viz._scenario_colors(2, palette=["red", "blue", "green"]), ["red", "blue"])
         self.assertEqual(len(viz._scenario_colors(12)), 12)
 
+    def test_base_and_row_styles_keep_model_keys_and_row_color(self):
+        base_styles = viz._base_styles()
+        row_styles = viz._row_styles(base_styles, "tab:orange")
+
+        self.assertEqual(set(row_styles), {"partmc", "mam4"})
+        self.assertEqual(row_styles["partmc"]["color"], "tab:orange")
+        self.assertEqual(row_styles["mam4"]["color"], "tab:orange")
+        self.assertEqual(row_styles["partmc"]["linestyle"], "-")
+        self.assertEqual(row_styles["mam4"]["linestyle"], "--")
+        self.assertEqual(row_styles["partmc"]["linewidth"], 2.0)
+        self.assertEqual(row_styles["mam4"]["linewidth"], 3.0)
+
     def test_as_array_expands_scalars_and_rejects_wrong_length(self):
         np.testing.assert_allclose(viz._as_array(3.0, 2), [3.0, 3.0])
         np.testing.assert_allclose(viz._as_array([1.0, 2.0], 2), [1.0, 2.0])
@@ -285,6 +297,41 @@ class TestBuildInputRangesDataFrame(unittest.TestCase):
             make_ensemble(gas_concs={"bad": [1.0, 2.0]}),
             variables={"Temperature": "temperature"},
             gas_names=["SO2", "H2SO4"],
+        )
+
+        self.assertEqual(set(df["variable"]), {"Temperature"})
+
+    def test_infers_size_from_later_candidate_after_scalar_candidate(self):
+        base = make_ensemble()
+        ensemble = ppe.Ensemble(
+            aerosols=base.aerosols,
+            gases=base.gases,
+            size=base.size,
+            gas_concs=base.gas_concs,
+            flux=base.flux,
+            temperature=base.temperature,
+            relative_humidity=0.5,
+            pressure=base.pressure,
+            height=base.height,
+        )
+
+        df = viz.build_input_ranges_dataframe(
+            ensemble,
+            variables={"Temperature": "temperature"},
+        )
+
+        self.assertEqual(df["sample"].tolist(), [1, 2])
+        self.assertEqual(df["value"].tolist(), [280.0, 290.0])
+
+    def test_omits_requested_variable_with_wrong_length_values(self):
+        ensemble = make_ensemble(gas_concs=np.array([1.0]))
+
+        df = viz.build_input_ranges_dataframe(
+            ensemble,
+            variables={
+                "Temperature": "temperature",
+                "Gas concentrations": "gas_concs",
+            },
         )
 
         self.assertEqual(set(df["variable"]), {"Temperature"})

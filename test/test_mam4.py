@@ -340,5 +340,55 @@ class TestMAM4InputHelpers(unittest.TestCase):
             self.assertEqual(mam4.get_mam_input("press", namelist), 101325.0)
 
 
+class TestMAM4GasMixingRatios(unittest.TestCase):
+    def make_size(self):
+        return aerosol.AerosolModalSizePopulation(
+            modes=(
+                aerosol.AerosolModePopulation(
+                    name="accumulation",
+                    species=(so4, pom, soa, bc, dst, ncl),
+                    number=1.0e8,
+                    geom_mean_diam=1.0e-7,
+                    log10_geom_std_dev=log10(1.6),
+                    mass_fractions=(0.2, 0.2, 0.1, 0.1, 0.2, 0.2),
+                ),
+            ),
+        )
+
+    def make_scenario(self, gases, gas_concs):
+        return Scenario(
+            aerosols=(so4, pom, soa, bc, dst, ncl),
+            gases=gases,
+            size=self.make_size(),
+            gas_concs=gas_concs,
+            flux=0.0,
+            relative_humidity=0.5,
+            temperature=290.0,
+            pressure=p0,
+            height=h0,
+        )
+
+    def test_gas_mixing_ratios_requires_so2(self):
+        scenario = self.make_scenario((h2so4,), (1.0e-9,))
+
+        with self.assertRaisesRegex(ValueError, "SO2 gas not found"):
+            mam4.GasMixingRatios(scenario)
+
+    def test_gas_mixing_ratios_requires_h2so4(self):
+        scenario = self.make_scenario((so2,), (1.0e-9,))
+
+        with self.assertRaisesRegex(ValueError, "H2SO4 gas not found"):
+            mam4.GasMixingRatios(scenario)
+
+    def test_gas_mixing_ratios_converts_known_gases(self):
+        scenario = self.make_scenario((so2, h2so4), (2.0e-9, 3.0e-9))
+
+        ratios = mam4.GasMixingRatios(scenario)
+
+        self.assertAlmostEqual(ratios.SO2, 2.0e-9 * so2.molar_mass / mam4.dry_air_molar_mass)
+        self.assertAlmostEqual(ratios.H2SO4, 3.0e-9 * h2so4.molar_mass / mam4.dry_air_molar_mass)
+        self.assertEqual(ratios.SOAG, 0.0)
+
+
 if __name__ == '__main__':
     unittest.main()
