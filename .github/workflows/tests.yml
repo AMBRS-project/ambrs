@@ -37,7 +37,7 @@ jobs:
 
       - name: Running tests (${{ matrix.os }})
         run: |
-          coverage run --source=ambrs -m unittest discover
+          coverage run --source=ambrs -m pytest
           coverage xml
 
       - if: ${{ matrix.os == 'ubuntu-latest' }}
