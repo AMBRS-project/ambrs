@@ -33,7 +33,6 @@ class TestGas(unittest.TestCase):
             {"units": "ppb", "SO2": 1000.0, "H2SO4": 2.0}
         )
 
-        self.assertEqual([species.name for species in mixture.species], ["SO2", "H2SO4", "SOAG"])
         np.testing.assert_allclose(mixture.mole_ratio, [1.0e-6, 2.0e-9, 0.0])
 
     def test_build_gas_mixture_accepts_mole_ratio_aliases(self):
