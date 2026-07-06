@@ -326,5 +326,19 @@ class TestMAM4AerosolModel(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(temp_dir.name, 'namelist')))
         temp_dir.cleanup()
 
+class TestMAM4InputHelpers(unittest.TestCase):
+    def test_get_mam_input_reads_value_from_temporary_namelist(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            namelist = os.path.join(temp_dir, "smoke_test.nl")
+            with open(namelist, "w") as f:
+                f.write("&inputs\n")
+                f.write("  temp = 285.5,\n")
+                f.write("  press = 101325.0,\n")
+                f.write("/\n")
+
+            self.assertEqual(mam4.get_mam_input("temp", namelist), 285.5)
+            self.assertEqual(mam4.get_mam_input("press", namelist), 101325.0)
+
+
 if __name__ == '__main__':
     unittest.main()
