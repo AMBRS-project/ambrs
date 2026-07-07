@@ -3,6 +3,7 @@
 
 .DS_Store
 runs/
+/*.nc
 
 .ipynb_checkpoints/
 ambrs/.ipynb_checkpoints/
@@ -17,3 +18,6 @@ ambrs.egg-info
 /*.pdf
 
 *span_seeds*
+# AMBRS tutorial generated raw model output
+tutorial/data/raw/**/run/
+tutorial/data/raw/**/*.nc
