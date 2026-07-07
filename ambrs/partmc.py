@@ -342,6 +342,7 @@ class AerosolModel(BaseAerosolModel):
             spec_content += 'do_camp_chem no\n'
         spec_content += '\n'
 
+        spec_content += 'do_tchem no\n'
         # gas data
         if not self.processes.do_camp_chem:
             spec_content += 'gas_data gas_data.dat\n'
