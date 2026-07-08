@@ -43,7 +43,7 @@ def _format_panel(ax, *, xscale=None, yscale=None, minimal_spines=True):
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
 
-def _add_row_label(ax, label: str, color: str = "black"):
+def _add_row_label(ax, label: str, color: str = "black",  fontsize: int = 12):
     xlims = ax.get_xlim()
     ylims = ax.get_ylim()
     ax.text(
@@ -52,7 +52,7 @@ def _add_row_label(ax, label: str, color: str = "black"):
         label,
         ha='left',
         va='center',
-        fontsize=12,
+        fontsize=fontsize,
         transform=ax.transData,
         color=color
     )
@@ -106,6 +106,7 @@ def render_partmc_and_mam4_variable_grid(
     sharex: bool = True,
     sharey: bool = False,
     color: str | Sequence[str] | None = None,
+    fontsize: int | None = None,
     ) -> Tuple[plt.Figure, np.ndarray]:
     """
     Render a grid where rows = scenarios and columns = user-defined 'columns'
@@ -191,15 +192,29 @@ def render_partmc_and_mam4_variable_grid(
             
             # panel cosmetics
             _format_panel(ax, xscale=xscale, yscale=yscale)
-
+            if fontsize is not None:
+                ax.tick_params(axis="both", which="both", labelsize=fontsize)
             if varname == 'b_scat':
                 ax.set_ylim([0., ax.get_ylim()[1]])
 
+            # # legend (only once)
+            # if legend_loc == 'upper right' and i_row == 0 and i_col == n_cols - 1:
+            #     ax.legend(frameon=False, loc=legend_loc)
+            # elif legend_loc == 'upper left' and i_row == 0 and i_col == 0:
+            #     ax.legend(frameon=False, loc=legend_loc)
+
             # legend (only once)
-            if legend_loc == 'upper right' and i_row == 0 and i_col == n_cols - 1:
-                ax.legend(frameon=False, loc=legend_loc)
-            elif legend_loc == 'upper left' and i_row == 0 and i_col == 0:
-                ax.legend(frameon=False, loc=legend_loc)
+            show_legend = (
+                (legend_loc == "upper right" and i_row == 0 and i_col == n_cols - 1)
+                or
+                (legend_loc == "upper left" and i_row == 0 and i_col == 0)
+            )
+
+            if show_legend:
+                legend_kwargs = {"frameon": False, "loc": legend_loc}
+                if fontsize is not None:
+                    legend_kwargs["fontsize"] = fontsize
+                ax.legend(**legend_kwargs)
             
             xlim = ax.get_xlim()
             ylim = ax.get_ylim()
@@ -230,10 +245,19 @@ def render_partmc_and_mam4_variable_grid(
         xvarlab = 'wavelength [nm]'
     else:
         yvarlab = varname.replace("_", " ")
-    axes[np.floor(n_rows/2).astype(int), 0].set_ylabel(yvarlab)
     
+    label_kwargs = {}
+    if fontsize is not None:
+        label_kwargs["fontsize"] = fontsize
+
+    axes[np.floor(n_rows/2).astype(int), 0].set_ylabel(yvarlab, **label_kwargs)
+
     for i_col in range(n_cols):
-        axes[-1, i_col].set_xlabel(xvarlab)
+        axes[-1, i_col].set_xlabel(xvarlab, **label_kwargs)
+    # axes[np.floor(n_rows/2).astype(int), 0].set_ylabel(yvarlab)
+    
+    # for i_col in range(n_cols):
+    #     axes[-1, i_col].set_xlabel(xvarlab)
 
     return fig, axes
 
@@ -247,7 +271,9 @@ def render_dNdlnD_grid(
     xscale='log', yscale='linear',
     spec_modifications={},
     sharex=True, sharey=False,
-    color=None):
+    color=None,
+    fontsize=None,
+    ) -> Tuple[plt.Figure, np.ndarray]:
     """
     Render a grid of aerosol size distributions (dNdlnD) for multiple scenarios and timesteps.
     Each subplot shows the size distribution for a given scenario and timestep, using data from PartMC and MAM4.
@@ -271,6 +297,7 @@ def render_dNdlnD_grid(
         sharex = sharex,
         sharey = sharey,
         color = color,
+        fontsize = fontsize
         )
 
 def render_frac_ccn_grid(
@@ -280,7 +307,8 @@ def render_frac_ccn_grid(
     s_grid=np.logspace(-2, 1.0, 50),
     legend_loc=None, row_colors=None,
     xscale='log', yscale='linear',
-    spec_modifications={}):
+    spec_modifications={},
+    fontsize=None):
     """
     Render grid of CCN activation fraction vs supersaturation for specified scenarios and timesteps.
     """
@@ -298,6 +326,7 @@ def render_frac_ccn_grid(
         xscale = xscale,
         yscale = yscale,
         species_modifications = spec_modifications, # modify aerosol species during post-processing (e.g., assume BrC rather than non-absorbing OC)
+        fontsize = fontsize
         )
 
 def render_bscat_grid(
@@ -307,7 +336,8 @@ def render_bscat_grid(
     wvl_grid=np.linspace(0.35e-6, 0.8e-6, 30), rh_grid=[0.0],
     legend_loc='upper right', row_colors=None,
     xscale='linear', yscale='linear',
-    spec_modifications={}):
+    spec_modifications={}, 
+    fontsize=None):
     """
     Render grid of bscat vs wavelength at specified RH values.
     """
@@ -325,6 +355,7 @@ def render_bscat_grid(
         xscale = xscale,
         yscale = yscale,
         species_modifications = spec_modifications, # modify aerosol species during post-processing (e.g., assume BrC rather than non-absorbing OC)
+        fontsize = fontsize
         )
 
 
