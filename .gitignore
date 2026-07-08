@@ -3,11 +3,12 @@
 
 .DS_Store
 
-**/*.nc
-
 .ipynb_checkpoints/
 ambrs/.ipynb_checkpoints/
 test/.ipynb_checkpoints/
+
+**/*.nc
+**/fort*
 
 ambrs.egg-info
 
