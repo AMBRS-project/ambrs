@@ -2,8 +2,8 @@
 *.pyc
 
 .DS_Store
-runs/
-/*.nc
+
+**/*.nc
 
 .ipynb_checkpoints/
 ambrs/.ipynb_checkpoints/
@@ -12,10 +12,10 @@ test/.ipynb_checkpoints/
 ambrs.egg-info
 
 # Generated root-level figures
-/*.png
-/*.jpg
-/*.jpeg
-/*.pdf
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.pdf
 
 *span_seeds*
 # AMBRS tutorial generated raw model output

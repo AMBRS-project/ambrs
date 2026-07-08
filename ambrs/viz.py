@@ -168,7 +168,6 @@ def render_partmc_and_mam4_variable_grid(
                     species_modifications=species_modifications,
                     ensemble_output_dir=mam4_dir,
                 )
-
             if partmc_dir is not None and mam4_dir is not None:
                 series = (
                     ("partmc", partmc_output.particle_population, "PartMC"),
