@@ -3,13 +3,17 @@
 
 .DS_Store
 
+# Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 ambrs/.ipynb_checkpoints/
 test/.ipynb_checkpoints/
 
+# demo output
 **/*.nc
 **/fort*
+**/*.log 
 
+# AMBRS build artifacts
 ambrs.egg-info
 
 # Generated root-level figures
@@ -18,7 +22,14 @@ ambrs.egg-info
 **/*.jpeg
 **/*.pdf
 
+# Coverage output
+.coverage
+coverage.xml
+htmlcov/
+
+# sensitivity analysis output
 *span_seeds*
+
 # AMBRS tutorial generated raw model output
 tutorial/data/raw/**/run/
 tutorial/data/raw/**/*.nc
