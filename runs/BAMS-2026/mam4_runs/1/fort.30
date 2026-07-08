@@ -1,0 +1,300 @@
+
+cambox_do_run doing calcsize, istep=       1
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.3608E+03  3.4690E+00  1.1000E+02    8.6026E+02  9.5285E-03  2.6000E+01
+
+cambox_do_run doing calcsize, istep=       2
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.4954E+03  6.7447E+00  1.3478E+02    7.2427E+02  2.6156E-02  3.8554E+01
+
+cambox_do_run doing calcsize, istep=       3
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.6321E+03  9.5800E+00  1.4883E+02    5.8658E+02  3.3244E-02  4.4802E+01
+
+cambox_do_run doing calcsize, istep=       4
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7025E+03  1.1270E+01  1.5574E+02    5.1531E+02  3.6104E-02  4.8084E+01
+
+cambox_do_run doing calcsize, istep=       5
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7327E+03  1.2065E+01  1.5873E+02    4.8434E+02  3.7294E-02  4.9622E+01
+
+cambox_do_run doing calcsize, istep=       6
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7445E+03  1.2397E+01  1.5994E+02    4.7170E+02  3.7771E-02  5.0273E+01
+
+cambox_do_run doing calcsize, istep=       7
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7488E+03  1.2528E+01  1.6042E+02    4.6655E+02  3.7950E-02  5.0537E+01
+
+cambox_do_run doing calcsize, istep=       8
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7502E+03  1.2579E+01  1.6061E+02    4.6434E+02  3.8011E-02  5.0644E+01
+
+cambox_do_run doing calcsize, istep=       9
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7505E+03  1.2598E+01  1.6069E+02    4.6327E+02  3.8025E-02  5.0690E+01
+
+cambox_do_run doing calcsize, istep=      10
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7503E+03  1.2606E+01  1.6072E+02    4.6264E+02  3.8023E-02  5.0712E+01
+
+cambox_do_run doing calcsize, istep=      11
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7500E+03  1.2608E+01  1.6074E+02    4.6217E+02  3.8013E-02  5.0725E+01
+
+cambox_do_run doing calcsize, istep=      12
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7496E+03  1.2610E+01  1.6075E+02    4.6176E+02  3.8001E-02  5.0734E+01
+
+cambox_do_run doing calcsize, istep=      13
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7492E+03  1.2610E+01  1.6076E+02    4.6138E+02  3.7987E-02  5.0742E+01
+
+cambox_do_run doing calcsize, istep=      14
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7488E+03  1.2610E+01  1.6077E+02    4.6101E+02  3.7974E-02  5.0750E+01
+
+cambox_do_run doing calcsize, istep=      15
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7484E+03  1.2610E+01  1.6078E+02    4.6065E+02  3.7960E-02  5.0757E+01
+
+cambox_do_run doing calcsize, istep=      16
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7479E+03  1.2610E+01  1.6079E+02    4.6028E+02  3.7946E-02  5.0764E+01
+
+cambox_do_run doing calcsize, istep=      17
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7475E+03  1.2610E+01  1.6080E+02    4.5992E+02  3.7933E-02  5.0771E+01
+
+cambox_do_run doing calcsize, istep=      18
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7471E+03  1.2610E+01  1.6080E+02    4.5955E+02  3.7919E-02  5.0779E+01
+
+cambox_do_run doing calcsize, istep=      19
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7467E+03  1.2610E+01  1.6081E+02    4.5919E+02  3.7905E-02  5.0786E+01
+
+cambox_do_run doing calcsize, istep=      20
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7462E+03  1.2610E+01  1.6082E+02    4.5883E+02  3.7891E-02  5.0793E+01
+
+cambox_do_run doing calcsize, istep=      21
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7458E+03  1.2610E+01  1.6083E+02    4.5847E+02  3.7878E-02  5.0800E+01
+
+cambox_do_run doing calcsize, istep=      22
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7454E+03  1.2610E+01  1.6084E+02    4.5811E+02  3.7864E-02  5.0808E+01
+
+cambox_do_run doing calcsize, istep=      23
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7449E+03  1.2610E+01  1.6085E+02    4.5774E+02  3.7850E-02  5.0815E+01
+
+cambox_do_run doing calcsize, istep=      24
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7445E+03  1.2610E+01  1.6085E+02    4.5738E+02  3.7836E-02  5.0822E+01
+
+cambox_do_run doing calcsize, istep=      25
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7441E+03  1.2610E+01  1.6086E+02    4.5702E+02  3.7823E-02  5.0829E+01
+
+cambox_do_run doing calcsize, istep=      26
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7437E+03  1.2610E+01  1.6087E+02    4.5666E+02  3.7809E-02  5.0836E+01
+
+cambox_do_run doing calcsize, istep=      27
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7432E+03  1.2611E+01  1.6088E+02    4.5630E+02  3.7795E-02  5.0844E+01
+
+cambox_do_run doing calcsize, istep=      28
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7428E+03  1.2611E+01  1.6089E+02    4.5594E+02  3.7782E-02  5.0851E+01
+
+cambox_do_run doing calcsize, istep=      29
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7424E+03  1.2611E+01  1.6090E+02    4.5559E+02  3.7768E-02  5.0858E+01
+
+cambox_do_run doing calcsize, istep=      30
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7420E+03  1.2611E+01  1.6091E+02    4.5523E+02  3.7754E-02  5.0865E+01
+
+cambox_do_run doing calcsize, istep=      31
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7415E+03  1.2611E+01  1.6091E+02    4.5487E+02  3.7741E-02  5.0872E+01
+
+cambox_do_run doing calcsize, istep=      32
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7411E+03  1.2611E+01  1.6092E+02    4.5451E+02  3.7727E-02  5.0880E+01
+
+cambox_do_run doing calcsize, istep=      33
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7407E+03  1.2611E+01  1.6093E+02    4.5416E+02  3.7713E-02  5.0887E+01
+
+cambox_do_run doing calcsize, istep=      34
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7402E+03  1.2611E+01  1.6094E+02    4.5380E+02  3.7700E-02  5.0894E+01
+
+cambox_do_run doing calcsize, istep=      35
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7398E+03  1.2611E+01  1.6095E+02    4.5344E+02  3.7686E-02  5.0901E+01
+
+cambox_do_run doing calcsize, istep=      36
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7394E+03  1.2611E+01  1.6096E+02    4.5309E+02  3.7672E-02  5.0908E+01
+
+cambox_do_run doing calcsize, istep=      37
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7390E+03  1.2611E+01  1.6096E+02    4.5273E+02  3.7659E-02  5.0916E+01
+
+cambox_do_run doing calcsize, istep=      38
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7385E+03  1.2611E+01  1.6097E+02    4.5238E+02  3.7645E-02  5.0923E+01
+
+cambox_do_run doing calcsize, istep=      39
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7381E+03  1.2611E+01  1.6098E+02    4.5202E+02  3.7632E-02  5.0930E+01
+
+cambox_do_run doing calcsize, istep=      40
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7377E+03  1.2611E+01  1.6099E+02    4.5167E+02  3.7618E-02  5.0937E+01
+
+cambox_do_run doing calcsize, istep=      41
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7373E+03  1.2611E+01  1.6100E+02    4.5131E+02  3.7604E-02  5.0944E+01
+
+cambox_do_run doing calcsize, istep=      42
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7368E+03  1.2611E+01  1.6101E+02    4.5096E+02  3.7591E-02  5.0952E+01
+
+cambox_do_run doing calcsize, istep=      43
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7364E+03  1.2611E+01  1.6101E+02    4.5061E+02  3.7577E-02  5.0959E+01
+
+cambox_do_run doing calcsize, istep=      44
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7360E+03  1.2611E+01  1.6102E+02    4.5025E+02  3.7564E-02  5.0966E+01
+
+cambox_do_run doing calcsize, istep=      45
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7356E+03  1.2611E+01  1.6103E+02    4.4990E+02  3.7550E-02  5.0973E+01
+
+cambox_do_run doing calcsize, istep=      46
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7351E+03  1.2611E+01  1.6104E+02    4.4955E+02  3.7537E-02  5.0980E+01
+
+cambox_do_run doing calcsize, istep=      47
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7347E+03  1.2611E+01  1.6105E+02    4.4920E+02  3.7523E-02  5.0987E+01
+
+cambox_do_run doing calcsize, istep=      48
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7343E+03  1.2611E+01  1.6106E+02    4.4885E+02  3.7510E-02  5.0995E+01
+
+cambox_do_run doing calcsize, istep=      49
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7339E+03  1.2611E+01  1.6107E+02    4.4850E+02  3.7496E-02  5.1002E+01
+
+cambox_do_run doing calcsize, istep=      50
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7334E+03  1.2611E+01  1.6107E+02    4.4814E+02  3.7483E-02  5.1009E+01
+
+cambox_do_run doing calcsize, istep=      51
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7330E+03  1.2611E+01  1.6108E+02    4.4779E+02  3.7469E-02  5.1016E+01
+
+cambox_do_run doing calcsize, istep=      52
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7326E+03  1.2611E+01  1.6109E+02    4.4744E+02  3.7456E-02  5.1023E+01
+
+cambox_do_run doing calcsize, istep=      53
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7322E+03  1.2611E+01  1.6110E+02    4.4710E+02  3.7442E-02  5.1030E+01
+
+cambox_do_run doing calcsize, istep=      54
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7317E+03  1.2611E+01  1.6111E+02    4.4675E+02  3.7429E-02  5.1038E+01
+
+cambox_do_run doing calcsize, istep=      55
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7313E+03  1.2611E+01  1.6112E+02    4.4640E+02  3.7415E-02  5.1045E+01
+
+cambox_do_run doing calcsize, istep=      56
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7309E+03  1.2611E+01  1.6112E+02    4.4605E+02  3.7402E-02  5.1052E+01
+
+cambox_do_run doing calcsize, istep=      57
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7305E+03  1.2611E+01  1.6113E+02    4.4570E+02  3.7388E-02  5.1059E+01
+
+cambox_do_run doing calcsize, istep=      58
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7301E+03  1.2611E+01  1.6114E+02    4.4535E+02  3.7375E-02  5.1066E+01
+
+cambox_do_run doing calcsize, istep=      59
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7296E+03  1.2611E+01  1.6115E+02    4.4501E+02  3.7361E-02  5.1073E+01
+
+cambox_do_run doing calcsize, istep=      60
+calcsize tend = 0 for all species
+k, accum num, so4, dgncur_a, same for aitken  (#/mg,  nmol/mol,  nm)
+   1    2.7292E+03  1.2611E+01  1.6116E+02    4.4466E+02  3.7348E-02  5.1080E+01
