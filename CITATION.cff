@@ -3,7 +3,7 @@ message: "If you use AMBRS, please cite the associated AMBRS paper. Until the pa
 
 title: "Aerosol Model Benchmarking Repository and Standards (AMBRS)"
 type: software
-version: 1.0.0
+version: 2026.0
 date-released: 2026-05-21
 url: "https://github.com/AMBRS-project/ambrs"
 
