@@ -5,6 +5,8 @@ installed.
 """
 
 import math
+import os
+import tempfile
 import unittest
 import warnings
 
@@ -255,6 +257,73 @@ class TestRun(unittest.TestCase):
         model.run(model.create_input(scenario, dt = 60.0, nstep = 2))
         model.run(model.create_input(scenario, dt = 60.0, nstep = 3))
         self.assertEqual(len(model._step_cache), 1)
+
+
+@unittest.skipUnless(HAVE_TOMAS, 'tomas_jax is not installed')
+class TestEnsembleAndFiles(unittest.TestCase):
+    """Unit tests for run_ensemble, the input files, and retrieve_model_state"""
+
+    def setUp(self):
+        self.model = tomas_jax.AerosolModel(
+            aerosol.AerosolProcesses(coagulation = True))
+
+    def test_run_ensemble_returns_one_output_per_input(self):
+        from part2pop import ParticlePopulation
+        inputs = self.model.create_inputs(
+            [make_scenario() for _ in range(3)], dt = 60.0, nstep = 2)
+        outputs = self.model.run_ensemble(inputs)
+        self.assertEqual(len(outputs), 3)
+        self.assertEqual([o.scenario_name for o in outputs], ['1', '2', '3'])
+        for output in outputs:
+            self.assertIsInstance(output.particle_population, ParticlePopulation)
+        self.assertEqual(len(self.model._step_cache), 1) # one step, reused
+
+    def test_run_ensemble_rejects_a_non_list(self):
+        self.assertRaises(TypeError, self.model.run_ensemble, 'not-a-list')
+
+    def test_input_files_round_trip(self):
+        input = self.model.create_input(make_scenario(), dt = 60.0, nstep = 7)
+        with tempfile.TemporaryDirectory() as dir:
+            self.model.write_input_files(input, dir, 'scenario-1')
+            self.assertTrue(os.path.exists(os.path.join(dir, 'scenario-1.npz')))
+            self.assertTrue(os.path.exists(os.path.join(dir, 'scenario-1.txt')))
+            restored = self.model.read_input(dir, 'scenario-1')
+        np.testing.assert_allclose(restored.Nk, input.Nk)
+        np.testing.assert_allclose(restored.Mk, input.Mk)
+        np.testing.assert_allclose(restored.Gc, input.Gc)
+        np.testing.assert_allclose(restored.xk, input.xk)
+        self.assertEqual(restored.processes, input.processes)
+        self.assertEqual(restored.nstep, input.nstep)
+        self.assertEqual(restored.dt, input.dt)
+
+    def test_write_input_files_needs_an_existing_directory(self):
+        input = self.model.create_input(make_scenario(), dt = 60.0, nstep = 1)
+        self.assertRaises(OSError, self.model.write_input_files,
+                          input, '/no/such/directory', 'scenario-1')
+
+    def test_retrieve_model_state_reads_and_runs(self):
+        from part2pop import ParticlePopulation
+        scenario = make_scenario()
+        input = self.model.create_input(scenario, dt = 60.0, nstep = 5)
+        with tempfile.TemporaryDirectory() as root:
+            dir = os.path.join(root, 'scenario-1')
+            os.mkdir(dir)
+            self.model.write_input_files(input, dir, 'scenario-1')
+            output = tomas_jax.retrieve_model_state(
+                'scenario-1', scenario, timestep = 5,
+                ensemble_output_dir = root)
+        self.assertEqual(output.model_name, 'tomas-jax')
+        self.assertEqual(output.scenario_name, 'scenario-1')
+        self.assertIs(output.scenario, scenario)
+        self.assertIsInstance(output.particle_population, ParticlePopulation)
+
+    def test_retrieve_model_state_rejects_a_nonpositive_timestep(self):
+        self.assertRaises(ValueError, tomas_jax.retrieve_model_state,
+                          'scenario-1', make_scenario(), 0)
+
+    def test_invocation_is_not_supported(self):
+        from ambrs.aerosol_model import NotImplementedError as NotOverridden
+        self.assertRaises(NotOverridden, self.model.invocation, 'exe', 'prefix')
 
 
 if __name__ == '__main__':
