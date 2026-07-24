@@ -41,9 +41,131 @@ try:
         MW_H2SO4, MW_SO2, AVOGADRO, PI,
     )
     from tomas_jax.solvers.condensation import make_step
+
+    # AMBRS aerosol species -> TOMAS species index. TOMAS carries sulfate, a run
+    # of organics (SRTORG1..IORG), ammonium and water; see UNMAPPED_SPECIES below
+    # for everything else.
+    AEROSOL_SPECIES_MAP = {
+        'SO4': SRTSO4,
+        'NH4': SRTNH4,
+        'H2O': SRTH2O,
+        # organics are lumped into the first organic slot
+        'OC': SRTORG1, 'MSA': SRTORG1,
+        'ARO1': SRTORG1, 'ARO2': SRTORG1, 'ALK1': SRTORG1, 'OLE1': SRTORG1,
+        'API1': SRTORG1, 'API2': SRTORG1, 'LIM1': SRTORG1, 'LIM2': SRTORG1,
+    }
+
+    # AMBRS gas species -> index in TOMAS's gas array Gc. NH3 has no Gc slot; it
+    # is passed to the nucleation scheme as nh3_conc instead (see create_input).
+    GAS_SPECIES_MAP = {
+        'H2SO4': SRTSO4,
+        'SO2': SRTSO2,
+    }
+
+    # molar masses [g/mol] used to convert gas number concentrations to the
+    # kg-per-grid-cell units TOMAS stores in Gc
+    _GAS_MOLAR_MASS = {
+        'H2SO4': MW_H2SO4,
+        'SO2': MW_SO2,
+    }
+
     _TOMAS_AVAILABLE = True
 except (ImportError, OSError):
     _TOMAS_AVAILABLE = False
+
+# AMBRS aerosol species with no TOMAS analog. TOMAS has no black carbon, dust or
+# inorganic-salt slot, so this mass is lumped into the organic slot: total mass
+# is conserved but the speciation is approximate. Callers are warned.
+UNMAPPED_SPECIES = frozenset({'BC', 'OIN', 'NO3', 'Cl', 'Na', 'Ca', 'CO3'})
+
+# TOMAS applies its processes in this order within a step
+_PROCESS_ORDER = ('so2_chemistry', 'nucleation', 'coagulation', 'condensation',
+                  'dilution')
+
+
+def _gas_conc_to_kg_per_cell(conc_molec_cm3, boxvol, molar_mass_g_mol):
+    """Convert a gas number concentration [molec cm^-3] to [kg per grid cell]."""
+    return conc_molec_cm3 * boxvol * (molar_mass_g_mol / 1000.0) / AVOGADRO
+
+
+def map_species_fractions(species_names, mass_fractions):
+    """Map an AMBRS mode's (species_names, mass_fractions) onto TOMAS species
+indices, conserving total mass.
+
+Returns (frac_by_index, remapped): a {tomas_index: mass_fraction} dict, and the
+names that had no TOMAS slot and were lumped into the organic slot.
+"""
+    frac_by_index = {}
+    remapped = []
+    for name, frac in zip(species_names, mass_fractions):
+        index = AEROSOL_SPECIES_MAP.get(name)
+        if index is None:
+            index = SRTORG1  # conserve mass by lumping into the organic slot
+            remapped.append(name)
+        frac_by_index[index] = frac_by_index.get(index, 0.0) + float(frac)
+    if remapped:
+        warnings.warn(
+            'tomas_jax: aerosol species %s have no TOMAS-JAX slot; their mass '
+            'was lumped into the organic slot, so total mass is conserved but '
+            'the speciation is approximate.' % ', '.join(remapped),
+            stacklevel = 2,
+        )
+    return frac_by_index, tuple(remapped)
+
+
+def lognormal_to_bins(xk, number, geom_mean_diam, log10_geom_std_dev,
+                      boxvol, dens = 1770.0):
+    """Integrate a single log-normal mode onto TOMAS's mass-doubling grid.
+
+Mirrors TOMAS-JAX's own initializer but takes the parameters an AMBRS
+AerosolModeState carries: a geometric mean diameter in metres and the base-10
+logarithm of the geometric standard deviation.
+
+Parameters:
+    * xk: bin boundary masses [kg], shape (nbins+1,)
+    * number: modal number concentration [# cm^-3]
+    * geom_mean_diam: geometric mean diameter [m]
+    * log10_geom_std_dev: log10 of the geometric standard deviation
+    * boxvol: grid-cell volume [cm^3]
+    * dens: density relating bin mass to diameter [kg m^-3]
+
+Returns Nk, the number per bin [# per grid cell], shape (nbins,).
+"""
+    xk = np.asarray(xk, dtype = float)
+    nbins = len(xk) - 1
+    gsd = 10.0 ** log10_geom_std_dev
+    gmd_um = geom_mean_diam * 1e6 # the integral below works in micrometres
+    Nk = np.zeros(nbins)
+    for k in range(nbins):
+        Dl = 1e6 * ((6.0 * xk[k]) / (dens * PI)) ** (1.0 / 3.0)
+        Dh = 1e6 * ((6.0 * xk[k + 1]) / (dens * PI)) ** (1.0 / 3.0)
+        Dk = np.sqrt(Dl * Dh)
+        Nk[k] = ((number * boxvol)
+                 / (np.sqrt(2 * PI) * Dk * np.log(gsd))
+                 * np.exp(-(np.log(Dk / gmd_um) ** 2 / (2 * np.log(gsd) ** 2)))
+                 * (Dh - Dl))
+    return Nk
+
+
+def distribute_mass(Nk, xk, frac_by_index):
+    """Distribute each bin's mass across TOMAS species indices.
+
+Each bin's particles are given the geometric-mean bin mass sqrt(xk[k]*xk[k+1]),
+matching TOMAS-JAX's own initializer.
+
+Parameters:
+    * Nk: number per bin [# per grid cell], shape (nbins,)
+    * xk: bin boundary masses [kg], shape (nbins+1,)
+    * frac_by_index: {tomas_index: mass_fraction} for this mode
+
+Returns Mk [kg per grid cell], shape (nbins, ICOMP).
+"""
+    xk = np.asarray(xk, dtype = float)
+    Mk = np.zeros((len(xk) - 1, ICOMP))
+    bin_mass = np.asarray(Nk, dtype = float) * np.sqrt(xk[:-1] * xk[1:])
+    for index, frac in frac_by_index.items():
+        Mk[:, index] += bin_mass * frac
+    return Mk
 
 
 @dataclass
