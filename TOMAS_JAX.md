@@ -69,6 +69,9 @@ for out in outputs:
     print(out.compute_variable('dNdlnD'))
 ```
 
+A runnable version of this, with plots, is in
+[`demo_tomas_jax.ipynb`](demo_tomas_jax.ipynb).
+
 `run_ensemble` reuses a single JIT-compiled step across the whole ensemble, so the
 compilation cost is paid once rather than per scenario. A single input can also be
 run directly with `model.run(input, scenario_name=...)`.
