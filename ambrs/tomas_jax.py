@@ -346,8 +346,134 @@ Parameters:
             scenario = scenario,
         )
 
+    def step_function(self, processes):
+        """The compiled TOMAS step for a set of processes.
+
+Compiling is expensive, so steps are cached on the model and reused across every
+scenario in an ensemble.
+"""
+        if not hasattr(self, '_step_cache'):
+            self._step_cache = {}
+        key = (processes, self.cond_method, self.nucl_scheme)
+        if key not in self._step_cache:
+            self._step_cache[key] = make_step(
+                list(processes),
+                cond_method = self.cond_method,
+                nucl_scheme = self.nucl_scheme)
+        return self._step_cache[key]
+
     def run(self, input, scenario_name: str = 'tomas-jax') -> Output:
-        raise NotImplementedError('tomas_jax.AerosolModel.run not yet implemented!')
+        """ambrs.tomas_jax.AerosolModel.run(input, scenario_name) ->
+ambrs.analysis.Output describing the final state of the simulation.
+
+Steps the input's state input.nstep times and converts the result into an
+Output, exactly as retrieve_model_state does for the executable models. TOMAS-JAX
+runs in process, so there are no output files to read.
+"""
+        import jax.numpy as jnp
+
+        Nk = jnp.asarray(input.Nk)
+        Mk = jnp.asarray(input.Mk)
+        Gc = jnp.asarray(input.Gc)
+        xk = jnp.asarray(input.xk)
+
+        # TOMAS's step doesn't add the H2SO4 source term itself
+        produced = _gas_conc_to_kg_per_cell(
+            input.h2so4_production * input.dt, input.boxvol, MW_H2SO4)
+        nucleation_args = {}
+        if 'nucleation' in input.processes:
+            nucleation_args = dict(
+                org_conc = input.org_conc, nh3_conc = input.nh3_conc,
+                fion = input.fion, fn_scale = input.fn_scale)
+
+        step = self.step_function(input.processes) if input.processes else None
+        for _ in range(input.nstep):
+            if input.h2so4_production:
+                Gc = Gc.at[SRTSO4].add(produced)
+            if step is not None:
+                Nk, Mk, Gc = step(
+                    Nk, Mk, Gc, xk, input.temp, input.pres, input.boxvol,
+                    input.rh, input.alpha, input.dt, **nucleation_args)
+
+        return Output(
+            model_name = self.name,
+            scenario_name = scenario_name,
+            scenario = input.scenario,
+            timestep = input.nstep,
+            particle_population = self.build_population(
+                np.asarray(Nk), np.asarray(Mk), np.asarray(xk), input.boxvol),
+            gas_mixture = self.build_gas_mixture(
+                np.asarray(Gc), input.temp, input.pres, input.boxvol),
+            thermodynamics = {'T': input.temp, 'p': input.pres, 'RH': input.rh},
+        )
+
+    def build_population(self, Nk, Mk, xk, boxvol):
+        """Build a part2pop ParticlePopulation from TOMAS's per-bin state.
+
+Each non-empty bin becomes one particle, whose composition is that bin's mass
+across the dry TOMAS species and whose number concentration is Nk/boxvol
+converted back to the [# m^-3] the rest of ambrs uses.
+
+TOMAS is a two-moment model, so a bin's mean particle mass is Mk/Nk rather than
+the geometric bin mass; taking the diameter from Mk/Nk is what makes the
+population's total mass match the model's.
+"""
+        from part2pop import ParticlePopulation, make_particle
+        from part2pop.species.registry import get_species
+
+        # dry species only: part2pop adds water from the ambient humidity
+        names = ['SO4', 'OC', 'NH4']
+        masses = np.column_stack([
+            Mk[:, SRTSO4],
+            Mk[:, SRTORG1:SRTNH4].sum(axis = 1), # organics -> a single OC proxy
+            Mk[:, SRTNH4],
+        ])
+        dry_mass = masses.sum(axis = 1)
+
+        with np.errstate(divide = 'ignore', invalid = 'ignore'):
+            mean_mass = np.where(Nk > 0.0, dry_mass / Nk, 0.0)
+        # (near-)empty bins carry negligible number; fall back to the bin's own
+        # geometric mass so their diameter is still well defined
+        geometric_mass = np.sqrt(xk[:-1] * xk[1:])
+        mean_mass = np.where(mean_mass > 0.0, mean_mass, geometric_mass)
+        diameters = np.cbrt(mean_mass / self.density * 6.0 / np.pi) # [m]
+        num_concs = (Nk / boxvol) * 1e6                             # [# m^-3]
+
+        # drop species that carry no mass, but always keep sulfate so that a
+        # population is never empty
+        totals = masses.sum(axis = 0)
+        keep = [i for i in range(len(names)) if i == 0 or totals[i] > 0.0]
+        names = [names[i] for i in keep]
+        masses = masses[:, keep]
+
+        species = tuple(get_species(name, None) for name in names)
+        population = ParticlePopulation(
+            species = species, spec_masses = [], num_concs = [], ids = [],
+            species_modifications = {})
+        part_id = 0
+        for k in range(len(diameters)):
+            if num_concs[k] <= 0.0:
+                continue
+            total = masses[k].sum()
+            fractions = (masses[k] / total) if total > 0.0 \
+                else np.eye(len(names))[0] # nominal sulfate for an empty bin
+            particle = make_particle(
+                diameters[k], species, list(fractions),
+                specdata_path = None, species_modifications = {},
+                D_is_wet = False)
+            part_id += 1
+            population.set_particle(particle, part_id, float(num_concs[k]))
+        return population
+
+    def build_gas_mixture(self, Gc, temp, pres, boxvol):
+        """Build a GasMixture from TOMAS's gas array Gc [kg per grid cell]."""
+        R = 8.314462618 # [J mol^-1 K^-1]
+        moles_of_air = pres * (boxvol * 1e-6) / (R * temp)
+        return build_gas_mixture({
+            'SO2': float((Gc[SRTSO2] / (MW_SO2 / 1000.0)) / moles_of_air),
+            'H2SO4': float((Gc[SRTSO4] / (MW_H2SO4 / 1000.0)) / moles_of_air),
+            'units': 'mole_ratio',
+        })
 
     def write_input_files(self, input, dir: str, prefix: str) -> None:
         raise NotImplementedError('tomas_jax.AerosolModel.write_input_files not yet implemented!')

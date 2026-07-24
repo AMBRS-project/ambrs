@@ -199,5 +199,63 @@ class TestCreateInput(unittest.TestCase):
         self.assertRaises(TypeError, self.model.create_input, non_modal, 60.0, 10)
 
 
+@unittest.skipUnless(HAVE_TOMAS, 'tomas_jax is not installed')
+class TestRun(unittest.TestCase):
+    """Unit tests for ambrs.tomas_jax.AerosolModel.run"""
+
+    def test_run_produces_a_populated_output(self):
+        from part2pop import ParticlePopulation
+        model = tomas_jax.AerosolModel(
+            aerosol.AerosolProcesses(coagulation = True, condensation = True))
+        scenario = make_scenario()
+        output = model.run(model.create_input(scenario, dt = 60.0, nstep = 5),
+                           scenario_name = 'scenario-1')
+        self.assertEqual(output.model_name, 'tomas-jax')
+        self.assertEqual(output.scenario_name, 'scenario-1')
+        self.assertIs(output.scenario, scenario)
+        self.assertEqual(output.timestep, 5)
+        self.assertIsInstance(output.particle_population, ParticlePopulation)
+        self.assertGreater(output.particle_population.get_Ntot(), 0.0)
+
+    def test_thermodynamics_reports_the_scenario_state(self):
+        model = tomas_jax.AerosolModel(aerosol.AerosolProcesses(coagulation = True))
+        scenario = make_scenario(temperature = 273.0, pressure = 90000.0)
+        output = model.run(model.create_input(scenario, dt = 60.0, nstep = 1))
+        self.assertAlmostEqual(output.thermodynamics['T'], 273.0)
+        self.assertAlmostEqual(output.thermodynamics['p'], 90000.0)
+        self.assertAlmostEqual(output.thermodynamics['RH'],
+                               scenario.relative_humidity)
+
+    def test_coagulation_conserves_dry_mass_and_reduces_number(self):
+        model = tomas_jax.AerosolModel(aerosol.AerosolProcesses(coagulation = True))
+        # a high number concentration, so that coagulation is actually active
+        scenario = make_scenario(
+            modes = [make_mode('aitken', [so4], 1e12, 5e-8)])
+        early = model.run(model.create_input(scenario, dt = 60.0, nstep = 1))
+        late = model.run(model.create_input(scenario, dt = 60.0, nstep = 40))
+        early_pop = early.particle_population
+        late_pop = late.particle_population
+        self.assertLess(late_pop.get_Ntot(), early_pop.get_Ntot())
+        # TOMAS is two-moment, so taking diameters from Mk/Nk conserves mass
+        mass = early_pop.get_tot_dry_mass()
+        self.assertLess(
+            abs(late_pop.get_tot_dry_mass() - mass) / mass, 1e-6)
+
+    def test_the_output_works_with_the_framework_analysis(self):
+        model = tomas_jax.AerosolModel(aerosol.AerosolProcesses(coagulation = True))
+        output = model.run(
+            model.create_input(make_scenario(), dt = 60.0, nstep = 2))
+        result = output.compute_variable('dNdlnD')
+        dNdlnD = result['dNdlnD'] if isinstance(result, dict) else result
+        self.assertGreater(float(np.sum(dNdlnD)), 0.0)
+
+    def test_the_compiled_step_is_reused(self):
+        model = tomas_jax.AerosolModel(aerosol.AerosolProcesses(coagulation = True))
+        scenario = make_scenario()
+        model.run(model.create_input(scenario, dt = 60.0, nstep = 2))
+        model.run(model.create_input(scenario, dt = 60.0, nstep = 3))
+        self.assertEqual(len(model._step_cache), 1)
+
+
 if __name__ == '__main__':
     unittest.main()
