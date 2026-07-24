@@ -113,6 +113,18 @@ class TestLognormalBinning(unittest.TestCase):
         # midpoint integration of a mode well inside the grid, to within a few %
         self.assertLess(abs(np.sum(Nk) / BOXVOL - n_total) / n_total, 0.05)
 
+    def test_bin_diameters_match_the_tomas_grid(self):
+        from tomas_jax.core.config import NBINS
+        diameters = tomas_jax.bin_diameters(self.xk)
+        # one diameter per bin, ascending, spanning the nm-to-micron range
+        self.assertEqual(diameters.shape, (NBINS,))
+        self.assertTrue(np.all(np.diff(diameters) > 0.0))
+        self.assertGreater(diameters[0], 1e-9)
+        self.assertLess(diameters[-1], 1e-4)
+        # the grid is mass-doubling, so diameters step by 2**(1/3)
+        np.testing.assert_allclose(diameters[1:] / diameters[:-1],
+                                   2.0 ** (1.0 / 3.0), rtol = 1e-9)
+
     def test_mass_is_split_across_the_requested_species(self):
         from tomas_jax.core.config import ICOMP, SRTSO4, SRTORG1
         Nk = tomas_jax.lognormal_to_bins(

@@ -147,6 +147,24 @@ Returns Nk, the number per bin [# per grid cell], shape (nbins,).
     return Nk
 
 
+def bin_diameters(xk, dens = 1770.0):
+    """The diameter at the centre of each TOMAS bin [m].
+
+TOMAS's grid is defined by bin boundary *masses*, so a size distribution should be
+evaluated on the diameters those bins correspond to: sampling more finely than the
+model resolves leaves empty bins between populated ones, which shows up as a comb
+of spikes rather than a smooth distribution.
+
+Parameters:
+    * xk: bin boundary masses [kg], shape (nbins+1,)
+    * dens: density relating bin mass to diameter [kg m^-3]
+
+Returns the bin-centre diameters [m], shape (nbins,).
+"""
+    xk = np.asarray(xk, dtype = float)
+    return np.cbrt(np.sqrt(xk[:-1] * xk[1:]) / dens * 6.0 / np.pi)
+
+
 def distribute_mass(Nk, xk, frac_by_index):
     """Distribute each bin's mass across TOMAS species indices.
 
