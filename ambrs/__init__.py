@@ -12,6 +12,7 @@ from .scenario import Scenario
 # from .camp import CAMP
 from . import mam4
 from . import partmc
+from . import tomas_jax
 # from . import mphys
 
 from . import viz
