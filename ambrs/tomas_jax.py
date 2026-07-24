@@ -36,8 +36,8 @@ try:
     import tomas_jax.core.config as _tomas_config  # noqa: F401  (import first!)
     from tomas_jax.core.config import (
         xk_boundaries,
-        NBINS, ICOMP, N_GAS_SPECIES,
-        SRTSO4, SRTSO2, SRTNH4, SRTH2O, SRTORG1, IORG,
+        ICOMP, N_GAS_SPECIES,
+        SRTSO4, SRTSO2, SRTNH4, SRTH2O, SRTORG1,
         MW_H2SO4, MW_SO2, AVOGADRO, PI,
     )
     from tomas_jax.solvers.condensation import make_step
