@@ -21,3 +21,4 @@ six==1.16.0
 tzdata==2024.1
 part2pop==1.1.0
 pytest==8.3.5
+carma-jax @ git+https://github.com/reflective-org/carma-jax.git@a2dc083af91142a059210a75d6240e8daa4837df

@@ -10,6 +10,7 @@ from .runners import PoolRunner
 from .scenario import Scenario
 
 # from .camp import CAMP
+from . import carma_jax
 from . import mam4
 from . import partmc
 # from . import mphys
