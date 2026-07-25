@@ -14,13 +14,25 @@ project if you're interested in participating.
 
 ## Supported Aerosol Box Models
 
-All of the box models supported by AMBRS are forked under the [AMBRS-Project](https://github.com/AMBRS-project) GitHub organization. The box models we currently support are
+### Executable models
+
+These are compiled programs: AMBRS writes their native input files and runs them as
+subprocesses. They are forked under the [AMBRS-Project](https://github.com/AMBRS-project)
+GitHub organization.
 
 * [PartMC](https://github.com/AMBRS-project/partmc)
 * [MAM4](https://github.com/AMBRS-project/MAM_box_model)
 
 AMBRS provides a [CMake](https://cmake.org/)-based [automated tool](https://github.com/AMBRS-project/ambuilder)
 for configuring and building each of these aerosol models and their dependencies.
+
+### In-process models
+
+These are Python libraries that AMBRS imports and steps directly, so they need no
+build step and no executable.
+
+* [CARMA-JAX](https://github.com/reflective-org/carma-jax) — a JAX port of the CARMA
+  sectional aerosol model (coagulation). See [CARMA_JAX.md](CARMA_JAX.md).
 
 ## System Requirements
 
