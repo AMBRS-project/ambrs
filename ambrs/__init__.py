@@ -11,6 +11,7 @@ from .scenario import Scenario
 
 # from .camp import CAMP
 from . import mam4
+from . import mam4_jax
 from . import partmc
 # from . import mphys
 
