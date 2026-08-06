@@ -183,8 +183,7 @@ class AerosolModel(BaseAerosolModel):
         aero_data = self._build_aero_data(scenario.aerosols)
         aero_init = self._modal_state_to_aeromodes(scenario.size)
         do_mosaic = self.processes.condensation and not self.processes.do_camp_chem
-        # do_camp_chem = self.processes.condensation and self.processes.do_camp_chem
-        do_camp_chem = self.processes.do_camp_chem and isinstance(self.camp_config, CAMP)
+        do_camp_chem = self.processes.condensation and self.processes.do_camp_chem and isinstance(self.camp_config, CAMP)
         if self.processes.do_camp_chem and not isinstance(self.camp_config, CAMP):
             raise Exception('CAMP chemistry requires configuration')
 
@@ -360,6 +359,9 @@ class AerosolModel(BaseAerosolModel):
             spec_content += f'camp_config camp.json\n'
         else:
             spec_content += 'do_camp_chem no\n'
+
+        # TODO: add support for tchem
+        spec_content += 'do_tchem no\n'
         spec_content += '\n'
         
         # gas data
