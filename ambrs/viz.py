@@ -31,29 +31,28 @@ def _row_styles(base_styles: Dict[str, Dict[str, Any]], color) -> Dict[str, Dict
         "partmc": {**base_styles["partmc"], "color": color, "linestyle": "-",  "linewidth": 2.0},
         "mam4":   {**base_styles["mam4"],   "color": color, "linestyle": "--", "linewidth": 3.0},
     }
-    
+
 def _format_panel(ax, *, xscale=None, yscale=None, minimal_spines=True):
     if xscale:
         ax.set_xscale(xscale)
-    
+
     if yscale:
         ax.set_yscale(yscale)
-    
+
     if minimal_spines:
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
 
-def _add_row_label(ax, label: str, color: str = "black"):
+def _add_row_label(ax, label: str, color: str = "black",  fontsize: int = 12):
     xlims = ax.get_xlim()
     ylims = ax.get_ylim()
     ax.text(
         xlims[1] - 0.2*(xlims[1]-xlims[0]),
         0.95*(ylims[0]+ylims[1]),
         label,
-        # rotation=90,
         ha='left',
         va='center',
-        fontsize=12,
+        fontsize=fontsize,
         transform=ax.transData,
         color=color
     )
@@ -78,6 +77,14 @@ def make_bscat_cfg(wvl_grid=np.linspace(0.35e-6, 0.8e-6, 30), rh_grid=[0.0]):
     rh_grid = np.asarray(rh_grid)
     return ({"wvl_grid": wvl_grid, "rh_grid": rh_grid})
 
+def _as_array(value, n):
+    arr = np.asarray(value)
+    if arr.ndim == 0:
+        return np.full(n, arr.item())
+    if len(arr) == n:
+        return arr
+    return None
+
 # -----------------------------------------------------------
 # Functions for rendering grids of PartMC vs MAM4 comparisons
 # -----------------------------------------------------------
@@ -99,6 +106,7 @@ def render_partmc_and_mam4_variable_grid(
     sharex: bool = True,
     sharey: bool = False,
     color: str | Sequence[str] | None = None,
+    fontsize: int | None = None,
     ) -> Tuple[plt.Figure, np.ndarray]:
     """
     Render a grid where rows = scenarios and columns = user-defined 'columns'
@@ -108,7 +116,7 @@ def render_partmc_and_mam4_variable_grid(
     -------
     fig, axes : (matplotlib.figure.Figure, np.ndarray[(n_rows, n_cols)])
     """
-    
+
     if scenario_names is None:
         # FIXME: move this to utils module to avoid duplication
         num_scenarios = ensemble.__len__()
@@ -120,11 +128,11 @@ def render_partmc_and_mam4_variable_grid(
             formatted_index = '0' * (max_num_digits - num_digits) + f'{i+1}'
             scenario_name = str(i + 1).format(index = formatted_index)
             scenario_names.append(scenario_name)
-    
+
     fig = gs.figure
     n_rows, n_cols = len(scenario_names), len(timesteps)
     axes = np.empty((n_rows, n_cols), dtype=object)
-    
+
     base = _base_styles()
     if color is None:
         colors = _scenario_colors(n_rows) if row_colors is None else list(row_colors)
@@ -132,17 +140,17 @@ def render_partmc_and_mam4_variable_grid(
         colors = [color]*n_rows
     else:
         colors = color
-    
+
     for i_row, scenario_name in enumerate(scenario_names):
         row_style = _row_styles(base, colors[i_row])
 
         for i_col, timestep in enumerate(timesteps):
             ax = fig.add_subplot(
-                gs[i_row, i_col], 
+                gs[i_row, i_col],
                 sharex=axes[i_row-1,i_col] if sharex and i_row > 0 else None,
                 sharey=axes[i_row-1,i_col] if sharey and i_row > 0 else None)
             axes[i_row, i_col] = ax
-            
+
             if partmc_dir is not None:
                 partmc_output = partmc.retrieve_model_state(
                     scenario_name=scenario_name,
@@ -160,7 +168,6 @@ def render_partmc_and_mam4_variable_grid(
                     species_modifications=species_modifications,
                     ensemble_output_dir=mam4_dir,
                 )
-
             if partmc_dir is not None and mam4_dir is not None:
                 series = (
                     ("partmc", partmc_output.particle_population, "PartMC"),
@@ -181,19 +188,33 @@ def render_partmc_and_mam4_variable_grid(
             for key, population, label in series:
                 cfg = {"varname": varname, "var_cfg": var_cfg, "style": row_style[key]}
                 build_plotter("state_line", cfg).plot(population, ax, add_xlabel=False, add_ylabel=False, label=label)
-            
+
             # panel cosmetics
             _format_panel(ax, xscale=xscale, yscale=yscale)
-
+            if fontsize is not None:
+                ax.tick_params(axis="both", which="both", labelsize=fontsize)
             if varname == 'b_scat':
                 ax.set_ylim([0., ax.get_ylim()[1]])
 
+            # # legend (only once)
+            # if legend_loc == 'upper right' and i_row == 0 and i_col == n_cols - 1:
+            #     ax.legend(frameon=False, loc=legend_loc)
+            # elif legend_loc == 'upper left' and i_row == 0 and i_col == 0:
+            #     ax.legend(frameon=False, loc=legend_loc)
+
             # legend (only once)
-            if legend_loc == 'upper right' and i_row == 0 and i_col == n_cols - 1:
-                ax.legend(frameon=False, loc=legend_loc)
-            elif legend_loc == 'upper left' and i_row == 0 and i_col == 0:
-                ax.legend(frameon=False, loc=legend_loc)
-            
+            show_legend = (
+                (legend_loc == "upper right" and i_row == 0 and i_col == n_cols - 1)
+                or
+                (legend_loc == "upper left" and i_row == 0 and i_col == 0)
+            )
+
+            if show_legend:
+                legend_kwargs = {"frameon": False, "loc": legend_loc}
+                if fontsize is not None:
+                    legend_kwargs["fontsize"] = fontsize
+                ax.legend(**legend_kwargs)
+
             xlim = ax.get_xlim()
             ylim = ax.get_ylim()
             if varname == 'dNdlnD':
@@ -208,10 +229,10 @@ def render_partmc_and_mam4_variable_grid(
                 yticks = ax.get_yticks()
                 ax.set_yticks(yticks)
                 ax.set_yticklabels([f"{y*1e6:.1f}" for y in yticks]) # convert to $M$m^-1
-            
+
             ax.set_xlim(xlim)
             ax.set_ylim(ylim)
-    
+
     if varname == 'dNdlnD':
         yvarlab = 'normalized number density'
         xvarlab = r'diameter [$\mu$m]'
@@ -223,24 +244,35 @@ def render_partmc_and_mam4_variable_grid(
         xvarlab = 'wavelength [nm]'
     else:
         yvarlab = varname.replace("_", " ")
-    axes[np.floor(n_rows/2).astype(int), 0].set_ylabel(yvarlab)
-    
+
+    label_kwargs = {}
+    if fontsize is not None:
+        label_kwargs["fontsize"] = fontsize
+
+    axes[np.floor(n_rows/2).astype(int), 0].set_ylabel(yvarlab, **label_kwargs)
+
     for i_col in range(n_cols):
-        axes[-1, i_col].set_xlabel(xvarlab)
+        axes[-1, i_col].set_xlabel(xvarlab, **label_kwargs)
+    # axes[np.floor(n_rows/2).astype(int), 0].set_ylabel(yvarlab)
+
+    # for i_col in range(n_cols):
+    #     axes[-1, i_col].set_xlabel(xvarlab)
 
     return fig, axes
 
 # FIXME: add better typing
 def render_dNdlnD_grid(
-    gs, *, ensemble, scenario_names, timesteps, 
-    partmc_dir : str | None = None, 
-    mam4_dir : str | None = None, 
+    gs, *, ensemble, scenario_names, timesteps,
+    partmc_dir : str | None = None,
+    mam4_dir : str | None = None,
     D_range=(1e-9, 1e-6), N_bins=50, normalize=True, method="kde",
     legend_loc=None, row_colors=None,
     xscale='log', yscale='linear',
     spec_modifications={},
     sharex=True, sharey=False,
-    color=None):
+    color=None,
+    fontsize=None,
+    ) -> Tuple[plt.Figure, np.ndarray]:
     """
     Render a grid of aerosol size distributions (dNdlnD) for multiple scenarios and timesteps.
     Each subplot shows the size distribution for a given scenario and timestep, using data from PartMC and MAM4.
@@ -264,16 +296,18 @@ def render_dNdlnD_grid(
         sharex = sharex,
         sharey = sharey,
         color = color,
+        fontsize = fontsize
         )
 
 def render_frac_ccn_grid(
     gs, *, ensemble, scenario_names, timesteps,
-    partmc_dir : str | None = None, 
-    mam4_dir : str | None = None, 
+    partmc_dir : str | None = None,
+    mam4_dir : str | None = None,
     s_grid=np.logspace(-2, 1.0, 50),
     legend_loc=None, row_colors=None,
     xscale='log', yscale='linear',
-    spec_modifications={}):
+    spec_modifications={},
+    fontsize=None):
     """
     Render grid of CCN activation fraction vs supersaturation for specified scenarios and timesteps.
     """
@@ -291,16 +325,18 @@ def render_frac_ccn_grid(
         xscale = xscale,
         yscale = yscale,
         species_modifications = spec_modifications, # modify aerosol species during post-processing (e.g., assume BrC rather than non-absorbing OC)
+        fontsize = fontsize
         )
 
 def render_bscat_grid(
-    gs, *, ensemble, scenario_names, timesteps, 
-    partmc_dir : str | None = None, 
-    mam4_dir : str | None = None, 
+    gs, *, ensemble, scenario_names, timesteps,
+    partmc_dir : str | None = None,
+    mam4_dir : str | None = None,
     wvl_grid=np.linspace(0.35e-6, 0.8e-6, 30), rh_grid=[0.0],
     legend_loc='upper right', row_colors=None,
     xscale='linear', yscale='linear',
-    spec_modifications={}):
+    spec_modifications={},
+    fontsize=None):
     """
     Render grid of bscat vs wavelength at specified RH values.
     """
@@ -318,6 +354,7 @@ def render_bscat_grid(
         xscale = xscale,
         yscale = yscale,
         species_modifications = spec_modifications, # modify aerosol species during post-processing (e.g., assume BrC rather than non-absorbing OC)
+        fontsize = fontsize
         )
 
 
@@ -331,7 +368,7 @@ def plot_range_bars(
 ):
     """
     Plot variable ranges as horizontal bars with strip plot overlay.
-    
+
     Parameters
     ----------
     df : pd.DataFrame
@@ -357,12 +394,12 @@ def plot_range_bars(
     if figsize[1] is None:
         figsize = (figsize[0], fig_h)
     fig, axs = plt.subplots(
-        n, 1, figsize=figsize, 
+        n, 1, figsize=figsize,
         gridspec_kw={'height_ratios':[1]*n}
     )
     if n == 1:
         axs = [axs]
-    
+
     for ax, var in zip(axs, variables):
         vals = df[df[var_col]==var][value_col].values
         samples = df[df[var_col]==var]['sample'].values
@@ -371,7 +408,7 @@ def plot_range_bars(
                     ha='center', va='center',
                     transform=ax.transAxes)
             ax.axis('off'); continue
-        
+
         vmin, vmax = vals.min(), vals.max()
         pad = 0.02*(vmax-vmin) if vmin!=vmax else 0.1
 
@@ -399,7 +436,7 @@ def plot_range_bars(
                     mask = samples == idx
                     ax.scatter(vals[mask], np.full(mask.sum(), 0.5),
                                s=100, color=color, edgecolor='k', zorder=3)
-        
+
         # --- axis scaling
         if scale_info and scale_info.get(var, "lin") == "log":
             ax.set_xscale("log")
@@ -515,7 +552,5 @@ def build_input_ranges_dataframe(
                             rows.append({"variable": f"{name} (mixing ratio)", "value": float(v), "sample": int(s)})
             except Exception:
                 pass  # silently ignore if structure is unknown
-    
+
     return pd.DataFrame(rows, columns=["variable", "value", "sample"])
-
-

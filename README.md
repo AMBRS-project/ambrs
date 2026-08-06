@@ -37,3 +37,29 @@ pip install -r requirements.txt
 ```
 
 within the top-level directory of this repository.
+
+## Building Aerosol Models
+
+AMBRS uses [ambuilder](https://github.com/AMBRS-project/ambuilder) to configure
+and build the supported aerosol box models. From an ambuilder checkout, run:
+
+```sh
+cmake -S . -B build -DCMAKE_INSTALL_PREFIX=<prefix> -G "Unix Makefiles" -DENABLE_CAMP=OFF -DENABLE_MOSAIC=ON
+cd build
+make
+make install
+```
+
+`<prefix>` is the installation directory where ambuilder will place model
+executables under `bin`.
+
+Additional options can be passed to CMake using the `-D` flag:
+
+* `CMAKE_BUILD_TYPE={Debug,Release}`: builds debuggable or optimized versions of libraries and aerosol box models (default: `Release`)
+* `CMAKE_C_COMPILER=/path/to/c-compiler`: sets the C compiler used to build libraries and/or aerosol box models
+* `CMAKE_Fortran_COMPILER=/path/to/fortran-compiler`: sets the Fortran compiler used to build libraries and/or aerosol box models
+* `CMAKE_INSTALL_PREFIX=/path/to/install`: sets the top-level directory under which supported aerosol box models are installed, with executables in a `bin` subdirectory
+* `ENABLE_CAMP={ON,OFF}`: enables support for CAMP chemistry in relevant aerosol box models (default: `OFF`)
+* `ENABLE_MOSAIC={ON,OFF}`: enables support for MOSAIC in relevant aerosol box models, using a branch maintained by the PartMC team (default: `OFF`)
+
+Only one of CAMP and MOSAIC may be enabled.

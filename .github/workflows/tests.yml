@@ -36,7 +36,9 @@ jobs:
         run: python3 -m pip install -r requirements.txt
 
       - name: Running tests (${{ matrix.os }})
-        run: coverage run -m unittest discover
+        run: |
+          coverage run --source=ambrs -m pytest
+          coverage xml
 
       - if: ${{ matrix.os == 'ubuntu-latest' }}
         name: Uploading coverage report to codecov.io

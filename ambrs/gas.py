@@ -159,21 +159,14 @@ def build_gas_mixture(gas_cfg: dict) -> GasMixture:
     # fixme: hard coded with MAM4 gases for now
     species = [so2,h2so4]
     if gas_cfg['units'] == 'ppb':
-        # mole_ratio = np.array([gas_cfg.get('SO2',0.),gas_cfg.get('H2SO4',0.)])/1e9
         mole_ratio = np.array([gas_cfg.get(specname, 0.) for specname in gas_spec_names])/1e9
-        # gas_cfg.get('SO2',0.),gas_cfg.get('H2SO4',0.)])/1e9
     elif gas_cfg['units'] == 'ratio' or gas_cfg['units'] == 'mole_ratio' or gas_cfg['units'] == 'mol_ratio':
-        # mole_ratio = np.array([gas_cfg.get('SO2',0.),gas_cfg.get('H2SO4',0.)])
         mole_ratio = np.array([gas_cfg.get(specname, 0.) for specname in gas_spec_names])
 
     elif gas_cfg['units'] == 'kg_per_kg':
-        # mole_ratio = np.array([
-        #     gas_cfg.get('SO2',0.)*molar_mass_dry_air/so2.molar_mass,
-        #     gas_cfg.get('H2SO4',0.)*molar_mass_dry_air/h2so4.molar_mass])
         mole_ratio = np.array([gas_cfg.get(specname, 0.)*molar_mass_dry_air/
                                gases[GasSpecies.find(gases,specname)].molar_mass
                                for specname in gas_spec_names])                 
-            # GasSpecies.find(species,specname).molar_mass for specname in gas_spec_names])
     else:
         raise ValueError(f"Unsupported gas units: {gas_cfg['units']}, supported units are 'ppb', 'mole_ratio', and 'kg_per_kg'")
     
