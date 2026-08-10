@@ -20,7 +20,7 @@ from netCDF4 import Dataset
 
 @dataclass
 class AeroData:
-    species: str            # name of aerosol species
+    species: str            # name of aerosol speciesg
     density: float          # aerosol species density [kg/m^3]
     ions_in_soln: int       # number of ions in solution [-]
     molecular_weight: float # molecular weight [kg/mol]
@@ -183,7 +183,7 @@ class AerosolModel(BaseAerosolModel):
         aero_data = self._build_aero_data(scenario.aerosols)
         aero_init = self._modal_state_to_aeromodes(scenario.size)
         do_mosaic = self.processes.condensation and not self.processes.do_camp_chem
-        do_camp_chem = self.processes.condensation and self.processes.do_camp_chem and isinstance(self.camp_config, CAMP)
+        do_camp_chem = self.processes.do_camp_chem and isinstance(self.camp_config, CAMP)
         if self.processes.do_camp_chem and not isinstance(self.camp_config, CAMP):
             raise Exception('CAMP chemistry requires configuration')
 
@@ -280,10 +280,12 @@ class AerosolModel(BaseAerosolModel):
             mass_frac = {}
             for idx, species in enumerate(mode.species):
                 if use_camp_chem:
-                    key = camp_species[('core',mode.name,species.name)]
+                    for phase in self.camp_config.aerosol_phases:
+                        key = camp_species[('core',phase['name'],species.name)] #FIXME: Assumes one layer called "core"
+                        mass_frac[key] = mode.mass_fractions[idx] #FIXME: Assumes ordering matches, which it *should* since PartMC populates from CAMP here
                 else:
                     key = species.name
-                mass_frac[key] = mode.mass_fractions[idx]
+                    mass_frac[key] = mode.mass_fractions[idx]
             if not mass_frac:
                 continue
             modes.append(AeroMode(
