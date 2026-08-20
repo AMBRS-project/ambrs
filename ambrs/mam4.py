@@ -135,48 +135,11 @@ class AerosolMassFractions:
 
     def __init__(self,
                  scenario: Scenario):
-        # self.accum = self.AccumMode(
-        #     SO4 = scenario.size.modes[0].mass_fraction('SO4'),
-        #     POM = scenario.size.modes[0].mass_fraction('POM'),
-        #     # POM = scenario.size.modes[0].mass_fraction('OC'),
-        #     SOA = scenario.size.modes[0].mass_fraction('SOA'),
-        #     # SOA = scenario.size.modes[0].mass_fraction('MSA'),
-        #     BC  = scenario.size.modes[0].mass_fraction("BC"),
-        #     DST = scenario.size.modes[0].mass_fraction("DST"),
-        #     # DST = scenario.size.modes[0].mass_fraction("OIN"),
-        #     NCL = scenario.size.modes[0].mass_fraction("NCL"),
-        #     # NCL = scenario.size.modes[0].mass_fraction("Na"),
-        # )
         self.AccumMode = make_dataclass('AccumMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[0].species])
         self.accum = self.AccumMode(
             **{p.aliases if p.aliases else p.name : scenario.size.modes[0].mass_fraction(p.name) for p in scenario.size.modes[0].species}
         )
                 
-        
-        # self.aitken = self.AitkenMode(
-        #     SO4 = scenario.size.modes[1].mass_fraction("SO4"),
-        #     SOA = scenario.size.modes[1].mass_fraction("SOA"),
-        #     # SOA = scenario.size.modes[1].mass_fraction("MSA"),
-        #     NCL = scenario.size.modes[1].mass_fraction("NCL"),
-        #     # NCL = scenario.size.modes[1].mass_fraction("Na"),
-        # )
-        # self.coarse = self.CoarseMode(
-        #     DST = scenario.size.modes[2].mass_fraction("DST"),
-        #     # DST = scenario.size.modes[2].mass_fraction("OIN"),
-        #     NCL = scenario.size.modes[2].mass_fraction("NCL"),
-        #     # NCL = scenario.size.modes[2].mass_fraction("Na"),
-        #     SO4 = scenario.size.modes[2].mass_fraction("SO4"),
-        #     BC  = scenario.size.modes[2].mass_fraction("BC"),
-        #     # POM = scenario.size.modes[2].mass_fraction("OC"),
-        #     POM = scenario.size.modes[2].mass_fraction("POM"),
-        #     # SOA = scenario.size.modes[2].mass_fraction("MSA"),
-        #     SOA = scenario.size.modes[2].mass_fraction("SOA"),
-        # )
-        # self.pcarbon = self.PCarbonMode(
-        #     # POM = scenario.size.modes[3].mass_fraction("OC"),
-        #     POM = scenario.size.modes[3].mass_fraction("POM"),
-        #     BC  = scenario.size.modes[3].mass_fraction("BC"),
-        # )
         self.AitkenMode = make_dataclass('AitkenMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[1].species])
         self.aitken = self.AitkenMode(
             **{p.aliases if p.aliases else p.name : scenario.size.modes[1].mass_fraction(p.name) for p in scenario.size.modes[1].species}
@@ -206,7 +169,6 @@ class GasMixingRatios:
         if ih2so4 == -1:
             raise ValueError("H2SO4 gas not found in gas species")
         isoag = GasSpecies.find(scenario.gases, 'SOAG')
-        # fixme: double-check MAM units
         self.SO2 = scenario.gas_concs[iso2] * scenario.gases[iso2].molar_mass / dry_air_molar_mass
         self.H2SO4 = scenario.gas_concs[ih2so4] * scenario.gases[ih2so4].molar_mass / dry_air_molar_mass
         self.SOAG = 0.0 if isoag == -1 else scenario.gas_concs[isoag] * scenario.gases[isoag].molar_mass / dry_air_molar_mass
@@ -356,24 +318,6 @@ working directory contains any needed input files."""
         
         if self.camp:
             self.camp.configure(dir)
-
-        # TODO: merge with Duncan's changes
-        # camp_block = ""
-        # if self.camp_config:
-        #     cfg = pathlib.Path(self.camp_config)
-        #     if cfg.is_dir(): cfg = cfg / "config.json"
-        #     camp_block = f"""&camp_input
-        # use_camp   = 1,
-        # camp_files = '{cfg.resolve()}',
-        # camp_mech  = '{self.camp_mech or "MAM4_SOA_partitioning"}',
-        # /"""
-        # elif getattr(self, "camp", None):
-        #     camp_files_json = self.camp.write_for_model(pathlib.Path(dir), model_name="mam4")
-        #     camp_block = f"""&camp_input
-        # use_camp   = 1,
-        # camp_files = '{camp_files_json}',
-        # camp_mech  = '{self.camp_mech or "MAM4_SOA_partitioning"}',
-        # /"""
 
         camp_config_block = (
             f"""&camp_config
@@ -531,8 +475,7 @@ def retrieve_model_state(
             'SO2':get_mam_input(
                     'qso2',
                     mam_input=mam_input),
-            #'units':'mole_ratio' # fixme: double-check
-            'units':'kg_per_kg' # fixme: double-check
+            'units':'kg_per_kg'
             }
         gas_mixture = build_gas_mixture(gas_cfg)
         
@@ -561,11 +504,10 @@ def retrieve_model_state(
             'p':scenario.pressure}
         
         particle_population = build_population(mam4_population_cfg)
-        gas_cfg = {'H2SO4':currnc.variables['h2so4_gas'][timestep]}        
+        gas_cfg = {'H2SO4':currnc.variables['h2so4_gas'][timestep]}
         # gas_cfg = {'SO2':currnc.variables['so2_gas'][timestep]}
         # gas_cfg = {'SOAG':currnc.variables['soa_gas'][timestep]}
-        gas_cfg['units'] = 'kg_per_kg' # todo: double-check
-        # gas_cfg['units'] = 'mole_ratio' # todo: double-check
+        gas_cfg['units'] = 'kg_per_kg'
         gas_mixture = build_gas_mixture(gas_cfg)
         
         thermodynamics = { 

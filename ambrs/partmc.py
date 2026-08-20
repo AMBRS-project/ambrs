@@ -144,8 +144,6 @@ class Input:
     gas_background: Optional[DictTimeSeries] = None  # background gas concentration time series
     aero_emissions: Optional[AerosolModeTimeSeries] = None  # aerosol emissions time series
     aero_background: Optional[AerosolModeTimeSeries] = None # aerosol background time series
-
-    # TODO: merge with Duncan's changes
     
     # CAMP configuration
     camp_config: Optional[str] = None
@@ -245,14 +243,9 @@ class AerosolModel(BaseAerosolModel):
 
     def _build_aero_data(self, aerosols: tuple[AerosolSpecies, ...]) -> tuple[AeroData, ...]:
         if self.processes.do_camp_chem:
-            camp_species = [f'{l['name']}.{p['name']}.{s['name']}'\
-                            for s in self.camp_config.species\
-                                for p in self.camp_config.aerosol_phases\
-                                    for l in self.camp_config.aerosol_representation['layers']\
-                                        if ('phase' in s) and (s['phase']=='AEROSOL') and (s['name'] in p['species'])]
+            camp_species = self.camp_config.aero_names
             aerosol_by_name = {aerosol.name: aerosol for aerosol in aerosols}
             return tuple(AeroData(
-                # species = f'core.mixed.{s.name}',
                 species = s,
                 density = aerosol_by_name[s.split('.')[-1]].density,
                 ions_in_soln = aerosol_by_name[s.split('.')[-1]].ions_in_soln,
@@ -271,18 +264,13 @@ class AerosolModel(BaseAerosolModel):
         modes = []
         use_camp_chem = self.processes.do_camp_chem
         if use_camp_chem:
-            camp_species = {(l['name'],p['name'],s['name']): f'{l['name']}.{p['name']}.{s['name']}'\
-                            for s in self.camp_config.species\
-                                for p in self.camp_config.aerosol_phases\
-                                    for l in self.camp_config.aerosol_representation['layers']\
-                                        if ('phase' in s) and (s['phase']=='AEROSOL') and (s['name'] in p['species'])}
+            camp_species = self.camp_config.aero_names
         for mode in modal_state.modes:
             mass_frac = {}
             for idx, species in enumerate(mode.species):
                 if use_camp_chem:
-                    for phase in self.camp_config.aerosol_phases:
-                        key = camp_species[('core',phase['name'],species.name)] #FIXME: Assumes one layer called "core"
-                        mass_frac[key] = mode.mass_fractions[idx] #FIXME: Assumes ordering matches, which it *should* since PartMC populates from CAMP here
+                        key = [s for s in camp_species if s.endswith(species.name)][0] #FIXME: Fails for species in multiple phases in the same mode
+                        mass_frac[key] = mode.mass_fractions[idx]
                 else:
                     key = species.name
                     mass_frac[key] = mode.mass_fractions[idx]

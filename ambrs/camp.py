@@ -8,9 +8,6 @@ from scipy.constants import gas_constant
 
 from math import floor, log10
 
-
-# FIXME: IN PROGRESS!
-
 ####################################################################################################
 #> CAMP configuration
 ####################################################################################################
@@ -82,6 +79,17 @@ class CAMP:
             reactions=reactions
         )
 
+        self.gas_names = [spec['name'] for spec in self.gases]
+        if self.aero_rep_type=='AERO_REP_SINGLE_PARTICLE':
+            self.aero_names = [f'{layer['name']}.{phase['name']}.{spec['name']}' \
+                                    for spec in self.aerosols \
+                                        for phase in self.aerosol_phases \
+                                            for layer in self.layers]
+        elif self.aero_rep_type=='AERO_REP_MODAL_BINNED_MASS':
+            self.aero_names = [spec['name'] for spec in self.aerosols]
+        else:
+            self.aero_names = None
+
     def configure_species(
             self,
             species: list[GasSpecies | AerosolSpecies]=None,
@@ -89,8 +97,8 @@ class CAMP:
             diffusion_coeff: dict=None,
     ):
         if species:
-            gases_in = [s for s in species if not hasattr(s,'density')]
-            aerosols_in = [s for s in species if hasattr(s,'density')]
+            gases_in = [s for s in species if not isinstance(s, GasSpecies)]
+            aerosols_in = [s for s in species if isinstance(s, AerosolSpecies)]
         else:
             gases_in = self.ppe.gases
             aerosols_in = self.ppe.aerosols
@@ -136,6 +144,8 @@ class CAMP:
             }
             for aerosol in aerosols_in
         ]
+        self.gases = gases
+        self.aerosols = aerosols
         self.species = gases + aerosols
         return self
 
@@ -214,6 +224,7 @@ class CAMP:
                     ],
                     'maximum computational particles': maximum_computational_particles,
                 }
+            self.layers = aero_rep['layers']
         elif type=='AERO_REP_MODAL_BINNED_MASS':
             aero_rep = [{
                 'name': 'Modal/binned',
@@ -222,7 +233,7 @@ class CAMP:
                 {
                     mode.name: {
                         'type': 'MODAL',
-                        'phases': [phase['name'] for phase in self.aerosol_phases if phase['name']==mode.name],
+                        'phases': [phase['name'] for phase in self.aerosol_phases],
                         'shape': 'LOG_NORMAL',
                         'geometric mean diameter [m]': mode.geom_mean_diam.item(),
                         'geometric standard deviation': 10**mode.log10_geom_std_dev.item(),
