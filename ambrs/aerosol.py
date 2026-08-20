@@ -16,13 +16,11 @@ from typing import Optional, TypeVar
 RVFrozenDistribution = TypeVar('RVFrozenDistribution')
 
 class Delta:
-    '''
-    Constant "random variable" to fix parameters if perturbation is not desired
-    '''
+    """Constant 'random variable' to fix parameters if perturbation is not desired"""
     def __init__(self, value:float):
         self.value = value
-    def ppf(self, q:float):
-        return self.value
+    def ppf(self, q):
+        return self.value * np.ones_like(q)
     def rvs(self, size:int|tuple[int]):
         return self.value * np.ones(size)
 

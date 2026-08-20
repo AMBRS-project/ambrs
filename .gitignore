@@ -11,7 +11,7 @@ test/.ipynb_checkpoints/
 # demo output
 **/*.nc
 **/fort*
-**/*.log 
+**/*.log
 
 # AMBRS build artifacts
 ambrs.egg-info

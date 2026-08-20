@@ -9,8 +9,9 @@ from .gas import GasSpecies, build_gas_mixture
 from .scenario import Scenario
 from .ppe import Ensemble
 
-# from .camp import CampConfig
+from .camp import CAMP
 from typing import Optional
+#from pathlib import Path
 import pathlib
 
 
@@ -138,7 +139,7 @@ class AerosolMassFractions:
         self.accum = self.AccumMode(
             **{p.aliases if p.aliases else p.name : scenario.size.modes[0].mass_fraction(p.name) for p in scenario.size.modes[0].species}
         )
-
+                
         self.AitkenMode = make_dataclass('AitkenMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[1].species])
         self.aitken = self.AitkenMode(
             **{p.aliases if p.aliases else p.name : scenario.size.modes[1].mass_fraction(p.name) for p in scenario.size.modes[1].species}
@@ -167,24 +168,26 @@ class GasMixingRatios:
         ih2so4 = GasSpecies.find(scenario.gases, 'H2SO4')
         if ih2so4 == -1:
             raise ValueError("H2SO4 gas not found in gas species")
-        isoag = GasSpecies.find(scenario.gases, 'soag')
-        # fixme: double-check MAM units
+        isoag = GasSpecies.find(scenario.gases, 'SOAG')
         self.SO2 = scenario.gas_concs[iso2] * scenario.gases[iso2].molar_mass / dry_air_molar_mass
         self.H2SO4 = scenario.gas_concs[ih2so4] * scenario.gases[ih2so4].molar_mass / dry_air_molar_mass
-        self.SOAG = 0.0 if isoag == -1 else scenario.gases[isoag]
+        self.SOAG = 0.0 if isoag == -1 else scenario.gas_concs[isoag] * scenario.gases[isoag].molar_mass / dry_air_molar_mass
     
 class AerosolModel(BaseAerosolModel):
     def __init__(self,
                  processes: AerosolProcesses,
-                #  camp: Optional[CampConfig] = None,
-                #  camp_config: Optional[dict] = None,
-                #  camp_mech: Optional[str] = None
-                ):
+                 camp_config: Optional[CAMP] = None):
         
         BaseAerosolModel.__init__(self, 'mam4', processes)
-        # self.camp = camp  # None means “don’t use CAMP”
-        # self.camp_config = camp_config
-        # self.camp_mech = camp_mech
+        self.camp = camp_config  # None means “don’t use CAMP”
+        if self.camp:
+            if self.camp.aero_rep_type != 'AERO_REP_MODAL_BINNED_MASS':
+                raise ValueError('MAM4 CAMP input requires AERO_REP_MODAL_BINNED_MASS')
+            self.camp_config = camp_config
+            self.camp_mech = camp_config.mechanism['name']
+        else:
+            self.camp_config = None
+            self.camp_mech = None
     
     def create_input(self,
                      scenario: Scenario,
@@ -206,7 +209,7 @@ Parameters:
         if not isinstance(scenario.size, AerosolModalSizeState):
             raise TypeError('Non-modal aerosol particle size state cannot be used to create MAM4 input!')
         if len(scenario.size.modes) != 4:
-            raise TypeError(f'{len(scenario.size.mode)}-mode aerosol particle size state cannot be used to create MAM4 input!')
+            raise TypeError(f'{len(scenario.size.modes)}-mode aerosol particle size state cannot be used to create MAM4 input!')
         
         # translate the scenario's aerosol mass fractions to MAM4-ese
         aero_mass_fracs = AerosolMassFractions(scenario)
@@ -299,72 +302,79 @@ Parameters:
 the input with the given executable and input prefix, assuming that the current
 working directory contains any needed input files."""
         return f'{exe}'
+
+    @staticmethod
+    def _format_namelist_number(value):
+        if isinstance(value, float) and value.is_integer():
+            return str(int(value))
+        return str(value)
     
     def write_input_files(self, input, dir, prefix) -> None:
         dir = pathlib.Path(dir)
         if not dir.exists():
             raise OSError(f'Directory not found: {dir}')
+        
+        # # ----- CAMP files (absolute) -----
+        
+        if self.camp:
+            self.camp.configure(dir)
 
-        # camp_block = ""
-        # if self.camp_config:
-        #     cfg = pathlib.Path(self.camp_config)
-        #     if cfg.is_dir(): cfg = cfg / "config.json"
-        #     camp_block = f"""&camp_input
-        # use_camp   = 1,
-        # camp_files = '{cfg.resolve()}',
-        # camp_mech  = '{self.camp_mech or "MAM4_SOA_partitioning"}',
-        # /"""
-        # elif getattr(self, "camp", None):
-        #     camp_files_json = self.camp.write_for_model(pathlib.Path(dir), model_name="mam4")
-        #     camp_block = f"""&camp_input
-        # use_camp   = 1,
-        # camp_files = '{camp_files_json}',
-        # camp_mech  = '{self.camp_mech or "MAM4_SOA_partitioning"}',
-        # /"""
+        camp_config_block = (
+            f"""&camp_config
+    config_key      = 'camp.json',
+/
+&camp_mech
+    mech_key        = '{self.camp_mech}',
+/
+
+"""
+            if self.camp
+            else ""
+        )
 
         # Build the namelist content (unchanged pieces collapsed)
         content = f"""! generated by ambrs.mam4.AerosolModel.write_input_files
 &time_input
-mam_dt         = {input.mam_dt},
-mam_nstep      = {input.mam_nstep},
+    mam_dt         = {self._format_namelist_number(input.mam_dt)},
+    mam_nstep      = {input.mam_nstep},
 /
 &cntl_input
-mdo_gaschem    = {input.mdo_gaschem},
-mdo_gasaerexch = {input.mdo_gasaerexch},
-mdo_rename     = {input.mdo_rename},
-mdo_newnuc     = {input.mdo_newnuc},
-mdo_coag       = {input.mdo_coag},
+    mdo_gaschem    = {input.mdo_gaschem},
+    mdo_gasaerexch = {input.mdo_gasaerexch},
+    mdo_rename     = {input.mdo_rename},
+    mdo_newnuc     = {input.mdo_newnuc},
+    mdo_coag       = {input.mdo_coag},
 /
 &met_input
-temp           = {input.temp},
-press          = {input.press},
-RH_CLEA        = {input.RH_CLEA},
+    temp           = {input.temp},
+    press          = {input.press},
+    RH_CLEA        = {input.RH_CLEA},
 /
 &chem_input
-numc1          = {input.numc1},
-numc2          = {input.numc2},
-numc3          = {input.numc3},
-numc4          = {input.numc4},
-mfso41         = {input.mfso41},
-mfpom1         = {input.mfpom1},
-mfsoa1         = {input.mfsoa1},
-mfbc1          = {input.mfbc1},
-mfdst1         = {input.mfdst1},
-mfncl1         = {input.mfncl1},
-mfso42         = {input.mfso42},
-mfsoa2         = {input.mfsoa2},
-mfncl2         = {input.mfncl2},
-mfdst3         = {input.mfdst3},
-mfncl3         = {input.mfncl3},
-mfso43         = {input.mfso43},
-mfbc3          = {input.mfbc3},
-mfpom3         = {input.mfpom3},
-mfsoa3         = {input.mfsoa3},
-mfpom4         = {input.mfpom4},
-mfbc4          = {input.mfbc4},
-qso2           = {input.qso2},
-qh2so4         = {input.qh2so4},
-qsoag          = {input.qsoag},
+    numc1          = {input.numc1},
+    numc2          = {input.numc2},
+    numc3          = {input.numc3},
+    numc4          = {input.numc4},
+    mfso41         = {input.mfso41},
+    mfpom1         = {input.mfpom1},
+    mfsoa1         = {input.mfsoa1},
+    mfbc1          = {input.mfbc1},
+    mfdst1         = {input.mfdst1},
+    mfncl1         = {input.mfncl1},
+    mfso42         = {input.mfso42},
+    mfsoa2         = {input.mfsoa2},
+    mfncl2         = {input.mfncl2},
+    mfdst3         = {input.mfdst3},
+    mfncl3         = {input.mfncl3},
+    mfso43         = {input.mfso43},
+    mfbc3          = {input.mfbc3},
+    mfpom3         = {input.mfpom3},
+    mfsoa3         = {input.mfsoa3},
+    mfpom4         = {input.mfpom4},
+    mfbc4          = {input.mfbc4},
+    qso2           = {input.qso2},
+    qh2so4         = {input.qh2so4},
+    qsoag          = {input.qsoag},
 /
 &size_parameters
     dgnum1       = {input.scenario.size.modes[0].geom_mean_diam},
@@ -376,6 +386,7 @@ qsoag          = {input.qsoag},
     sigmag3      = {10**input.scenario.size.modes[2].log10_geom_std_dev},
     sigmag4      = {10**input.scenario.size.modes[3].log10_geom_std_dev},
 /
+{camp_config_block}
 """
         if not os.path.exists(dir):
             raise OSError(f'Directory not found: {dir}')
@@ -406,6 +417,8 @@ def retrieve_model_state(
         scenario_name: str, 
         scenario: Scenario, 
         timestep: int, 
+        # t_eval: float, 
+        # model_times: np.array,
         # fixme: remove this next entry? quick fix for now
         repeat_num: int=1, # option for Partmc; set to 1 for MAM4
         species_modifications: dict={},
@@ -433,6 +446,7 @@ def retrieve_model_state(
         raise ValueError('timestep=0 is invalid. Specify timestep = 1 for initial conditions')
     elif timestep == 1:
         scenario_dir = ensemble_output_dir + '/' + scenario_name + '/'
+        # mam_input = scenario_dir + 'mam_input.nl'
         mam_input = scenario_dir + 'namelist'
         Ns = np.zeros([len(GSDs)])
         for kk in range(len(Ns)):
@@ -461,8 +475,7 @@ def retrieve_model_state(
             'SO2':get_mam_input(
                     'qso2',
                     mam_input=mam_input),
-            #'units':'mole_ratio' # fixme: double-check
-            'units':'kg_per_kg' # fixme: double-check
+            'units':'kg_per_kg'
             }
         gas_mixture = build_gas_mixture(gas_cfg)
         
@@ -478,6 +491,7 @@ def retrieve_model_state(
         mam4_population_cfg = {
             'type':'mam4',
             'mam4_dir': ensemble_output_dir + '/' + scenario_name + '/',
+            #'output_filename': output_filename,
             'timestep':timestep,
             'GSD':GSDs, #fixme: put in the correct GSD values!
             'N_sigmas': 10,
@@ -490,8 +504,10 @@ def retrieve_model_state(
             'p':scenario.pressure}
         
         particle_population = build_population(mam4_population_cfg)
-        gas_cfg = {'H2SO4':currnc.variables['h2so4_gas'][timestep]}        
-        gas_cfg['units'] = 'kg_per_kg' # todo: double-check
+        gas_cfg = {'H2SO4':currnc.variables['h2so4_gas'][timestep]}
+        # gas_cfg = {'SO2':currnc.variables['so2_gas'][timestep]}
+        # gas_cfg = {'SOAG':currnc.variables['soa_gas'][timestep]}
+        gas_cfg['units'] = 'kg_per_kg'
         gas_mixture = build_gas_mixture(gas_cfg)
         
         thermodynamics = { 
@@ -504,6 +520,7 @@ def retrieve_model_state(
         model_name='mam4',
         scenario_name=scenario_name, 
         scenario=scenario,
+        # time=t_eval,
         timestep=timestep,
         particle_population=particle_population,
         gas_mixture=gas_mixture,
