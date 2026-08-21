@@ -1,47 +1,106 @@
-name: tests
+name: CI
 
-# This action is triggered:
-# 1. when someone creates a pull request for a merge to the main branch
-# 2. when changes are merged into the main branch (via a pull request)
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+  schedule:
+    # Catch incompatibilities in part2pop's unpinned transitive dependencies.
+    - cron: "13 8 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  MPLBACKEND: Agg
 
 jobs:
-  test:
+  tests:
+    name: Tests (${{ matrix.os }}, Python 3.12)
     runs-on: ${{ matrix.os }}
-    container: ${{ matrix.container }}
+    timeout-minutes: 30
 
-    # we support Linux and macOS
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
 
-    # Steps for running tests and analysis.
     steps:
-      - name: Checking out repository (${{ matrix.os }})
-        uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          submodules: recursive
+          persist-credentials: false
 
-      - name: Setting up Python 3.12 (${{ matrix.os }})
-        uses: actions/setup-python@v5.1.1
+      - name: Set up Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
 
-      - name: Installing ambrs dependencies (${{ matrix.os }})
-        run: python3 -m pip install -r requirements.txt
-
-      - name: Running tests (${{ matrix.os }})
+      - name: Install AMBRS and dependencies
         run: |
-          coverage run --source=ambrs -m pytest
-          coverage xml
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -e .
+          python -m pip check
 
-      - if: ${{ matrix.os == 'ubuntu-latest' }}
-        name: Uploading coverage report to codecov.io
-        uses: codecov/codecov-action@v4.0.1
+      - name: Run tests with coverage
+        run: |
+          python -m coverage run --source=ambrs -m pytest test
+          python -m coverage xml
+          python -m coverage report --fail-under=80
+
+      - name: Upload coverage to Codecov
+        if: matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5.5.5
         with:
+          files: ./coverage.xml
+          flags: unittests
           token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+  wheel:
+    name: Build and test wheel
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: tests
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build setuptools twine wheel
+
+      - name: Build and inspect wheel
+        run: |
+          python -m build --wheel --no-isolation
+          python -m twine check dist/*.whl
+
+      - name: Install wheel
+        run: |
+          python -m pip install dist/*.whl
+          python -m pip check
+
+      - name: Test the installed wheel
+        run: |
+          mv ambrs "${RUNNER_TEMP}/ambrs-source"
+          python -c "import ambrs; print(f'Testing {ambrs.__file__}')"
+          python -m pytest test
