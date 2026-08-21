@@ -1,8 +1,13 @@
 from setuptools import setup, find_packages
+from pathlib import Path
 
 # Read requirements from requirements.txt
-with open("requirements.txt") as f:
-    requirements = [line.strip() for line in f if line.strip()]
+ROOT = Path(__file__).resolve().parent
+requirements = [
+    line.strip()
+    for line in (ROOT / "requirements.txt").read_text(encoding="utf-8").splitlines()
+    if line.strip() and not line.startswith("#")
+]
 
 setup(
     name="ambrs",  # package name
