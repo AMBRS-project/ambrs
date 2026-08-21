@@ -11,5 +11,5 @@ setup(
     description="Aerosol Model Benchmarking Repository and Standards",
     packages=find_packages(),  # automatically finds the ambrs/ folder
     install_requires=requirements,
-    python_requires=">=3.11",  # adjust if needed
+    python_requires=">=3.12",  # adjust if needed
 )
