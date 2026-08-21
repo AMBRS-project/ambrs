@@ -119,8 +119,8 @@ class GasMixture:
     # fixme: maybe remove the following
     def _add_gas(self,GasSpec,mole_ratio):
         if GasSpec.name not in [spec.name for spec in self.species]:
-            self.species.append(GasSpec)
-            idx, = -1
+            self.species = tuple(self.species) + (GasSpec,)
+            idx = len(self.species) - 1
             self.mole_ratio = np.append(self.mole_ratio, 0.)
         else:
             idx, = np.where([GasSpec.name==spec.name for spec in self.species])
