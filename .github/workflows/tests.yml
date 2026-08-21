@@ -1,4 +1,4 @@
-name: CI
+name: tests
 
 on:
   push:
@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    # Catch incompatibilities in part2pop's unpinned transitive dependencies.
     - cron: "13 8 * * 1"
   workflow_dispatch:
 
