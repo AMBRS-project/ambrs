@@ -168,19 +168,23 @@ distribution"""
     def member(self, i: int) -> AerosolModeState:
         """population.member(i) -> extracts mode state information from ith
 population member"""
+        n = self.__len__()
+        def _is_broadcast(value) -> bool:
+            return isinstance(value, np.ndarray) and value.shape == (n,)
         for key in self.__dict__:
             if key == 'mass_fractions':
-                object.__setattr__(
-                    self,
-                    key,
-                    tuple([frac*np.ones(self.__len__()) for frac in getattr(self,key)])
-                )
+                fracs = getattr(self, key)
+                if any(not _is_broadcast(frac) for frac in fracs):
+                    object.__setattr__(
+                        self,
+                        key,
+                        tuple([frac if _is_broadcast(frac) else frac*np.ones(n)
+                               for frac in fracs])
+                    )
             elif key in ['number','geom_mean_diam','log10_geom_std_dev']:
-                object.__setattr__(
-                    self,
-                    key,
-                    getattr(self,key) * np.ones(self.__len__())
-                )
+                value = getattr(self, key)
+                if not _is_broadcast(value):
+                    object.__setattr__(self, key, value * np.ones(n))
         return AerosolModeState(
             name = self.name,
             species = self.species,
