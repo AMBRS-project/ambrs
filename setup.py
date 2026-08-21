@@ -9,7 +9,7 @@ setup(
     version="0.1.0",
     author="AMBRS Project",
     description="Aerosol Model Benchmarking Repository and Standards",
-    packages=find_packages(),  # automatically finds the ambrs/ folder
+    packages=find_packages(include=["ambrs", "ambrs.*"]),
     install_requires=requirements,
     python_requires=">=3.11",  # adjust if needed
 )
