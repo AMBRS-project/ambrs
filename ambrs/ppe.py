@@ -116,19 +116,23 @@ a specific EnsembleSpecification"""
 
     def member(self, i: int) -> Scenario:
         """ensemble.member(i) -> extracts Scenario from ith ensemble member"""
+        n = self.__len__()
+        def _is_broadcast(value) -> bool:
+            return isinstance(value, np.ndarray) and value.shape == (n,)
         for key in self.__dict__:
             if key == 'gas_concs':
-                object.__setattr__(
-                    self,
-                    key,
-                    tuple([conc*np.ones(self.__len__()) for conc in getattr(self,key)])
-                )
+                concs = getattr(self, key)
+                if any(not _is_broadcast(conc) for conc in concs):
+                    object.__setattr__(
+                        self,
+                        key,
+                        tuple([conc if _is_broadcast(conc) else conc*np.ones(n)
+                               for conc in concs])
+                    )
             elif key in ['flux','relative_humidity','temperature','pressure']:
-                object.__setattr__(
-                    self,
-                    key,
-                    getattr(self,key) * np.ones(self.__len__())
-                )
+                value = getattr(self, key)
+                if not _is_broadcast(value):
+                    object.__setattr__(self, key, value * np.ones(n))
         return Scenario(
             aerosols = self.aerosols,
             gases = self.gases,
