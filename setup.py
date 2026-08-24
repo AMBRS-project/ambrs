@@ -6,8 +6,9 @@ ROOT = Path(__file__).resolve().parent
 requirements = [
     line.strip()
     for line in (ROOT / "requirements.txt").read_text(encoding="utf-8").splitlines()
-    if line.strip() and not line.startswith("#")
+    if line.strip() and not line.strip().startswith("#")
 ]
+
 
 setup(
     name="ambrs",  # package name
