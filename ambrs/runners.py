@@ -142,6 +142,7 @@ Chunking support (optional):
         with multiprocessing.dummy.Pool(self.num_processes) as pool:
             results = pool.map_async(run_scenario, args, callback=callback)
             results.wait()
+            results.get()
 
         logger.info(f"{self.model.name}: completed runs.")
         if error_state["error"]:
