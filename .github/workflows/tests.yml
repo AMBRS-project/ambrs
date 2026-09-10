@@ -8,6 +8,14 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -16,19 +24,20 @@ jobs:
 
     # we support Linux and macOS
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
 
     # Steps for running tests and analysis.
     steps:
       - name: Checking out repository (${{ matrix.os }})
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
           submodules: recursive
 
       - name: Setting up Python 3.12 (${{ matrix.os }})
-        uses: actions/setup-python@v5.1.1
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
 
@@ -42,6 +51,82 @@ jobs:
 
       - if: ${{ matrix.os == 'ubuntu-latest' }}
         name: Uploading coverage report to codecov.io
-        uses: codecov/codecov-action@v4.0.1
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  wheel:
+    name: Build and test distributions
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: test
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install packaging tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build twine
+
+      # Build both artifacts using the normal isolated PEP 517 build path.
+      - name: Build wheel and source distribution
+        run: python -m build
+
+      - name: Validate distributions
+        run: python -m twine check dist/*
+
+      # Use a fresh virtual environment and run outside the checkout so a
+      # successful import cannot accidentally come from ./ambrs.
+      - name: Test installed wheel
+        shell: bash
+        run: |
+          python -m venv "${RUNNER_TEMP}/wheel-venv"
+          "${RUNNER_TEMP}/wheel-venv/bin/python" -m pip install --upgrade pip
+          "${RUNNER_TEMP}/wheel-venv/bin/python" -m pip install dist/*.whl pytest
+
+          cp -R test "${RUNNER_TEMP}/wheel-tests"
+          cd "${RUNNER_TEMP}"
+
+          "${RUNNER_TEMP}/wheel-venv/bin/python" - <<'PY'
+          import os
+          import pathlib
+          import ambrs
+
+          package_path = pathlib.Path(ambrs.__file__).resolve()
+          repo_path = pathlib.Path(os.environ["GITHUB_WORKSPACE"]).resolve()
+
+          assert repo_path not in package_path.parents, (
+              "ambrs imported from the source checkout instead of the "
+              f"installed wheel: {package_path}"
+          )
+
+          print(f"Testing installed wheel from {package_path}")
+          PY
+
+          "${RUNNER_TEMP}/wheel-venv/bin/python" -m pytest wheel-tests
+          "${RUNNER_TEMP}/wheel-venv/bin/python" -m pip check
+
+      # This also exercises MANIFEST.in and catches files missing from the sdist.
+      - name: Test source distribution installation
+        shell: bash
+        run: |
+          python -m venv "${RUNNER_TEMP}/sdist-venv"
+          "${RUNNER_TEMP}/sdist-venv/bin/python" -m pip install --upgrade pip
+          "${RUNNER_TEMP}/sdist-venv/bin/python" -m pip install dist/*.tar.gz
+
+          cd "${RUNNER_TEMP}"
+          "${RUNNER_TEMP}/sdist-venv/bin/python" -c \
+            "import ambrs; print(f'Imported sdist installation from {ambrs.__file__}')"
+
+          "${RUNNER_TEMP}/sdist-venv/bin/python" -m pip check
