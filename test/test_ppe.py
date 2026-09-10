@@ -305,7 +305,7 @@ class TestSampling(unittest.TestCase):
             log_ni = log10(3e7) + i * step
             self.assertTrue(abs(log_ni - log10(member.size.modes[1].number)) < 1e-12)
 
-def test_lhs_with_constant_parameters(self):
+def test_lhs_with_constant_parameters():
     """LHS supports parameters represented internally by Delta."""
     n = 10
 
