@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parent
 requirements = [
     requirement
     for line in (ROOT / "requirements.txt").read_text(encoding="utf-8").splitlines()
+    if not line.lstrip().startswith("#")
     if (requirement := re.sub(r"\s+#.*$", "", line).strip())
 ]
 
