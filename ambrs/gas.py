@@ -123,7 +123,6 @@ class GasMixture:
             self.species = tuple(self.species) + (GasSpec,)
             self.mole_ratio = np.append(self.mole_ratio, 0.0)
             idx = len(self.species) - 1
-            idx, = np.where([GasSpec.name==spec.name for spec in self.species])
         self.mole_ratio[idx] = mole_ratio
         
     def _add_H2O_from_RH(self,RH):
