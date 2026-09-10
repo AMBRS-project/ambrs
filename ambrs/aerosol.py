@@ -167,7 +167,7 @@ distribution"""
 
     def member(self, i: int) -> AerosolModeState:
         """population.member(i) -> extracts mode state information from ith
-population member"""
+population member without mutating the population"""
         n = self.__len__()
         def _is_broadcast(value) -> bool:
             return isinstance(value, np.ndarray) and value.shape == (n,)
