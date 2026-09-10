@@ -6,15 +6,21 @@ updates:
     schedule:
       interval: weekly
     groups:
-      github-actions:
+      github-actions-minor-patch:
         patterns:
           - "*"
+        update-types:
+          - minor
+          - patch
 
   - package-ecosystem: pip
     directory: /
     schedule:
       interval: weekly
     groups:
-      pip:
+      pip-minor-patch:
         patterns:
           - "*"
+        update-types:
+          - minor
+          - patch
