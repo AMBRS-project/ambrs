@@ -335,7 +335,7 @@ def test_lhs_with_constant_parameters(self):
 
     ensemble = ppe.lhs(specification, n, seed=42)
 
-    self.assertEqual(n, len(ensemble))
+    assert n == len(ensemble)
 
     mode = ensemble.size.modes[0]
     np.testing.assert_array_equal(mode.number, np.full(n, 5e8))
@@ -346,11 +346,13 @@ def test_lhs_with_constant_parameters(self):
     )
 
     for member in ensemble:
-        self.assertEqual(5e8, member.size.modes[0].number)
-        self.assertEqual(1e-7, member.size.modes[0].geom_mean_diam)
-        self.assertAlmostEqual(log10(1.6), member.size.modes[0].log10_geom_std_dev)
-        self.assertAlmostEqual(0.4, member.size.modes[0].mass_fractions[0])
-        self.assertAlmostEqual(0.6, member.size.modes[0].mass_fractions[1])
+        assert member.size.modes[0].number == 5e8
+        assert member.size.modes[0].geom_mean_diam == 1e-7
+        assert np.isclose(
+            member.size.modes[0].log10_geom_std_dev, log10(1.6)
+        )
+        assert np.isclose(member.size.modes[0].mass_fractions[0], 0.4)
+        assert np.isclose(member.size.modes[0].mass_fractions[1], 0.6)
 
 if __name__ == '__main__':
     unittest.main()
