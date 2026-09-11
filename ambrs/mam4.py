@@ -167,12 +167,18 @@ class GasMixingRatios:
         ih2so4 = GasSpecies.find(scenario.gases, 'H2SO4')
         if ih2so4 == -1:
             raise ValueError("H2SO4 gas not found in gas species")
-        isoag = GasSpecies.find(scenario.gases, 'soag')
+        isoag = GasSpecies.find(scenario.gases, 'SOAG')
         # fixme: double-check MAM units
         self.SO2 = scenario.gas_concs[iso2] * scenario.gases[iso2].molar_mass / dry_air_molar_mass
         self.H2SO4 = scenario.gas_concs[ih2so4] * scenario.gases[ih2so4].molar_mass / dry_air_molar_mass
-        self.SOAG = 0.0 if isoag == -1 else scenario.gases[isoag]
-    
+        self.SOAG = (
+            0.0
+            if isoag == -1
+            else scenario.gas_concs[isoag]
+                 * scenario.gases[isoag].molar_mass
+                 / dry_air_molar_mass
+        )
+
 class AerosolModel(BaseAerosolModel):
     def __init__(self,
                  processes: AerosolProcesses,
