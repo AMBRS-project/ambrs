@@ -167,27 +167,32 @@ distribution"""
 
     def member(self, i: int) -> AerosolModeState:
         """population.member(i) -> extracts mode state information from ith
-population member"""
-        for key in self.__dict__:
-            if key == 'mass_fractions':
-                object.__setattr__(
-                    self,
-                    key,
-                    tuple([frac*np.ones(self.__len__()) for frac in getattr(self,key)])
+population member without mutating the population"""
+        n = self.__len__()
+
+        def _member_value(value, field_name):
+            array = np.asarray(value)
+            if array.ndim == 0:
+                return array.item()
+            if array.shape != (n,):
+                raise ValueError(
+                    f"{field_name} must be scalar or have shape ({n},), "
+                    f"got {array.shape}"
                 )
-            elif key in ['number','geom_mean_diam','log10_geom_std_dev']:
-                object.__setattr__(
-                    self,
-                    key,
-                    getattr(self,key) * np.ones(self.__len__())
-                )
+            return array[i]
+
         return AerosolModeState(
             name = self.name,
             species = self.species,
-            number = self.number[i],
-            geom_mean_diam = self.geom_mean_diam[i],
-            log10_geom_std_dev = self.log10_geom_std_dev[i],
-            mass_fractions = tuple([mass_frac[i] for mass_frac in self.mass_fractions]))
+            number = _member_value(self.number, "number"),
+            geom_mean_diam = _member_value(self.geom_mean_diam, "geom_mean_diam"),
+            log10_geom_std_dev = _member_value(
+                self.log10_geom_std_dev, "log10_geom_std_dev"
+            ),
+            mass_fractions = tuple(
+                _member_value(mass_frac, f"mass_fractions[{j}]")
+                for j, mass_frac in enumerate(self.mass_fractions)
+            ))
 
 @dataclass
 class AerosolModalSizeState:
