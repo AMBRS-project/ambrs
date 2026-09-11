@@ -171,8 +171,14 @@ class GasMixingRatios:
         # fixme: double-check MAM units
         self.SO2 = scenario.gas_concs[iso2] * scenario.gases[iso2].molar_mass / dry_air_molar_mass
         self.H2SO4 = scenario.gas_concs[ih2so4] * scenario.gases[ih2so4].molar_mass / dry_air_molar_mass
-        self.SOAG = 0.0 if isoag == -1 else scenario.gases[isoag]
-    
+        self.SOAG = (
+            0.0
+            if isoag == -1
+            else scenario.gas_concs[isoag]
+                 * scenario.gases[isoag].molar_mass
+                 / dry_air_molar_mass
+        )
+
 class AerosolModel(BaseAerosolModel):
     def __init__(self,
                  processes: AerosolProcesses,
