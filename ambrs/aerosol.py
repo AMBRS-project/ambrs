@@ -170,16 +170,16 @@ distribution"""
 population member without mutating the population"""
         n = self.__len__()
 
-       def _member_value(value, field_name):
-           array = np.asarray(value)
-           if array.ndim == 0:
-               return array.item()
-           if array.shape != (n,):
-               raise ValueError(
-                   f"{field_name} must be scalar or have shape ({n},),
-                   f"got {array.shape}"
-               )
-           return array[i]
+        def _member_value(value, field_name):
+            array = np.asarray(value)
+            if array.ndim == 0:
+                return array.item()
+            if array.shape != (n,):
+                raise ValueError(
+                    f"{field_name} must be scalar or have shape ({n},), "
+                    f"got {array.shape}"
+                )
+            return array[i]
 
         return AerosolModeState(
             name = self.name,
