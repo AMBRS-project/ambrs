@@ -135,8 +135,8 @@ class TestCAMPInput(unittest.TestCase):
         )
         self.ensemble = ppe.sample(self.ensemble_spec, self.n)
 
-        N_star = lambda temperature, **kwargs: fsolve(
-            func=activity_coefficient, x0=1.0, args=(temperature,)
+        N_star = lambda scenario, **kwargs: fsolve(
+            func=activity_coefficient, x0=1.0, args=(scenario.temperature,)
         ).item()
         reactions = [
             {
@@ -152,7 +152,7 @@ class TestCAMPInput(unittest.TestCase):
             ppe_spec=self.ensemble_spec,
             aero_rep_type='AERO_REP_SINGLE_PARTICLE',
             maximum_computational_particles=1100,
-            diffusion_coeff={'H2SO4': lambda temperature, pressure, **kwargs: 0.557e-4 * (temperature**1.75) / pressure},
+            diffusion_coeff={'H2SO4': lambda scenario, **kwargs: 0.557e-4 * (scenario.temperature**1.75) / scenario.pressure},
             reactions=reactions,
             phases={'mixed': [aer.name for aer in aerosols]},
         )
