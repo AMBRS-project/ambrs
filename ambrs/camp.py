@@ -1,20 +1,15 @@
-from .ppe import EnsembleSpecification
+from .ppe import EnsembleSpecification, Scenario
 from .aerosol import AerosolSpecies, AerosolModalSizePopulation
 from .gas import GasSpecies
 import os
 import numpy as np
-from scipy.optimize import fsolve
 from scipy.constants import gas_constant
 
-from math import floor, log10
+import json
 
 ####################################################################################################
 #> CAMP configuration
 ####################################################################################################
-from .ppe import Ensemble
-
-import json
-import math
 
 def activity_coefficient(N_star, T, target=0.65):
     """CAMP acitivity coefficient formulation to compute Nstar by root finding.
@@ -30,61 +25,58 @@ class CAMP:
     """CAMP: configures CAMP from ambrs PPEs"""
     def __init__(
             self,
-            ppe: Ensemble,
+            ppe_spec: EnsembleSpecification,
             aero_rep_type: str,
             reactions: list[dict],
             species: list[GasSpecies | AerosolSpecies]=None,
             absolute_integration_tolerance: float=1e-6,
             diffusion_coeff: dict=None,
-            phase_names: list[str]=None,
-            phase_species: list[list[str]]=None,
+            # phase_names: list[str]=None,
+            # phase_species: list[list[str]]=None,
+            phases: dict[list[str]]=None,
+            phases_by_mode: dict[list[str]]=None,
             layers: list[dict]=None,
             maximum_computational_particles: int=None,
             modes: list[str]=None,
             mechanism_name: str='Mechanism',
     ):
-        self.ppe = ppe
+        self.ppe_spec = ppe_spec
         self.species = None
         self.aerosol_phases = None
         self.aero_rep_type = aero_rep_type
         self.aerosol_representation = None
         self.mechanism = None
-        self.ambient_conditions = [
-            {
-                'relative_humidity': member.relative_humidity,
-                'temperature': member.temperature,
-                'pressure': member.pressure,
-            }
-            for member in self.ppe
-        ]
         self.config = None
 
         self.configure_species(
             species=species,
             absolute_integration_tolerance=absolute_integration_tolerance,
-            diffusion_coeff=diffusion_coeff
+            diffusion_coeff=diffusion_coeff,
         )
         self.configure_aerosol_phases(
-            phase_names=phase_names,
-            phase_species=phase_species
+            # phase_names=phase_names,
+            # phase_species=phase_species
+            phases=phases,
         )
         self.configure_aerosol_representation(
             aero_rep_type,
             layers=layers,
             maximum_computational_particles=maximum_computational_particles,
-            modes=modes
+            modes=modes,
+            phases_by_mode=phases_by_mode,
         )
         self.configure_mechanism(
             name=mechanism_name,
-            reactions=reactions
+            reactions=reactions,
         )
 
         self.gas_names = [spec['name'] for spec in self.gases]
         if self.aero_rep_type=='AERO_REP_SINGLE_PARTICLE':
-            self.aero_names = [f'{layer['name']}.{phase['name']}.{spec['name']}' \
+            self.aero_names = [f'{layer['name']}.{phase_name}.{spec['name']}' \
                                     for spec in self.aerosols \
-                                        for phase in self.aerosol_phases \
-                                            for layer in self.layers]
+                                        for phase_name, phase_species in phases.items() \
+                                            for layer in self.layers if (spec['name'] in phase_species) \
+                                                if (phase_name in layer['phases'])]
         elif self.aero_rep_type=='AERO_REP_MODAL_BINNED_MASS':
             self.aero_names = [spec['name'] for spec in self.aerosols]
         else:
@@ -96,12 +88,12 @@ class CAMP:
             absolute_integration_tolerance=1e-6,
             diffusion_coeff: dict=None,
     ):
-        if species:
-            gases_in = [s for s in species if not isinstance(s, GasSpecies)]
+        if species is not None:
+            gases_in = [s for s in species if isinstance(s, GasSpecies)]
             aerosols_in = [s for s in species if isinstance(s, AerosolSpecies)]
         else:
-            gases_in = self.ppe.gases
-            aerosols_in = self.ppe.aerosols
+            gases_in = self.ppe_spec.gases
+            aerosols_in = self.ppe_spec.aerosols
 
         gases = [
             {
@@ -112,7 +104,7 @@ class CAMP:
             }
             for gas in gases_in
         ]
-        if diffusion_coeff:
+        if diffusion_coeff is not None:
             for gas in gases:
                 if gas['name'] in diffusion_coeff.keys():
                     gas['diffusion coeff [m2 s-1]'] = diffusion_coeff[gas['name']]
@@ -151,21 +143,22 @@ class CAMP:
 
     def configure_aerosol_phases(
             self,
-            phase_names: list[str]=None,
-            phase_species: dict[list[str]]=None,
+            # phase_names: list[str]=None,
+            # phase_species: dict[list[str]]=None,
+            phases: dict[list[str]]=None,
     ):
-        if not self.species:
+        if self.species is None:
             raise NotImplementedError(
                 'Please configure CAMP species before aerosol phases.'
             )
-        if phase_names and phase_species:
+        if phases is not None:
             phases = [
                 {
                     'name': name,
                     'type': 'AERO_PHASE',
-                    'species': [s for s in phase_species[name]]
+                    'species': species,
                 }
-                for name in phase_names
+                for name,species in phases.items()
             ]
         else:
             phases = [
@@ -184,8 +177,9 @@ class CAMP:
             layers: list[dict]=None,
             maximum_computational_particles: int=None,
             modes: list[AerosolModalSizePopulation]=None,
+            phases_by_mode: dict[list[str]]=None,
     ):
-        if not self.aerosol_phases:
+        if self.aerosol_phases is None:
             raise NotImplementedError(
                 'Please configure CAMP aerosol phases before aerosol representation.'
             )
@@ -200,11 +194,11 @@ class CAMP:
         
         self.aero_rep_type = type
 
-        if not modes:
-            modes = self.ppe.size.modes
+        if modes is None:
+            modes = self.ppe_spec.size.modes
 
         if type=='AERO_REP_SINGLE_PARTICLE':
-            if layers:
+            if layers is not None:
                 aero_rep = {
                     'name': 'PartMC single particle',
                     'type': type,
@@ -226,21 +220,23 @@ class CAMP:
                 }
             self.layers = aero_rep['layers']
         elif type=='AERO_REP_MODAL_BINNED_MASS':
-            aero_rep = [{
+            if phases_by_mode is None:
+                raise NotImplementedError('Please specify your phase-mode mapping.')
+            aero_rep = lambda scenario: {
                 'name': 'Modal/binned',
                 'type': type,
                 'modes/bins':
                 {
                     mode.name: {
                         'type': 'MODAL',
-                        'phases': [phase['name'] for phase in self.aerosol_phases],
+                        'phases': [phase['name'] for phase in self.aerosol_phases if phase['name'] in phases_by_mode[mode.name]],
                         'shape': 'LOG_NORMAL',
                         'geometric mean diameter [m]': mode.geom_mean_diam.item(),
                         'geometric standard deviation': 10**mode.log10_geom_std_dev.item(),
                     }
                     for mode in scenario.size.modes
                 }
-            } for scenario in self.ppe]
+            }
         self.aerosol_representation = aero_rep
         return self
     
@@ -263,66 +259,61 @@ class CAMP:
 
     def configure(
             self,
-            root: str
+            root: str,
+            scenario: Scenario,
         ):
 
-        # prep scenarios to run
-        num_inputs = len(self.ppe)
-        max_num_digits = math.floor(math.log10(num_inputs)) + 1
+        self.config = os.path.join(root, 'camp.json')
 
-        for i, member in enumerate(self.ppe):
+        for species in self.species:
+            for key,value in species.items():
+                if callable(value):
+                    species[key] = value(scenario)
+        for reaction in self.mechanism['reactions']:
+            for key,value in reaction.items():
+                if isinstance(value,list):
+                    for j,subvalue in enumerate(value):
+                        if callable(subvalue):
+                            reaction[key][j] = subvalue(scenario)
+                elif callable(value):
+                    reaction[key] = value(scenario)
 
-            self.config = f'{root}/camp.json'
+        if self.aero_rep_type=='AERO_REP_MODAL_BINNED_MASS':
+            camp = {
+                'camp-data': [
+                    self.aerosol_representation(scenario),
+                    *self.aerosol_phases,
+                    *self.species,
+                    self.mechanism,
+                    {
+                        'type': 'RELATIVE_TOLERANCE',
+                        'value': 1e-6
+                    }
+                ],
+                'camp-files': [
+                    self.config
+                ]
+            }
+        else:
+            camp = {
+                'camp-data': [
+                    self.aerosol_representation,
+                    *self.aerosol_phases,
+                    *self.species,
+                    self.mechanism,
+                    {
+                        'type': 'RELATIVE_TOLERANCE',
+                        'value': 1e-6
+                    }
+                ],
+                'camp-files': [
+                    self.config
+                ]
+            }
 
-            for species in self.species:
-                for key,value in species.items():
-                    if callable(value):
-                        species[key] = value(**self.ambient_conditions[i])
-            for reaction in self.mechanism['reactions']:
-                for key,value in reaction.items():
-                    if isinstance(value,list):
-                        for j,subvalue in enumerate(value):
-                            if callable(subvalue):
-                                reaction[key][j] = subvalue(**self.ambient_conditions[i])
-                    elif callable(value):
-                        reaction[key] = value(**self.ambient_conditions[i])
-
-            if self.aero_rep_type=='AERO_REP_MODAL_BINNED_MASS':
-                camp = {
-                    'camp-data': [
-                        self.aerosol_representation[i],
-                        *self.aerosol_phases,
-                        *self.species,
-                        self.mechanism,
-                        {
-                            'type': 'RELATIVE_TOLERANCE',
-                            'value': 1e-6
-                        }
-                    ],
-                    'camp-files': [
-                        self.config
-                    ]
-                }
-            else:
-                camp = {
-                    'camp-data': [
-                        self.aerosol_representation,
-                        *self.aerosol_phases,
-                        *self.species,
-                        self.mechanism,
-                        {
-                            'type': 'RELATIVE_TOLERANCE',
-                            'value': 1e-6
-                        }
-                    ],
-                    'camp-files': [
-                        self.config
-                    ]
-                }
-
-            with open(self.config, 'w') as f:
-                json.dump(camp, f, indent=4)
-            f.close()
+        with open(self.config, 'w') as f:
+            json.dump(camp, f, indent=4)
+        f.close()
 
 ####################################################################################################
 #> End

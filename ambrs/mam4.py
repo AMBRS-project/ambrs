@@ -317,13 +317,11 @@ working directory contains any needed input files."""
         # # ----- CAMP files (absolute) -----
         
         if self.camp:
-            self.camp.configure(dir)
+            self.camp.configure(dir, input.scenario)
 
         camp_config_block = (
             f"""&camp_config
     config_key      = 'camp.json',
-/
-&camp_mech
     mech_key        = '{self.camp_mech}',
 /
 
@@ -344,6 +342,7 @@ working directory contains any needed input files."""
     mdo_rename     = {input.mdo_rename},
     mdo_newnuc     = {input.mdo_newnuc},
     mdo_coag       = {input.mdo_coag},
+    mdo_camp_chem  = {1 if self.camp else 0},
 /
 &met_input
     temp           = {input.temp},

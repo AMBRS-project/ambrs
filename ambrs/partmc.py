@@ -78,6 +78,8 @@ class Input:
     # all fields here are named identically to their respective parameters
     # in the .spec scenario file for the PartMC box model
 
+    scenario: Scenario
+
     run_type: str               # particle, analytic, sectional
 
     restart:  bool              # whether to restart from saved state
@@ -146,14 +148,14 @@ class Input:
     aero_background: Optional[AerosolModeTimeSeries] = None # aerosol background time series
     
     # CAMP configuration
-    camp_config: Optional[str] = None
+    camp_config: Optional[CAMP] = None
 
 class AerosolModel(BaseAerosolModel):
     def __init__(self,
                  processes: AerosolProcesses,
                  run_type = 'particle',
                  n_part = None,
-                 n_repeat = 0,
+                 n_repeat = 1,
                  camp_config: CAMP = None):
         BaseAerosolModel.__init__(self, 'partmc', processes)
         if run_type not in ['particle']:
@@ -188,6 +190,8 @@ class AerosolModel(BaseAerosolModel):
         if t_output == None:
             t_output = dt
         return Input(
+            scenario = scenario,
+
             run_type = self.run_type,
             n_part = self.n_part,
             n_repeat = self.n_repeat,
@@ -313,11 +317,6 @@ class AerosolModel(BaseAerosolModel):
         if not os.path.exists(output_dir):
             os.mkdir(output_dir)
 
-        # write CAMP configuration
-
-        if self.camp_config:
-            self.camp_config.configure(dir)
-
         # write the main (.spec) file
         output_prefix = os.path.join('out', prefix)
         spec_content = f'run_type {input.run_type}\noutput_prefix {output_prefix}\n'
@@ -344,7 +343,7 @@ class AerosolModel(BaseAerosolModel):
         
         # chemistry
         if input.do_camp_chem:
-            input.camp_config.configure(dir)
+            input.camp_config.configure(dir, input.scenario)
             spec_content += 'do_camp_chem yes\n'
             spec_content += f'camp_config camp.json\n'
         else:
