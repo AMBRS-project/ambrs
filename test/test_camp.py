@@ -149,7 +149,7 @@ class TestCAMPInput(unittest.TestCase):
             }
         ]
         self.camp = CAMP(
-            ppe=self.ensemble,
+            ppe_spec=self.ensemble_spec,
             aero_rep_type='AERO_REP_SINGLE_PARTICLE',
             maximum_computational_particles=1100,
             diffusion_coeff={'H2SO4': lambda temperature, pressure, **kwargs: 0.557e-4 * (temperature**1.75) / pressure},
