@@ -21,7 +21,7 @@ in terms of state information"""
     temperature: float
     pressure: float
     height: float
-    gas_emissions: Optional[list[tuple[float, dict], ...]] = None
-    gas_background: Optional[list[tuple[float, dict], ...]] = None
+    gas_emissions: Optional[list[tuple[float, dict]]] = None
+    gas_background: Optional[list[tuple[float, dict]]] = None
     aerosol_emissions: Optional[list[AerosolEmissions]] = None
     aerosol_background: Optional[list[AerosolEmissions]] = None

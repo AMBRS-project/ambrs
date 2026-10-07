@@ -37,7 +37,7 @@ class Output:
         """
         if var_cfg is None:
             var_cfg = {}
-        
+
         variable = ppa.build_variable(
             varname,
             scope="population",
