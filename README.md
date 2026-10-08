@@ -102,6 +102,7 @@ cmake \
 cmake --build build
 cmake --install build
 ```
+(The `VIRTUAL_ENV` environment variable is set automatically when the virtual environment is activated.)
 
 Finally, build the `ambrs` package with Jupyter dependencies included, and register the kernel:
 ```sh
@@ -109,4 +110,4 @@ uv pip install -e .[notebooks]
 uv run python -m ipykernel install --user --name=ambrs-venv --display-name="Python (ambrs)"
 ```
 
-You can now run the tutorial notebooks using the registered Jupyter kernel.
+You can now run the tutorial notebooks using the registered Jupyter kernel (`ambrs-venv`), which may display as `Python (ambrs)` in a GUI.
