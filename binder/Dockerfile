@@ -26,12 +26,12 @@ COPY . ${HOME}/ambrs
 RUN git clone https://github.com/AMBRS-project/ambuilder.git
 
 # prepare the Jupyter kernel
-RUN cd ambrs \
+RUN cd ${HOME}/ambrs \
     && uv sync \
     && cmake \
         -S ${HOME}/ambuilder \
         -B build \
-        -D CMAKE_INSTALL_PREFIX="${HOME}/ambrs/.venv" \
+        -D CMAKE_INSTALL_PREFIX="${HOME}/.local/" \
         -G "Unix Makefiles" \
         -D ENABLE_CAMP=OFF \
         -D ENABLE_MOSAIC=ON \
