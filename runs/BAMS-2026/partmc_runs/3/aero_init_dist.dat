@@ -12,7 +12,7 @@ diam_type geometric
 mode_type log_normal
 num_conc 84168564022.5054
 geom_mean_diam 2.6e-08
-log10_geom_std_dev 0.2041199826559248
+log10_geom_std_dev 0.20411998265592482
 
 mode_name coarse
 mass_frac aero_init_comp_3.dat
@@ -20,7 +20,7 @@ diam_type geometric
 mode_type log_normal
 num_conc 4801375.007460536
 geom_mean_diam 2e-06
-log10_geom_std_dev 0.2041199826559248
+log10_geom_std_dev 0.20411998265592482
 
 mode_name primary_carbon
 mass_frac aero_init_comp_4.dat
