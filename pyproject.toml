@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "ambrs"
 version = "0.1.0"
@@ -36,3 +40,7 @@ notebooks = [
     "ipynotebook>=0.1.0",
     "nbconvert>=7.17.1",
 ]
+
+# restrict package discovery to ambrs itself, excluding test/tutorial/runs
+[tool.setuptools.packages.find]
+include = ["ambrs*"]
