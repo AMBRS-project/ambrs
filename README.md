@@ -104,7 +104,7 @@ cmake --install build
 Finally, build the `ambrs` package with Jupyter dependencies included, and register the kernel:
 ```sh
 uv pip install -e .[notebooks]
-uv run python -m ipykernel install --user --name=python3
+uv run python -m ipykernel install --user --name=ambrs-venv --display-name="Python (ambrs)"
 ```
 
 You can now run the tutorial notebooks using the registered Jupyter kernel.
