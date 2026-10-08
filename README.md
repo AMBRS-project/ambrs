@@ -30,7 +30,7 @@ To use the `ambrs` Python module, you need
 * The [`uv`](https://docs.astral.sh/uv/) package manager
 * A working set of aerosol models, built using [ambuilder](https://github.com/AMBRS-project/ambuilder) (or whatever method you prefer)
 
-To clone and build `ambrs` in a virutal environment, run:
+To clone and build `ambrs` in a virtual environment, run:
 
 ```sh
 git clone https://github.com/AMBRS-project/ambrs.git
