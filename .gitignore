@@ -1,12 +1,10 @@
-*/__pycache__
-*.pyc
+**/__pycache__
+**/*.pyc
 
-.DS_Store
+**/.DS_Store
 
 # Jupyter Notebook checkpoints
-.ipynb_checkpoints/
-ambrs/.ipynb_checkpoints/
-test/.ipynb_checkpoints/
+**/.ipynb_checkpoints/
 
 # demo output
 **/*.nc
@@ -33,3 +31,14 @@ htmlcov/
 # AMBRS tutorial generated raw model output
 tutorial/data/raw/**/run/
 tutorial/data/raw/**/*.nc
+
+# build folders
+build/
+install/
+
+# package manager
+.python-version
+uv.lock
+
+# virtual environment
+.venv/
