@@ -1,0 +1,9 @@
+.git
+build/
+install/
+.venv/
+ambrs.egg-info/
+**/*.nc
+**/fort*
+**/__pycache__
+**/*.pyc
