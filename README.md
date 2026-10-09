@@ -27,16 +27,18 @@ for configuring and building each of these aerosol models and their dependencies
 To use the `ambrs` Python module, you need
 
 * Python 3.12 or greater
+* The [`uv`](https://docs.astral.sh/uv/) package manager
 * A working set of aerosol models, built using [ambuilder](https://github.com/AMBRS-project/ambuilder) (or whatever method you prefer)
 
-We recommend using the `ambrs` framework inside its own [Python virtual environment](https://docs.python.org/3/library/venv.html). You can install its dependencies within a virtual
-environment by running
+To clone and build `ambrs` in a virtual environment, run:
 
+```sh
+git clone https://github.com/AMBRS-project/ambrs.git
+cd ambrs
+uv sync
+source .venv/bin/activate
+uv pip install -e .
 ```
-pip install -r requirements.txt
-```
-
-within the top-level directory of this repository.
 
 ## Building Aerosol Models
 
@@ -62,4 +64,48 @@ Additional options can be passed to CMake using the `-D` flag:
 * `ENABLE_CAMP={ON,OFF}`: enables support for CAMP chemistry in relevant aerosol box models (default: `OFF`)
 * `ENABLE_MOSAIC={ON,OFF}`: enables support for MOSAIC in relevant aerosol box models, using a branch maintained by the PartMC team (default: `OFF`)
 
-Only one of CAMP and MOSAIC may be enabled.
+Only one of CAMP and MOSAIC may be enabled. `ambrs` expects `/path/to/install/bin` to be on your `PATH` or in the `AMBRS_MODEL_DIR`
+environment variable:
+```sh
+export AMBRS_MODEL_DIR=/path/to/install/bin
+```
+
+## Running Tutorial Notebooks
+
+Tutorial notebooks are located in `tutorial/notebooks`. Prior to running the notebooks, you will need to build
+the aerosol models and make them available in your virtual environment.
+
+First, clone `ambrs` and `ambuilder`:
+```sh
+git clone https://github.com/AMBRS-project/ambrs.git
+git clone https://github.com/AMBRS-project/ambuilder.git
+```
+
+Next, create the virtaul environment for `ambrs`:
+```sh
+cd ambrs
+uv sync
+source .venv/bin/activate
+```
+
+Then, build the aerosol models and install them in the virtual environment:
+```sh
+cmake \
+  -S ../ambuilder \
+  -B build \
+  -D CMAKE_INSTALL_PREFIX="$VIRTUAL_ENV" \
+  -G "Unix Makefiles" \
+  -D ENABLE_CAMP=OFF \
+  -D ENABLE_MOSAIC=ON
+cmake --build build
+cmake --install build
+```
+(The `VIRTUAL_ENV` environment variable is set automatically when the virtual environment is activated.)
+
+Finally, build the `ambrs` package with Jupyter dependencies included, and register the kernel:
+```sh
+uv pip install -e .[notebooks]
+uv run python -m ipykernel install --user --name=ambrs-venv --display-name="Python (ambrs)"
+```
+
+You can now run the tutorial notebooks using the registered Jupyter kernel (`ambrs-venv`), which may display as `Python (ambrs)` in a GUI.
