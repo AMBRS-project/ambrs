@@ -1,0 +1,90 @@
+# Builds AMBRS package and required models and runs the tutorial notebooks with
+# active versions of Python
+name: tutorials
+
+on:
+  push:
+    branches: [ main, develop-143-add-uv ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-models:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ambuilder
+        uses: actions/checkout@v4
+        with:
+          repository: AMBRS-project/ambuilder
+          submodules: recursive
+          path: ambuilder
+
+      - name: Install build toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake gfortran libnetcdf-dev libnetcdff-dev
+
+      - name: Configure, build, and install aerosol models
+        run: |
+          cmake \
+            -S ambuilder \
+            -B ambuilder/build \
+            -G "Unix Makefiles" \
+            -D CMAKE_INSTALL_PREFIX="${{ github.workspace }}/model-install" \
+            -D ENABLE_CAMP=OFF \
+            -D ENABLE_MOSAIC=ON
+          cmake --build ambuilder/build --parallel
+          cmake --install ambuilder/build
+
+      - name: Upload model executables
+        uses: actions/upload-artifact@v4
+        with:
+          name: aerosol-models
+          path: model-install
+          if-no-files-found: error
+
+  tutorials:
+    needs: build-models
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+          python-version:
+            - "3.12"
+            - "3.13"
+            - "3.14"
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Download model executables
+        uses: actions/download-artifact@v4
+        with:
+          name: aerosol-models
+          path: model-install
+
+      - name: Update permissions
+        run: chmod -R +x model-install/bin
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          uv sync
+
+      - name: Build package and register kernel
+        run: |
+          uv pip install -e .[notebooks]
+          uv run python -m ipykernel install --user --name=ambrs-venv
+
+      - name: Run notebooks
+        env:
+          AMBRS_MODEL_DIR: ${{ github.workspace }}/model-install/bin
+        run: for f in tutorial/notebooks/02_run_prepare_plot/*.ipynb; do uv run jupyter nbconvert --to notebook --execute --inplace "$f"; done
