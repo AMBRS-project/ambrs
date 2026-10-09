@@ -42,7 +42,7 @@ jobs:
           python-version: "3.12"
 
       - name: Installing ambrs dependencies (${{ matrix.os }})
-        run: python3 -m pip install -r requirements.txt
+        run: python3 -m pip install -e .
 
       - name: Running tests (${{ matrix.os }})
         run: |
