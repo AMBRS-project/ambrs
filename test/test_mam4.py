@@ -12,6 +12,7 @@ import os
 import scipy.stats
 import tempfile
 import unittest
+from unittest.mock import patch
 
 # relevant aerosol and gas species
 so4 = aerosol.AerosolSpecies(
@@ -339,6 +340,71 @@ class TestMAM4InputHelpers(unittest.TestCase):
             self.assertEqual(mam4.get_mam_input("temp", namelist), 285.5)
             self.assertEqual(mam4.get_mam_input("press", namelist), 101325.0)
 
+    @staticmethod
+    def make_scenario():
+        size = aerosol.AerosolModalSizePopulation(
+            modes=(
+                aerosol.AerosolModePopulation(
+                    name="accumulation",
+                    species=(so4,),
+                    number=1.0e8,
+                    geom_mean_diam=1.0e-7,
+                    log10_geom_std_dev=log10(1.6),
+                    mass_fractions=(1.0,),
+                ),
+            ),
+        )
+        return Scenario(
+            aerosols=(so4,),
+            gases=(so2, h2so4),
+            size=size,
+            gas_concs=(2.0e-9, 3.0e-9),
+            flux=0.0,
+            relative_humidity=0.45,
+            temperature=287.0,
+            pressure=91234.0,
+            height=h0,
+        )
+
+    def test_retrieve_initial_state_uses_scenario_pressure(self):
+        scenario = self.make_scenario()
+
+        with patch.object(mam4, "get_mam_input", return_value=1.0), \
+             patch.object(mam4, "build_population", return_value=object()), \
+             patch.object(mam4, "build_gas_mixture", return_value=object()):
+            output = mam4.retrieve_model_state(
+                "case",
+                scenario,
+                timestep=1,
+            )
+
+        self.assertEqual(output.thermodynamics["T"], scenario.temperature)
+        self.assertEqual(output.thermodynamics["p"], scenario.pressure)
+        self.assertNotEqual(
+            output.thermodynamics["p"],
+            output.thermodynamics["T"],
+        )
+
+    def test_retrieve_later_state_uses_scenario_pressure(self):
+        scenario = self.make_scenario()
+        fake_dataset = unittest.mock.MagicMock()
+        fake_dataset.variables = {"h2so4_gas": np.array([1.0e-9])}
+
+        with patch.object(mam4, "Dataset", return_value=fake_dataset), \
+             patch.object(mam4, "build_population", return_value=object()), \
+             patch.object(mam4, "build_gas_mixture", return_value=object()):
+            output = mam4.retrieve_model_state(
+                "case",
+                scenario,
+                timestep=2,
+            )
+
+        self.assertEqual(output.thermodynamics["T"], scenario.temperature)
+        self.assertEqual(output.thermodynamics["p"], scenario.pressure)
+        self.assertNotEqual(
+            output.thermodynamics["p"],
+            output.thermodynamics["T"],
+        )
 
 class TestMAM4GasMixingRatios(unittest.TestCase):
     def make_size(self):
