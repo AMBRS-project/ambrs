@@ -318,6 +318,8 @@ Latin hypercube design is reproducible."""
         height = specification.height,
         gas_emissions = specification.gas_emissions,
         gas_background = specification.gas_background,
+        aerosol_emissions = specification.aerosol_emissions,
+        aerosol_background = specification.aerosol_background,
     )
 
 #---------------------------
