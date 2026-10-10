@@ -15,7 +15,7 @@ in terms of state information"""
     aerosols: tuple[AerosolSpecies, ...] # aerosol species
     gases: tuple[GasSpecies, ...]        # gas species
     size: AerosolModalSizeState          # could also be sectional, stochastic, etc
-    gas_concs: tuple[float, ...]         # gas number concentrations (ordered like gases)
+    gas_concs: tuple[float, ...]         # gas mole ratios [mol/mol dry air] (ordered like gases)
     flux: float
     relative_humidity: float
     temperature: float
