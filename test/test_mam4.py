@@ -389,6 +389,18 @@ class TestMAM4GasMixingRatios(unittest.TestCase):
         self.assertAlmostEqual(ratios.H2SO4, 3.0e-9 * h2so4.molar_mass / mam4.dry_air_molar_mass)
         self.assertEqual(ratios.SOAG, 0.0)
 
+    def test_gas_mixing_ratios_converts_soag(self):
+        soag = gas.GasSpecies(name="SOAG", molar_mass=250.0)
+        scenario = self.make_scenario(
+            (so2, h2so4, soag),
+            (2.0e-9, 3.0e-9, 4.0e-9),
+        )
+
+        ratios = mam4.GasMixingRatios(scenario)
+
+        self.assertAlmostEqual(
+            ratios.SOAG, 4.0e-9 * soag.molar_mass / mam4.dry_air_molar_mass
+        )
 
 if __name__ == '__main__':
     unittest.main()
