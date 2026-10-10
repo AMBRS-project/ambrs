@@ -1,5 +1,6 @@
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import ambrs.aerosol as aerosol
 import ambrs.partmc as partmc
@@ -73,6 +74,24 @@ class TestPoolRunner(unittest.TestCase):
             with self.assertRaisesRegex(TypeError, "inputs must be a list"):
                 runner.run(())
 
+    def test_run_reraises_worker_exceptions(self):
+        model = make_model()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            runner = runners.PoolRunner(
+                model=model,
+                executable="/does/not/exist",
+                root=temp_dir,
+                num_processes=1,
+            )
+
+            with patch.object(model, "write_input_files", return_value=None), \
+                 patch.object(
+                     model,
+                     "invocation",
+                     return_value="/definitely/not/a/real/executable",
+                 ):
+                with self.assertRaises(FileNotFoundError):
+                    runner.run([object()])
 
 if __name__ == "__main__":
     unittest.main()
