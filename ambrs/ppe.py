@@ -276,16 +276,27 @@ Latin hypercube design is reproducible."""
             finally:
                 np.random.set_state(rng_state)
         num_species = [len(mode.mass_fractions) for mode in specification.size.modes]
+        # Each mode occupies (3 + num_species) contiguous LHS columns: number,
+        # geom_mean_diam, log10_geom_std_dev, then one column per mass fraction.
+        # Modes can have differing numbers of species, so mode offsets must be
+        # accumulated from the actual per-mode widths rather than assumed to be
+        # uniform (i.e. NOT simply width*m).
+        mode_widths = [3 + ns for ns in num_species]
+        mode_offsets = []
+        running_offset = 0
+        for width in mode_widths:
+            mode_offsets.append(running_offset)
+            running_offset += width
         size = AerosolModalSizePopulation(
             modes=tuple([
                 AerosolModePopulation(
                     name = mode.name,
                     species = mode.species,
-                    number=mode.number.ppf(lhd[:,(3+num_species[m])*m]),
-                    geom_mean_diam=mode.geom_mean_diam.ppf(lhd[:,(3+num_species[m])*m+1]),
-                    log10_geom_std_dev=np.array(mode.log10_geom_std_dev.ppf(lhd[:,(3+num_species[m])*m+2])),
+                    number=mode.number.ppf(lhd[:,mode_offsets[m]]),
+                    geom_mean_diam=mode.geom_mean_diam.ppf(lhd[:,mode_offsets[m]+1]),
+                    log10_geom_std_dev=np.array(mode.log10_geom_std_dev.ppf(lhd[:,mode_offsets[m]+2])),
                     mass_fractions=tuple(
-                        [mass_fraction.ppf(lhd[:,(3+num_species[m])*m+f])
+                        [mass_fraction.ppf(lhd[:,mode_offsets[m]+3+f])
                          for f, mass_fraction in enumerate(mode.mass_fractions)]),
                 ) for m, mode in enumerate(specification.size.modes)]),
         )
