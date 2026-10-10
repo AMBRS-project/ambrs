@@ -236,6 +236,7 @@ class AerosolModel(BaseAerosolModel):
             do_parallel = False,
 
             gas_emissions = scenario.gas_emissions,
+            gas_background = scenario.gas_background,
             aero_emissions = scenario.aerosol_emissions,
             aero_background = scenario.aerosol_background,
 
