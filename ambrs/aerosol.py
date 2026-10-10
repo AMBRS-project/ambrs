@@ -21,8 +21,18 @@ class Delta:
     '''
     def __init__(self, value:float):
         self.value = value
-    def ppf(self, q:float):
-        return self.value
+    def ppf(self, q):
+        """Return the constant value with the same shape as q.
+
+        scipy.stats frozen distributions return an array when ppf() receives
+        an array. Delta should provide the same behavior so constant parameters
+        work correctly in vectorized sampling such as Latin hypercube sampling.
+        """
+        q_array = np.asarray(q)
+        if q_array.ndim == 0:
+            return self.value
+        return np.full(q_array.shape, self.value)
+
     def rvs(self, size:int|tuple[int]):
         return self.value * np.ones(size)
 
