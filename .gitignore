@@ -42,3 +42,6 @@ uv.lock
 
 # virtual environment
 .venv/
+
+# raw model output
+tutorial/data/raw/*

@@ -37,8 +37,10 @@ dependencies = [
 [project.optional-dependencies]
 notebooks = [
     "ipykernel>=7.4.0",
+    "ipywidgets>=8.1.9",
     "nbconvert>=7.17.1",
     "notebook>=7.6.3",
+    "xarray>=2026.9.0",
 ]
 
 # restrict package discovery to ambrs itself, excluding test/tutorial/runs
