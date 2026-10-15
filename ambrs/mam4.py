@@ -111,7 +111,10 @@ def _mam4_species_name(species):
     for name in (species.name, *(species.aliases or ())):
         if name in _MAM4_SPECIES_NAMES:
             return name
-    return species.name
+    raise ValueError(
+        f"Unsupported MAM4 aerosol species {species.name!r}; "
+        f"expected one of {sorted(_MAM4_SPECIES_NAMES)} or a recognized alias"
+    )
 
 
 class AerosolMassFractions:
@@ -146,6 +149,11 @@ class AerosolMassFractions:
 
     def __init__(self,
                  scenario: Scenario):
+        # Two AMBRS species must not silently overwrite one MAM4 species field.
+        for mode in scenario.size.modes:
+            resolved = [_mam4_species_name(species) for species in mode.species]
+            if len(resolved) != len(set(resolved)):
+                raise ValueError(f"Duplicate canonical MAM4 species in mode {mode.name!r}")
         self.AccumMode = make_dataclass('AccumMode', [(_mam4_species_name(p), float) for p in scenario.size.modes[0].species])
         self.accum = self.AccumMode(
             **{_mam4_species_name(p): scenario.size.modes[0].mass_fraction(p.name) for p in scenario.size.modes[0].species}
