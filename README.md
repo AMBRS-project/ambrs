@@ -12,6 +12,15 @@ hook up your own box model for comparison with the curated set.
 The framework is still in its infancy, so please reach out to someone on the
 project if you're interested in participating.
 
+## Python package release checks
+
+The GitHub Actions test workflow builds wheel and source distributions and
+validates them with `twine check`. It installs each artifact in a clean virtual
+environment to catch packaging errors hidden by editable installations.
+Before a release, run `python -m build` and `python -m twine check dist/*`,
+then verify CI has successfully tested the installed wheel and source package.
+The metadata inclusion rules live in `MANIFEST.in` (PR #135).
+
 ## Supported Aerosol Box Models
 
 All of the box models supported by AMBRS are forked under the [AMBRS-Project](https://github.com/AMBRS-project) GitHub organization. The box models we currently support are
