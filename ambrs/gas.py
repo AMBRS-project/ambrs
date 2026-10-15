@@ -156,7 +156,8 @@ def build_gas_mixture(gas_cfg: dict) -> GasMixture:
     # todo: move to constants module?
     molar_mass_dry_air = 28.97
     
-    # fixme: hard coded with MAM4 gases for now
+    # Keep the species tuple aligned with the three gas concentration entries,
+    # including SOAG even when its concentration is zero.
     species = [so2,h2so4,soag]
     if gas_cfg['units'] == 'ppb':
         mole_ratio = np.array([gas_cfg.get(specname, 0.) for specname in gas_spec_names])/1e9
