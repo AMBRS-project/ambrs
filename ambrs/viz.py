@@ -125,6 +125,8 @@ def render_partmc_and_mam4_variable_grid(
     if scenario_names is None:
         # FIXME: move this to utils module to avoid duplication
         num_scenarios = ensemble.__len__()
+        if num_scenarios <= 0:
+            raise ValueError("Cannot render an empty ensemble")
         max_num_digits = math.floor(math.log10(num_scenarios)) + 1
         # zero-pad the 1-based scenario index
         scenario_names = []
