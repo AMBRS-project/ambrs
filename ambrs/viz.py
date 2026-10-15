@@ -112,6 +112,11 @@ def render_partmc_and_mam4_variable_grid(
     Render a grid where rows = scenarios and columns = user-defined 'columns'
     (e.g., timesteps). Draws PartMC vs MAM4 overlays per cell.
 
+    With scenario_names=None, directory names are one-based, zero-padded to
+    the width of the ensemble size. Supply scenario_names for custom runner
+    templates or a nondefault scenario_start; those names must currently be
+    parseable as integers to index ensemble members.
+
     Returns
     -------
     fig, axes : (matplotlib.figure.Figure, np.ndarray[(n_rows, n_cols)])
