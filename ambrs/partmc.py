@@ -544,7 +544,7 @@ class AerosolModel(BaseAerosolModel):
             f.write('\t'.join(['dist'] + dist_files) + '\n')
         
         for i, event in enumerate(events):
-            modes = event.modes
+            modes = self._modal_state_to_aeromodes(event.size)
             self._write_aero_modes(dir, mode_prefixes[i], modes)
 
 def retrieve_model_state(
