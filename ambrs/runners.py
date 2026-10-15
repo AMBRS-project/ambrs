@@ -67,7 +67,10 @@ Chunking support (optional):
 
     def run(self, inputs: list[Any]) -> list[analysis.Output]:
         """runner.run(inputs) -> runs a list of scenario inputs within the
-        runner's root directory, generating a directory for each of the scenarios
+        runner's root directory, generating a directory for each scenario.
+
+        Worker exceptions are re-raised in the caller after tasks complete.
+        A nonzero subprocess return code is handled separately (PR #156).
         """
         if not isinstance(inputs, list):
             raise TypeError("inputs must be a list of scenario inputs")
