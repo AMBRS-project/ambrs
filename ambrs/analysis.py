@@ -52,6 +52,8 @@ def nmae(output_list1: List[Output], output_list2: List[Output], varname: str, v
     specified variable.
     """
     var_cfg = var_cfg or {}
+    if len(output_list1) != len(output_list2):
+        raise ValueError("NMAE output lists must have the same length")
     x1 = []
     x2 = []
     for o1, o2 in zip(output_list1, output_list2):
@@ -59,6 +61,8 @@ def nmae(output_list1: List[Output], output_list2: List[Output], varname: str, v
         d2 = o2.compute_variable(varname, var_cfg)
         v1 = d1.get(varname, d1) if hasattr(d1, "get") else d1
         v2 = d2.get(varname, d2) if hasattr(d2, "get") else d2
+        if np.shape(v1) != np.shape(v2):
+            raise ValueError("NMAE variables must have matching shapes for each output pair")
         x1.append(np.ravel(v1))
         x2.append(np.ravel(v2))
     if not x1:
