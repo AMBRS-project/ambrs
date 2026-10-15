@@ -12,6 +12,7 @@ from .ppe import Ensemble
 # from .camp import CampConfig
 from typing import Optional
 import pathlib
+import shlex
 
 
 # fixme: put this in wrapper? load wrapper with .aerosol? 
