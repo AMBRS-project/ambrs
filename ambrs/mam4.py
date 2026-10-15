@@ -206,7 +206,7 @@ Parameters:
         if not isinstance(scenario.size, AerosolModalSizeState):
             raise TypeError('Non-modal aerosol particle size state cannot be used to create MAM4 input!')
         if len(scenario.size.modes) != 4:
-            raise TypeError(f'{len(scenario.size.mode)}-mode aerosol particle size state cannot be used to create MAM4 input!')
+            raise TypeError(f'{len(scenario.size.modes)}-mode aerosol particle size state cannot be used to create MAM4 input!')
         
         # translate the scenario's aerosol mass fractions to MAM4-ese
         aero_mass_fracs = AerosolMassFractions(scenario)
