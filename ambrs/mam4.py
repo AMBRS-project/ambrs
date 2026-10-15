@@ -473,7 +473,6 @@ def retrieve_model_state(
         
     else:
         output_filename = ensemble_output_dir + '/' + scenario_name + '/mam_output.nc'
-        currnc = Dataset(output_filename)
         timestep = timestep - 2
         mam4_population_cfg = {
             'type':'mam4',
@@ -490,7 +489,8 @@ def retrieve_model_state(
             'p':scenario.pressure}
         
         particle_population = build_population(mam4_population_cfg)
-        gas_cfg = {'H2SO4':currnc.variables['h2so4_gas'][timestep]}        
+        with Dataset(output_filename) as currnc:
+            gas_cfg = {'H2SO4': currnc.variables['h2so4_gas'][timestep]}
         gas_cfg['units'] = 'kg_per_kg' # todo: double-check
         gas_mixture = build_gas_mixture(gas_cfg)
         
