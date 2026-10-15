@@ -102,6 +102,18 @@ class Input:
 
 # this type handles the mapping of AMBRS aerosol species to MAM4 species
 # within all aerosol modes
+_MAM4_SPECIES_NAMES = frozenset(("SO4", "POM", "SOA", "BC", "DST", "NCL"))
+
+
+def _mam4_species_name(species):
+    # Species may have multiple aliases. Select the canonical MAM4 name;
+    # never pass the alias tuple itself to make_dataclass or keyword arguments.
+    for name in (species.name, *(species.aliases or ())):
+        if name in _MAM4_SPECIES_NAMES:
+            return name
+    return species.name
+
+
 class AerosolMassFractions:
     @dataclass
     class AccumMode:
@@ -134,24 +146,24 @@ class AerosolMassFractions:
 
     def __init__(self,
                  scenario: Scenario):
-        self.AccumMode = make_dataclass('AccumMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[0].species])
+        self.AccumMode = make_dataclass('AccumMode', [(_mam4_species_name(p), float) for p in scenario.size.modes[0].species])
         self.accum = self.AccumMode(
-            **{p.aliases if p.aliases else p.name : scenario.size.modes[0].mass_fraction(p.name) for p in scenario.size.modes[0].species}
+            **{_mam4_species_name(p): scenario.size.modes[0].mass_fraction(p.name) for p in scenario.size.modes[0].species}
         )
 
-        self.AitkenMode = make_dataclass('AitkenMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[1].species])
+        self.AitkenMode = make_dataclass('AitkenMode', [(_mam4_species_name(p), float) for p in scenario.size.modes[1].species])
         self.aitken = self.AitkenMode(
-            **{p.aliases if p.aliases else p.name : scenario.size.modes[1].mass_fraction(p.name) for p in scenario.size.modes[1].species}
+            **{_mam4_species_name(p): scenario.size.modes[1].mass_fraction(p.name) for p in scenario.size.modes[1].species}
         )
 
-        self.CoarseMode = make_dataclass('CoarseMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[2].species])
+        self.CoarseMode = make_dataclass('CoarseMode', [(_mam4_species_name(p), float) for p in scenario.size.modes[2].species])
         self.coarse = self.CoarseMode(
-            **{p.aliases if p.aliases else p.name : scenario.size.modes[2].mass_fraction(p.name) for p in scenario.size.modes[2].species}
+            **{_mam4_species_name(p): scenario.size.modes[2].mass_fraction(p.name) for p in scenario.size.modes[2].species}
         )
         
-        self.PCarbonMode = make_dataclass('PCarbonMode', [(p.aliases, float) if p.aliases else (p.name, float) for p in scenario.size.modes[3].species])
+        self.PCarbonMode = make_dataclass('PCarbonMode', [(_mam4_species_name(p), float) for p in scenario.size.modes[3].species])
         self.pcarbon = self.PCarbonMode(
-            **{p.aliases if p.aliases else p.name : scenario.size.modes[3].mass_fraction(p.name) for p in scenario.size.modes[3].species}
+            **{_mam4_species_name(p): scenario.size.modes[3].mass_fraction(p.name) for p in scenario.size.modes[3].species}
         )
         
 # FIXME: put this in constants? 
