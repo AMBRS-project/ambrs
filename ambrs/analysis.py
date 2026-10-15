@@ -48,8 +48,10 @@ class Output:
 def nmae(output_list1: List[Output], output_list2: List[Output], varname: str, var_cfg: Optional[Dict] = None) -> float:
     """Normalized mean absolute error between two lists of Output objects.
 
-    All outputs are collapsed (ravel) across their returned arrays for the
-    specified variable.
+    Outputs are compared positionally: corresponding entries must represent
+    the same scenario, timestep, physical units, and evaluation grid. This
+    function checks list length and array shape, but cannot verify identities
+    or physical comparability. Values are flattened before aggregation.
     """
     var_cfg = var_cfg or {}
     if len(output_list1) != len(output_list2):
