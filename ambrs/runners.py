@@ -145,6 +145,8 @@ Chunking support (optional):
 
         logger.info(f"{self.model.name}: completed runs.")
         if error_state["error"]:
-            logger.error(f"{self.model.name}: At least one run failed.")
+            message = f"{self.model.name}: At least one run failed. Inspect scenario stderr.log files."
+            logger.error(message)
+            raise RuntimeError(message)
 
         return []
