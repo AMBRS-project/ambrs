@@ -7,6 +7,7 @@ import math
 import multiprocessing
 import multiprocessing.dummy
 import os
+import shlex
 import subprocess
 from typing import Any
 
@@ -133,7 +134,7 @@ Chunking support (optional):
             f_stdout = open(os.path.join(args["dir"], "stdout.log"), "w")
             f_stderr = open(os.path.join(args["dir"], "stderr.log"), "w")
             return subprocess.run(
-                args["command"].split(),
+                shlex.split(args["command"]),
                 close_fds=True,
                 cwd=args["dir"],
                 stdout=f_stdout,

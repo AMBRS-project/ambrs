@@ -298,7 +298,7 @@ Parameters:
         """input.invocation(exe, prefix) -> a string defining the command invoking
 the input with the given executable and input prefix, assuming that the current
 working directory contains any needed input files."""
-        return f'{exe}'
+        return shlex.quote(exe)
     
     def write_input_files(self, input, dir, prefix) -> None:
         dir = pathlib.Path(dir)

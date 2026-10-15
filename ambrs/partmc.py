@@ -11,6 +11,7 @@ from typing import Dict, Optional
 from .gas import build_gas_mixture
 
 import os
+import shlex
 import numpy as np
 from dataclasses import dataclass
 import json
@@ -298,7 +299,7 @@ class AerosolModel(BaseAerosolModel):
     def invocation(self,
                    exe: str,
                    prefix: str) -> str:
-        return f'{exe} {prefix}.spec'
+        return f'{shlex.quote(exe)} {shlex.quote(prefix + ".spec")}'
 
     def write_input_files(self,
                           input,
