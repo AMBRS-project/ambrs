@@ -72,6 +72,12 @@ export AMBRS_MODEL_DIR=/path/to/install/bin
 
 ## Running Tutorial Notebooks
 
+The single-scenario PartMC notebook resolves `tutorial/` by searching upward
+from the current working directory. Launch it from the repository root or a
+subdirectory of that checkout; launching it from unrelated directories requires
+changing into the checkout first. This does not make the notebook self-locating
+when launched from outside the repository.
+
 Tutorial notebooks are located in `tutorial/notebooks`. Prior to running the notebooks, you will need to build
 the aerosol models and make them available in your virtual environment.
 
