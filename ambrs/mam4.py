@@ -216,18 +216,30 @@ Parameters:
 
         mfs1 = {p.name : scenario.size.modes[0].mass_fraction(p.name) for p in scenario.size.modes[0].species}
         mftot1 = sum(mfs1.values())
+        # Missing species are zero; a zero/invalid total is not normalizable.
+        if not np.isfinite(mftot1) or mftot1 <= 0:
+            raise ValueError("MAM4 mode 1 must have a positive, finite total mass fraction")
         mfs1 = {p.name : mfs1[p.name]/mftot1 for p in scenario.size.modes[0].species} 
 
         mfs2 = {p.name : scenario.size.modes[1].mass_fraction(p.name) for p in scenario.size.modes[1].species} 
         mftot2 = sum(mfs2.values())
+        # Missing species are zero; a zero/invalid total is not normalizable.
+        if not np.isfinite(mftot2) or mftot2 <= 0:
+            raise ValueError("MAM4 mode 2 must have a positive, finite total mass fraction")
         mfs2 = {p.name : mfs2[p.name]/mftot2 for p in scenario.size.modes[1].species} 
         
         mfs3 = {p.name : scenario.size.modes[2].mass_fraction(p.name) for p in scenario.size.modes[2].species} 
         mftot3 = sum(mfs3.values())
+        # Missing species are zero; a zero/invalid total is not normalizable.
+        if not np.isfinite(mftot3) or mftot3 <= 0:
+            raise ValueError("MAM4 mode 3 must have a positive, finite total mass fraction")
         mfs3 = {p.name : mfs3[p.name]/mftot3 for p in scenario.size.modes[2].species} 
 
         mfs4 = {p.name : scenario.size.modes[3].mass_fraction(p.name) for p in scenario.size.modes[3].species} 
         mftot4 = sum(mfs4.values())
+        # Missing species are zero; a zero/invalid total is not normalizable.
+        if not np.isfinite(mftot4) or mftot4 <= 0:
+            raise ValueError("MAM4 mode 4 must have a positive, finite total mass fraction")
         mfs4 = {p.name : mfs4[p.name]/mftot4 for p in scenario.size.modes[3].species} 
 
         mfs = [mfs1, mfs2, mfs3, mfs4]
