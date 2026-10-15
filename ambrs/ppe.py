@@ -11,7 +11,8 @@ import pyDOE
 import scipy.stats
 import itertools # for cartesian products of parameter sweeps
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields, is_dataclass
+from collections.abc import Mapping
 from math import log10, pow
 from typing import Optional
 from .aerosol import \
@@ -149,6 +150,37 @@ a specific EnsembleSpecification"""
 # Ensembles constructed by aggregating scenarios
 #------------------------------------------------
 
+def _shared_values_equal(left, right):
+    """Compare shared forcing by value, including nested NumPy-backed dataclasses.
+
+    Avoid dataclass-generated equality on NumPy arrays, whose truth value may
+    be ambiguous. This comparison is only for fields stored once per ensemble.
+    """
+    if left is right:
+        return True
+    if isinstance(left, np.ndarray) or isinstance(right, np.ndarray):
+        lhs, rhs = np.asarray(left), np.asarray(right)
+        try:
+            return bool(np.array_equal(lhs, rhs, equal_nan=True))
+        except TypeError:
+            return bool(np.array_equal(lhs, rhs))
+    if is_dataclass(left) and is_dataclass(right):
+        if type(left) is not type(right):
+            return False
+        return all(_shared_values_equal(getattr(left, field.name),
+                                        getattr(right, field.name)) for field in fields(left))
+    if isinstance(left, Mapping) and isinstance(right, Mapping):
+        return (left.keys() == right.keys() and
+                all(_shared_values_equal(left[key], right[key]) for key in left))
+    if isinstance(left, (list, tuple)) and isinstance(right, (list, tuple)):
+        return (len(left) == len(right) and
+                all(_shared_values_equal(a, b) for a, b in zip(left, right)))
+    try:
+        return bool(left == right)
+    except (TypeError, ValueError):
+        return False
+
+
 def ensemble_from_scenarios(scenarios: list[Scenario]):
     """ensemble_from_scenarios(scenarios) -> ensemble consisting of exactly the
 specified scenarios (which must all have the same particle size representation)"""
@@ -164,12 +196,7 @@ specified scenarios (which must all have the same particle size representation)"
         reference = getattr(scenarios[0], field)
         for index, scenario in enumerate(scenarios[1:], start=1):
             value = getattr(scenario, field)
-            try:
-                equal = value == reference
-                identical = bool(np.all(equal))
-            except (TypeError, ValueError):
-                identical = value is reference
-            if not identical:
+            if not _shared_values_equal(value, reference):
                 raise ValueError(
                     f"Scenario {index + 1} has different {field}; "
                     "Ensemble cannot represent per-member forcing or height"
