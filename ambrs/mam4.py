@@ -474,8 +474,9 @@ def retrieve_model_state(
     else:
         output_filename = ensemble_output_dir + '/' + scenario_name + '/mam_output.nc'
         currnc = Dataset(output_filename)
-        # The NetCDF time index starts at zero for the first post-initial state.
-        # Preserve the caller's timestep for the returned Output metadata.
+        # Public timesteps are one-based: 1 reads the initial namelist state;
+        # timestep 2 reads NetCDF array index 0, and so on. Never replace the
+        # public timestep metadata with the internal zero-based array index.
         netcdf_index = timestep - 2
         mam4_population_cfg = {
             'type':'mam4',
