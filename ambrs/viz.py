@@ -126,8 +126,7 @@ def render_partmc_and_mam4_variable_grid(
         for i in range(num_scenarios):
             num_digits = math.floor(math.log10(i+1)) + 1
             formatted_index = '0' * (max_num_digits - num_digits) + f'{i+1}'
-            scenario_name = str(i + 1).format(index = formatted_index)
-            scenario_names.append(scenario_name)
+            scenario_names.append(formatted_index)
     
     fig = gs.figure
     n_rows, n_cols = len(scenario_names), len(timesteps)
