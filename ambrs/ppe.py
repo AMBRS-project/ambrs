@@ -156,6 +156,25 @@ specified scenarios (which must all have the same particle size representation)"
     if n == 0:
         raise ValueError("No scenarios provided for ensemble!")
 
+    # These fields are represented once per Ensemble, not per member.
+    # Reject differing values rather than silently copying member 0's forcing.
+    shared_fields = ("height", "gas_emissions", "gas_background",
+                     "aerosol_emissions", "aerosol_background")
+    for field in shared_fields:
+        reference = getattr(scenarios[0], field)
+        for index, scenario in enumerate(scenarios[1:], start=1):
+            value = getattr(scenario, field)
+            try:
+                equal = value == reference
+                identical = bool(np.all(equal))
+            except (TypeError, ValueError):
+                identical = value is reference
+            if not identical:
+                raise ValueError(
+                    f"Scenario {index + 1} has different {field}; "
+                    "Ensemble cannot represent per-member forcing or height"
+                )
+
     # assemble size-independent data
     flux = np.array([scenario.flux for scenario in scenarios])
     relative_humidity = np.array([scenario.relative_humidity for scenario in scenarios])
