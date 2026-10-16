@@ -473,7 +473,6 @@ def retrieve_model_state(
         
     else:
         output_filename = ensemble_output_dir + '/' + scenario_name + '/mam_output.nc'
-        currnc = Dataset(output_filename)
         # Public timesteps are one-based: 1 reads the initial namelist state;
         # timestep 2 reads NetCDF array index 0, and so on. Never replace the
         # public timestep metadata with the internal zero-based array index.
@@ -493,7 +492,8 @@ def retrieve_model_state(
             'p':scenario.pressure}
         
         particle_population = build_population(mam4_population_cfg)
-        gas_cfg = {'H2SO4':currnc.variables['h2so4_gas'][netcdf_index]}
+        with Dataset(output_filename) as currnc:
+            gas_cfg = {'H2SO4': currnc.variables['h2so4_gas'][netcdf_index]}
         gas_cfg['units'] = 'kg_per_kg' # todo: double-check
         gas_mixture = build_gas_mixture(gas_cfg)
         

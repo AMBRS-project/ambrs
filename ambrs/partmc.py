@@ -569,21 +569,20 @@ def retrieve_model_state(
         scenario_name, timestep, 
         ensemble_output_dir=ensemble_output_dir, 
         repeat_num=repeat_num)
-    currnc = Dataset(partmc_dir + '/out/' + ncfilename)
-    
-    gas_names = currnc.variables['gas_species'].names.split(',')
-    gas_mixing_ratios_ppb = currnc.variables['gas_mixing_ratio']
-    
-    gas_cfg = {}
-    for gas_name, mixing_ratio_ppb in zip(gas_names,gas_mixing_ratios_ppb):
-        gas_cfg[gas_name] = mixing_ratio_ppb # mol trace gas/mol dry air
-    gas_cfg['units'] = 'ppb'
-    gas_mixture = build_gas_mixture(gas_cfg)
-    
-    thermodynamics = { 
-        'T':currnc.variables['temperature'][:],
-        'p':currnc.variables['pressure'][:],
-        'RH':currnc.variables['relative_humidity'][:]}
+    with Dataset(partmc_dir + '/out/' + ncfilename) as currnc:
+        gas_names = currnc.variables['gas_species'].names.split(',')
+        gas_mixing_ratios_ppb = currnc.variables['gas_mixing_ratio'][:]
+
+        gas_cfg = {}
+        for gas_name, mixing_ratio_ppb in zip(gas_names, gas_mixing_ratios_ppb):
+            gas_cfg[gas_name] = mixing_ratio_ppb
+        gas_cfg['units'] = 'ppb'
+        gas_mixture = build_gas_mixture(gas_cfg)
+
+        thermodynamics = {
+            'T':currnc.variables['temperature'][:],
+            'p':currnc.variables['pressure'][:],
+            'RH':currnc.variables['relative_humidity'][:]}
 
     return Output(
         'partmc',

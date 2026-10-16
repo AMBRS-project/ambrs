@@ -1,6 +1,6 @@
 """MAM4 timestep numbering: 1 is initial, 2 is NetCDF index zero."""
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 from ambrs import mam4
@@ -9,7 +9,8 @@ from ambrs import mam4
 def test_post_initial_timestep_two_reads_netcdf_zero():
     state = SimpleNamespace(size=SimpleNamespace(modes=()), temperature=298.0,
         pressure=101325.0, relative_humidity=0.5)
-    ds = SimpleNamespace(variables={"h2so4_gas": np.array([42.0])})
+    ds = MagicMock()
+    ds.__enter__.return_value.variables = {"h2so4_gas": np.array([42.0])}
     with patch.object(mam4, "Dataset", return_value=ds), \
          patch.object(mam4, "build_population", return_value=object()) as particle, \
          patch.object(mam4, "build_gas_mixture", return_value=object()) as gas:
