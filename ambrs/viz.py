@@ -113,9 +113,13 @@ def render_partmc_and_mam4_variable_grid(
     (e.g., timesteps). Draws PartMC vs MAM4 overlays per cell.
 
     With scenario_names=None, directory names are one-based, zero-padded to
-    the width of the ensemble size. Supply scenario_names for custom runner
-    templates or a nondefault scenario_start; those names must currently be
-    parseable as integers to index ensemble members.
+    the width of the ensemble size. Explicit scenario_names must encode
+    the intended one-based member indices of the supplied ensemble: each name
+    is converted to an integer and member(int(name) - 1) is selected. Padding
+    is allowed, but arbitrary names or numeric offsets are not remapped. For
+    example, names "10" and "11" require members 9 and 10 of this ensemble;
+    they cannot address members 0 and 1 of a two-member chunk merely because
+    its runner used scenario_start=10. No name-to-member mapping is provided.
 
     Returns
     -------
