@@ -67,8 +67,12 @@ Chunking support (optional):
 
     def run(self, inputs: list[Any]) -> list[analysis.Output]:
         """runner.run(inputs) -> runs a list of scenario inputs within the
-        runner's root directory, generating a directory for each of the scenarios
-        """
+        runner's root directory, generating a directory for each scenario.
+
+        Worker exceptions are re-raised in the caller after tasks complete.
+            Raises RuntimeError if a launched executable exits unsuccessfully.
+            Each scenario's stderr.log and stdout.log live in its output directory.
+            """
         if not isinstance(inputs, list):
             raise TypeError("inputs must be a list of scenario inputs")
 
@@ -118,7 +122,6 @@ Chunking support (optional):
         logger.info(f"{self.model.name}: finished generating scenario input.")
 
         # now run scenarios in parallel
-        pool = multiprocessing.dummy.Pool(self.num_processes)
         logger.info(
             f"{self.model.name}: running {num_inputs} inputs ({self.num_processes} parallel processes)"
         )
@@ -130,21 +133,25 @@ Chunking support (optional):
                 error_state["error"] = True
 
         def run_scenario(args) -> subprocess.CompletedProcess:
-            f_stdout = open(os.path.join(args["dir"], "stdout.log"), "w")
-            f_stderr = open(os.path.join(args["dir"], "stderr.log"), "w")
-            return subprocess.run(
-                args["command"].split(),
-                close_fds=True,
-                cwd=args["dir"],
-                stdout=f_stdout,
-                stderr=f_stderr,
-            )
+            with open(os.path.join(args["dir"], "stdout.log"), "w") as f_stdout, \
+                 open(os.path.join(args["dir"], "stderr.log"), "w") as f_stderr:
+                return subprocess.run(
+                    args["command"].split(),
+                    close_fds=True,
+                    cwd=args["dir"],
+                    stdout=f_stdout,
+                    stderr=f_stderr,
+                )
 
-        results = pool.map_async(run_scenario, args, callback=callback)
-        results.wait()
+        with multiprocessing.dummy.Pool(self.num_processes) as pool:
+            results = pool.map_async(run_scenario, args, callback=callback)
+            results.wait()
+            results.get()
 
         logger.info(f"{self.model.name}: completed runs.")
         if error_state["error"]:
-            logger.error(f"{self.model.name}: At least one run failed.")
+            message = f"{self.model.name}: At least one run failed. Inspect scenario stderr.log files."
+            logger.error(message)
+            raise RuntimeError(message)
 
         return []
