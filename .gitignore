@@ -45,3 +45,6 @@ uv.lock
 
 # raw model output
 tutorial/data/raw/*
+
+# IDE
+.vscode/
