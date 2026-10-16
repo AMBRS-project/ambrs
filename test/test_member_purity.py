@@ -26,7 +26,7 @@ def _size_population():
 def test_mode_member_does_not_broadcast_scalars_into_the_population():
     population = _size_population()
 
-    member = population.member(1)
+    member = population.member(1).modes[0]
 
     assert population.modes[0].geom_mean_diam == 1.0e-7
     assert population.modes[0].mass_fractions == (1.0,)
