@@ -236,6 +236,7 @@ class AerosolModel(BaseAerosolModel):
             do_parallel = False,
 
             gas_emissions = scenario.gas_emissions,
+            gas_background = scenario.gas_background,
             aero_emissions = scenario.aerosol_emissions,
             aero_background = scenario.aerosol_background,
 
@@ -480,7 +481,10 @@ class AerosolModel(BaseAerosolModel):
         if input.gas_background:
             gas_background_species = list(input.gas_background[0][1].keys())
             gas_background_species.remove('rate')
-            # FIXME: convert background conc to ppb
+            # PartMC gas_back.dat uses ppb. Unlike Scenario.gas_concs,
+            # the current gas_background event interface expects ppb already;
+            # no additional conversion is performed here. Confirm units at
+            # the calling boundary before supplying background events.
             with open(os.path.join(dir, 'gas_back.dat'), 'w') as f:
                 f.write('# time (s)\n# rate (s^{-1})\n# concentrations (ppb)\n')
                 f.write('\t'.join(['time'] + [str(pair[0]) for pair in input.gas_background]) + '\n')

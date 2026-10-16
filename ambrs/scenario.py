@@ -11,7 +11,13 @@ from typing import Dict, Optional
 @dataclass
 class Scenario:
     """Scenario: an abstract description of an aerosol configuration, expressed
-in terms of state information"""
+in terms of state information.
+
+PartMC gas_background events are (time, {'rate': value, SPECIES: ppb, ...})
+pairs: species concentrations are expected in ppb and written unchanged.
+Unlike gas_background, the initial gas_concs field is expressed as
+dry-air mole ratios (mol/mol). Background units are not auto-converted.
+    """
     aerosols: tuple[AerosolSpecies, ...] # aerosol species
     gases: tuple[GasSpecies, ...]        # gas species
     size: AerosolModalSizeState          # could also be sectional, stochastic, etc
