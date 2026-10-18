@@ -1,0 +1,7 @@
+include README.md
+include LICENSE
+include CITATION.cff
+include DISCLAIMER
+
+# The tutorial path-discovery test loads this notebook from the source tree.
+include tutorial/notebooks/02_run_prepare_plot/01_single_scenario_partmc.ipynb
