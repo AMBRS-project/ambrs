@@ -398,8 +398,9 @@ class TestMAM4GasMixingRatios(unittest.TestCase):
 
         ratios = mam4.GasMixingRatios(scenario)
 
-        self.assertAlmostEqual(
-            ratios.SOAG, 4.0e-9 * soag.molar_mass / mam4.dry_air_molar_mass
+        np.testing.assert_allclose(
+            ratios.SOAG, 4.0e-9 * soag.molar_mass / mam4.dry_air_molar_mass,
+            rtol=1e-12, atol=0.0,
         )
 
 if __name__ == '__main__':
