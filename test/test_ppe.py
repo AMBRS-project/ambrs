@@ -84,7 +84,7 @@ class TestEnsemble(unittest.TestCase):
                     ),
                 ),
             ),
-            gas_concs = (1e4, 1e5, 1e6),
+            gas_concs = (1e4, 1e5),  # One concentration per declared gas species.
             flux = 0.0,
             relative_humidity = 0.5,
             temperature = 298.0,
@@ -200,7 +200,7 @@ class TestSampling(unittest.TestCase):
                     ),
                 ],
             ),
-            gas_concs = tuple([scipy.stats.uniform(1e5, 1e6) for g in range(3)]),
+            gas_concs = tuple([scipy.stats.uniform(1e5, 1e6) for _ in (so2, h2so4)]),
             flux = scipy.stats.loguniform(1e-2*1e-9, 1e1*1e-9),
             relative_humidity = scipy.stats.loguniform(1e-5, 0.99),
             temperature = scipy.stats.uniform(240, 310),

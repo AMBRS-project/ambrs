@@ -183,10 +183,47 @@ def _shared_values_equal(left, right):
 
 def ensemble_from_scenarios(scenarios: list[Scenario]):
     """ensemble_from_scenarios(scenarios) -> ensemble consisting of exactly the
-specified scenarios (which must all have the same particle size representation)"""
+specified scenarios, with identical ordered species definitions and modal
+structure. State values may vary; metadata stored once per ensemble may not."""
     n = len(scenarios)
     if n == 0:
         raise ValueError("No scenarios provided for ensemble!")
+
+    # Concentration and mass-fraction columns are copied positionally. Their
+    # species definitions and mode structure must agree before aggregation.
+    reference = scenarios[0]
+    for index, scenario in enumerate(scenarios, start=1):
+        if not isinstance(scenario.size, AerosolModalSizeState):
+            raise TypeError(f"Scenario {index} has invalid particle size information!")
+        if len(scenario.gas_concs) != len(scenario.gases):
+            raise ValueError(f"Scenario {index} gas_concs count must match gases")
+        if len(scenario.gas_concs) != len(reference.gas_concs):
+            raise ValueError(f"Scenario {index} has a different gas_concs count")
+        for field in ("aerosols", "gases"):
+            if not _shared_values_equal(getattr(scenario, field), getattr(reference, field)):
+                raise ValueError(
+                    f"Scenario {index} has different {field}; "
+                    "Ensemble requires identical species definitions and ordering"
+                )
+        if len(scenario.size.modes) != len(reference.size.modes):
+            raise ValueError(f"Scenario {index} has a different mode count")
+        for mode_index, (mode, reference_mode) in enumerate(
+                zip(scenario.size.modes, reference.size.modes), start=1):
+            if len(mode.mass_fractions) != len(mode.species):
+                raise ValueError(
+                    f"Scenario {index} mode {mode_index} mass_fractions count must match species"
+                )
+            if len(mode.mass_fractions) != len(reference_mode.mass_fractions):
+                raise ValueError(
+                    f"Scenario {index} mode {mode_index} has a different mass_fractions count"
+                )
+            if mode.name != reference_mode.name:
+                raise ValueError(f"Scenario {index} mode {mode_index} has a different name")
+            if not _shared_values_equal(mode.species, reference_mode.species):
+                raise ValueError(
+                    f"Scenario {index} mode {mode_index} has different species; "
+                    "Ensemble requires identical species definitions and ordering"
+                )
 
     # These fields are represented once per Ensemble, not per member.
     # Reject differing values rather than silently copying member 0's forcing.
