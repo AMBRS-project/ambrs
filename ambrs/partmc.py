@@ -154,11 +154,12 @@ def _validate_mosaic_aerosol_data(
     do_mosaic: bool, aerosol_data: tuple[AeroData, ...]
 ) -> None:
     """Require a particle-water species slot for MOSAIC, even if initially dry."""
-    if do_mosaic and not any(aero.species == 'H2O' for aero in aerosol_data):
+    if do_mosaic and not any(aero.species == "H2O" for aero in aerosol_data):
         raise ValueError(
-            'MOSAIC requires H2O as an aerosol species. Add H2O to the aerosol '
-            'species definitions; its initial mass fraction may be zero.'
+            "MOSAIC requires H2O as an aerosol species. Add H2O to the aerosol "
+            "species definitions; its initial mass fraction may be zero."
         )
+
 
 class AerosolModel(BaseAerosolModel):
     def __init__(self,
