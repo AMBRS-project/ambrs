@@ -1,5 +1,7 @@
 """Guard numerical failures without changing the existing composition policy."""
 
+from dataclasses import replace
+
 import numpy as np
 import pytest
 from scipy import stats
@@ -22,7 +24,7 @@ class FixedSamples:
         return self.values.copy()
 
 
-def make_specification(fractions):
+def make_specification(fractions, *, number=None, extra_modes=()):
     species = tuple(
         aerosol.AerosolSpecies(name, molar_mass=12.0, density=1000.0)
         for name in ("BC", "OC", "H2O")[: len(fractions)]
@@ -36,11 +38,12 @@ def make_specification(fractions):
                 aerosol.AerosolModeDistribution(
                     name="test mode",
                     species=species,
-                    number=stats.uniform(1.0e8, 1.0e8),
+                    number=stats.uniform(1.0e8, 1.0e8) if number is None else number,
                     geom_mean_diam=stats.uniform(1.0e-7, 1.0e-7),
                     log10_geom_std_dev=stats.uniform(0.1, 0.1),
                     mass_fractions=fractions,
                 ),
+                *extra_modes,
             )
         ),
         gas_concs=(),
@@ -87,6 +90,67 @@ def test_zero_total_from_cancelling_weights_is_rejected(sampler):
 
     with pytest.raises(ValueError, match=r"test mode.*member.*\[2\]"):
         run_sampler(sampler, specification)
+
+
+@pytest.mark.parametrize("sampler", ["sample", "lhs"])
+def test_zero_total_is_rejected_even_when_particle_number_is_zero(sampler):
+    specification = make_specification(
+        (FixedSamples([0.0] * 4),), number=FixedSamples([0.0] * 4)
+    )
+
+    with pytest.raises(
+        ValueError,
+        match=r"test mode.*zero or non-finite total.*member.*\[1, 2, 3, 4\]",
+    ):
+        run_sampler(sampler, specification)
+
+
+@pytest.mark.parametrize("sampler", ["sample", "lhs"])
+def test_invalid_second_mode_identifies_its_name_and_member(sampler):
+    first_mode = make_specification((FixedSamples([1.0] * 4),)).size.modes[0]
+    second_mode = replace(
+        first_mode,
+        name="second mode",
+        mass_fractions=(FixedSamples([1.0, 1.0, 0.0, 1.0]),),
+    )
+    specification = make_specification(
+        first_mode.mass_fractions, extra_modes=(second_mode,)
+    )
+
+    with pytest.raises(ValueError, match=r"second mode.*member.*\[3\]"):
+        run_sampler(sampler, specification)
+
+
+@pytest.mark.parametrize("sampler", ["sample", "lhs"])
+@pytest.mark.parametrize("failure", ["zero total", "non-finite result"])
+def test_invalid_member_diagnostic_shows_only_the_first_ten(sampler, failure):
+    n = 24
+    weights = np.ones(n)
+    if failure == "zero total":
+        weights[1::2] = 0.0
+        fractions = (FixedSamples(weights),)
+    else:
+        weights[1::2] = np.nextafter(0.0, 1.0)
+        fractions = (
+            FixedSamples(np.ones(n)),
+            FixedSamples(-np.ones(n)),
+            FixedSamples(weights),
+        )
+    specification = make_specification(fractions)
+
+    with np.errstate(all="raise"):
+        with pytest.raises(ValueError, match="test mode") as error:
+            run_sampler(sampler, specification, n)
+
+    message = str(error.value)
+    # Twelve members fail; report the first ten using 1-based member indices.
+    expected_members = list(range(2, 21, 2))
+    assert f"ensemble member(s) {expected_members} " in message
+    assert "(1-based indices, first 10 shown)." in message
+    if failure == "zero total":
+        assert "zero or non-finite total" in message
+    else:
+        assert "non-finite result" in message
 
 
 @pytest.mark.parametrize("sampler", ["sample", "lhs"])
