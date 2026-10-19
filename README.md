@@ -72,6 +72,10 @@ environment variable:
 export AMBRS_MODEL_DIR=/path/to/install/bin
 ```
 
+When running PartMC with MOSAIC, `Scenario.aerosols` must declare the aerosol
+species `H2O`, even if its initial mass fraction is zero. AMBRS validates this
+requirement when creating input and before writing input files.
+
 ## Running Tutorial Notebooks
 
 Tutorial notebooks are located in `tutorial/notebooks`. Prior to running the notebooks, you will need to build
