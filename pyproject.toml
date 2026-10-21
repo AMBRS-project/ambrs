@@ -21,7 +21,7 @@ dependencies = [
     "numpy>=2.5.3",
     "packaging>=26.3",
     "pandas>=3.0.6",
-    "part2pop@git+https://github.com/cohere-llc/part2pop.git#egg=develop-patch-pymiescatt",
+    "part2pop@git+https://github.com/cohere-llc/part2pop.git@680a338989b1fdbe281fcbcacfb9283686b9f126",
     "pillow>=12.3.0",
     "pydoe==0.3.8",
     "pyparsing>=3.3.3",
