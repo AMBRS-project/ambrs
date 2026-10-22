@@ -106,9 +106,14 @@ _MAM4_SPECIES_NAMES = frozenset(("SO4", "POM", "SOA", "BC", "DST", "NCL"))
 
 
 def _mam4_species_name(species):
+    # A single string alias is used in demo.ipynb despite the tuple annotation.
+    # Treat it as one name, not an iterable of individual characters.
+    aliases = species.aliases or ()
+    if isinstance(aliases, str):
+        aliases = (aliases,)
     # Species may have multiple aliases. Select the canonical MAM4 name;
     # never pass the alias tuple itself to make_dataclass or keyword arguments.
-    for name in (species.name, *(species.aliases or ())):
+    for name in (species.name, *aliases):
         if name in _MAM4_SPECIES_NAMES:
             return name
     raise ValueError(
