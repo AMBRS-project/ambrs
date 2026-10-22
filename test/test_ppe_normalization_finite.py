@@ -263,3 +263,39 @@ def test_sample_of_zero_members_keeps_its_existing_behavior():
 
     assert len(ensemble) == 0
     assert ensemble.size.modes[0].mass_fractions[0].shape == (0,)
+
+
+@pytest.mark.parametrize("sampler", ["sample", "lhs"])
+def test_near_cancellation_rejects_huge_but_finite_fractions(sampler):
+    # Member 2 has a nonzero but roundoff-sized sum: 0.1 + 0.2 - 0.3.
+    specification = make_specification(
+        (
+            FixedSamples([0.8, 0.1 + 0.2, 0.8, 0.8]),
+            FixedSamples([0.2, -0.3, 0.2, 0.2]),
+        )
+    )
+    with pytest.raises(ValueError, match=r"test mode.*severe cancellation.*\[2\]"):
+        run_sampler(sampler, specification)
+
+
+@pytest.mark.parametrize("sampler", ["sample", "lhs"])
+def test_small_finite_positive_weights_are_not_near_cancellation(sampler):
+    # The check is relative: small total mass alone is not a failure.
+    specification = make_specification(
+        (FixedSamples([1e-200] * 4), FixedSamples([3e-200] * 4))
+    )
+    ensemble = run_sampler(sampler, specification)
+    fractions = ensemble.size.modes[0].mass_fractions
+    np.testing.assert_allclose(fractions[0], [0.25] * 4)
+    np.testing.assert_allclose(fractions[1], [0.75] * 4)
+
+
+@pytest.mark.parametrize("sampler", ["sample", "lhs"])
+def test_finite_negative_weights_without_cancellation_remain_allowed(sampler):
+    specification = make_specification(
+        (FixedSamples([-1.0] * 4), FixedSamples([3.0] * 4))
+    )
+    ensemble = run_sampler(sampler, specification)
+    fractions = ensemble.size.modes[0].mass_fractions
+    np.testing.assert_allclose(fractions[0], [-0.5] * 4)
+    np.testing.assert_allclose(fractions[1], [1.5] * 4)

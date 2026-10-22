@@ -241,6 +241,21 @@ def _normalize_mass_fractions(mode: AerosolModePopulation) -> tuple[np.ndarray, 
             f"non-finite result in ensemble member(s) {members} "
             "(1-based indices, first 10 shown)."
         )
+    # A finite but severely cancelled denominator can yield huge finite
+    # fractions. Compare it with the largest absolute weight, not with a
+    # fixed absolute threshold (which would reject uniformly tiny weights).
+    # Run this after the overflow check to retain its existing diagnostic.
+    largest_weight = np.maximum.reduce([np.abs(mf) for mf in mode.mass_fractions])
+    relative_tolerance = 32.0 * np.finfo(float).eps
+    with np.errstate(under="ignore"):
+        near_cancellation = np.abs(factor) <= relative_tolerance * largest_weight
+    if np.any(near_cancellation):
+        members = (np.flatnonzero(near_cancellation)[:10] + 1).tolist()
+        raise ValueError(
+            f"Cannot normalize mass fractions for mode {mode.name!r}: "
+            f"severe cancellation in ensemble member(s) {members} "
+            "(1-based indices, first 10 shown)."
+        )
     return fractions
 
 
