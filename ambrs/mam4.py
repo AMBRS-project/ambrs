@@ -1,5 +1,7 @@
 """ambrs.mam4 -- data types and functions related to the MAM4 box model"""
 
+import operator
+
 from .aerosol import AerosolProcesses, AerosolModalSizePopulation, \
                      AerosolModalSizeState
 from .aerosol_model import BaseAerosolModel
@@ -386,7 +388,8 @@ qsoag          = {input.qsoag},
     
 def get_mam_input(
         varname,
-        mam_input='../mam_refactor-main/standalone/tests/smoke_test.nl'):
+        mam_input='../mam_refactor-main/standalone/tests/smoke_test.nl',
+        *, default=None):
     with open(mam_input, 'r') as f_input:
         input_lines = f_input.readlines()
     yep = 0
@@ -397,6 +400,8 @@ def get_mam_input(
             idx2,=np.where([hi == ',' for hi in oneline])
             vardat = float(''.join([oneline[ii] for ii in range(idx1[0]+1,idx2[0])]))
     if yep == 0:
+        if default is not None:
+            return default
         print(varname,'is not a MAM input parameter')
     elif yep > 1:
         print('more than one line in ', mam_input, 'starts with', varname)
@@ -411,7 +416,19 @@ def retrieve_model_state(
         species_modifications: dict={},
         ensemble_output_dir: str='mam4_runs', 
         N_bins:int = 2000) -> Output: # data structure that allows species modifications in post-processing (e.g., treat some organics as light-absorbing)
-    
+    # Validate before touching scenario data or files. operator.index accepts
+    # NumPy integer indices without silently truncating floats or strings.
+    if isinstance(timestep, (bool, np.bool_)):
+        raise TypeError("timestep must be an integer >= 1")
+    try:
+        timestep = operator.index(timestep)
+    except TypeError as error:
+        raise TypeError("timestep must be an integer >= 1") from error
+    if timestep == 0:
+        raise ValueError('timestep=0 is invalid. Specify timestep = 1 for initial conditions')
+    if timestep < 1:
+        raise ValueError("timestep must be an integer >= 1")
+
     aero_spec_names = []
     GMDs = []
     GSDs = []
@@ -429,9 +446,7 @@ def retrieve_model_state(
         aero_spec_names.append(aero_spec_names_onemode)
     
     
-    if timestep == 0:
-        raise ValueError('timestep=0 is invalid. Specify timestep = 1 for initial conditions')
-    elif timestep == 1:
+    if timestep == 1:
         scenario_dir = ensemble_output_dir + '/' + scenario_name + '/'
         mam_input = scenario_dir + 'namelist'
         Ns = np.zeros([len(GSDs)])
@@ -461,6 +476,9 @@ def retrieve_model_state(
             'SO2':get_mam_input(
                     'qso2',
                     mam_input=mam_input),
+            'SOAG':get_mam_input(
+                    'qsoag',
+                    mam_input=mam_input, default=0.0),
             #'units':'mole_ratio' # fixme: double-check
             'units':'kg_per_kg' # fixme: double-check
             }
@@ -491,9 +509,18 @@ def retrieve_model_state(
             'T':scenario.temperature,
             'p':scenario.pressure}
         
-        particle_population = build_population(mam4_population_cfg)
         with Dataset(output_filename) as currnc:
-            gas_cfg = {'H2SO4': currnc.variables['h2so4_gas'][netcdf_index]}
+            try:
+                gas_cfg = {'H2SO4': currnc.variables['h2so4_gas'][netcdf_index]}
+                # Native MAM4 writes SOAG in kg/kg dry air alongside H2SO4.
+                # Older files may omit it; preserve their existing behavior.
+                if 'soag_gas' in currnc.variables:
+                    gas_cfg['SOAG'] = currnc.variables['soag_gas'][netcdf_index]
+            except IndexError as error:
+                raise ValueError(
+                    f"timestep {timestep} is outside the available MAM4 gas output records"
+                ) from error
+        particle_population = build_population(mam4_population_cfg)
         gas_cfg['units'] = 'kg_per_kg' # todo: double-check
         gas_mixture = build_gas_mixture(gas_cfg)
         
