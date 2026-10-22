@@ -22,6 +22,36 @@ import numpy as np
 import os.path
 import scipy.stats
 
+
+def _validate_modal_mass_fractions(fractions):
+    """Reject compositions that the native mode cannot represent faithfully.
+
+    Validate resolved field names, so aliases are checked by their native
+    names. Unsupported declarations are rejected even at zero fraction;
+    the adapter never silently drops or redistributes a supplied species.
+    """
+    allowed_species = (
+        {"SO4", "POM", "SOA", "BC", "DST", "NCL"},
+        {"SO4", "SOA", "NCL"},
+        {"SO4", "POM", "SOA", "BC", "DST", "NCL"},
+        {"POM", "BC"},
+    )
+    modes = (fractions.accum, fractions.aitken, fractions.coarse, fractions.pcarbon)
+    for index, (mode, allowed) in enumerate(zip(modes, allowed_species), start=1):
+        values = vars(mode)
+        unsupported = values.keys() - allowed
+        if unsupported:
+            raise ValueError(
+                f"MAM4 mode {index} cannot represent species {sorted(unsupported)}"
+            )
+        for name, value in values.items():
+            if np.ndim(value) != 0 or not np.isfinite(value) or value < 0:
+                raise ValueError(
+                    f"MAM4 mode {index} species {name!r} must have a "
+                    "nonnegative, finite scalar mass fraction"
+                )
+
+
 @dataclass
 class Input:
     """ambrs.mam4.Input -- an input dataclass for the MAM4 box model"""
@@ -206,28 +236,49 @@ Parameters:
         if not isinstance(scenario.size, AerosolModalSizeState):
             raise TypeError('Non-modal aerosol particle size state cannot be used to create MAM4 input!')
         if len(scenario.size.modes) != 4:
-            raise TypeError(f'{len(scenario.size.mode)}-mode aerosol particle size state cannot be used to create MAM4 input!')
+            raise TypeError(f'{len(scenario.size.modes)}-mode aerosol particle size state cannot be used to create MAM4 input!')
         
+        # Check the source columns before constructing fields: otherwise
+        # unmatched mass-fraction entries would never reach validation.
+        for index, mode in enumerate(scenario.size.modes, start=1):
+            if len(mode.mass_fractions) != len(mode.species):
+                raise ValueError(
+                    f"MAM4 mode {index} mass_fractions count must match species"
+                )
+
         # translate the scenario's aerosol mass fractions to MAM4-ese
         aero_mass_fracs = AerosolMassFractions(scenario)
+        _validate_modal_mass_fractions(aero_mass_fracs)
         
         # translate the scenario's gas mixing ratios to MAM4-ese
         gas_mixing_ratios = GasMixingRatios(scenario)
 
         mfs1 = {p.name : scenario.size.modes[0].mass_fraction(p.name) for p in scenario.size.modes[0].species}
         mftot1 = sum(mfs1.values())
+        # Missing species are zero; a zero/invalid total is not normalizable.
+        if not np.isfinite(mftot1) or mftot1 <= 0:
+            raise ValueError("MAM4 mode 1 must have a positive, finite total mass fraction")
         mfs1 = {p.name : mfs1[p.name]/mftot1 for p in scenario.size.modes[0].species} 
 
         mfs2 = {p.name : scenario.size.modes[1].mass_fraction(p.name) for p in scenario.size.modes[1].species} 
         mftot2 = sum(mfs2.values())
+        # Missing species are zero; a zero/invalid total is not normalizable.
+        if not np.isfinite(mftot2) or mftot2 <= 0:
+            raise ValueError("MAM4 mode 2 must have a positive, finite total mass fraction")
         mfs2 = {p.name : mfs2[p.name]/mftot2 for p in scenario.size.modes[1].species} 
         
         mfs3 = {p.name : scenario.size.modes[2].mass_fraction(p.name) for p in scenario.size.modes[2].species} 
         mftot3 = sum(mfs3.values())
+        # Missing species are zero; a zero/invalid total is not normalizable.
+        if not np.isfinite(mftot3) or mftot3 <= 0:
+            raise ValueError("MAM4 mode 3 must have a positive, finite total mass fraction")
         mfs3 = {p.name : mfs3[p.name]/mftot3 for p in scenario.size.modes[2].species} 
 
         mfs4 = {p.name : scenario.size.modes[3].mass_fraction(p.name) for p in scenario.size.modes[3].species} 
         mftot4 = sum(mfs4.values())
+        # Missing species are zero; a zero/invalid total is not normalizable.
+        if not np.isfinite(mftot4) or mftot4 <= 0:
+            raise ValueError("MAM4 mode 4 must have a positive, finite total mass fraction")
         mfs4 = {p.name : mfs4[p.name]/mftot4 for p in scenario.size.modes[3].species} 
 
         mfs = [mfs1, mfs2, mfs3, mfs4]
@@ -263,26 +314,26 @@ Parameters:
             numc3 = scenario.size.modes[2].number,
             numc4 = scenario.size.modes[3].number,
             
-            mfso41 = aero_mass_fracs.accum.SO4/mftot1,
-            mfpom1 = aero_mass_fracs.accum.POM/mftot1,
-            mfsoa1 = aero_mass_fracs.accum.SOA/mftot1,
-            mfbc1  = aero_mass_fracs.accum.BC/mftot1,
-            mfdst1 = aero_mass_fracs.accum.DST/mftot1,
-            mfncl1 = aero_mass_fracs.accum.NCL/mftot1,
+            mfso41 = getattr(aero_mass_fracs.accum, "SO4", 0.0)/mftot1,
+            mfpom1 = getattr(aero_mass_fracs.accum, "POM", 0.0)/mftot1,
+            mfsoa1 = getattr(aero_mass_fracs.accum, "SOA", 0.0)/mftot1,
+            mfbc1  = getattr(aero_mass_fracs.accum, "BC", 0.0)/mftot1,
+            mfdst1 = getattr(aero_mass_fracs.accum, "DST", 0.0)/mftot1,
+            mfncl1 = getattr(aero_mass_fracs.accum, "NCL", 0.0)/mftot1,
 
-            mfso42 = aero_mass_fracs.aitken.SO4/mftot2,
-            mfsoa2 = aero_mass_fracs.aitken.SOA/mftot2,
-            mfncl2 = aero_mass_fracs.aitken.NCL/mftot2,
+            mfso42 = getattr(aero_mass_fracs.aitken, "SO4", 0.0)/mftot2,
+            mfsoa2 = getattr(aero_mass_fracs.aitken, "SOA", 0.0)/mftot2,
+            mfncl2 = getattr(aero_mass_fracs.aitken, "NCL", 0.0)/mftot2,
             
-            mfdst3 = aero_mass_fracs.coarse.DST/mftot3,
-            mfncl3 = aero_mass_fracs.coarse.NCL/mftot3,
-            mfso43 = aero_mass_fracs.coarse.SO4/mftot3,
-            mfbc3  = aero_mass_fracs.coarse.BC/mftot3,
-            mfpom3 = aero_mass_fracs.coarse.POM/mftot3,
-            mfsoa3 = aero_mass_fracs.coarse.SOA/mftot3,
+            mfdst3 = getattr(aero_mass_fracs.coarse, "DST", 0.0)/mftot3,
+            mfncl3 = getattr(aero_mass_fracs.coarse, "NCL", 0.0)/mftot3,
+            mfso43 = getattr(aero_mass_fracs.coarse, "SO4", 0.0)/mftot3,
+            mfbc3  = getattr(aero_mass_fracs.coarse, "BC", 0.0)/mftot3,
+            mfpom3 = getattr(aero_mass_fracs.coarse, "POM", 0.0)/mftot3,
+            mfsoa3 = getattr(aero_mass_fracs.coarse, "SOA", 0.0)/mftot3,
 
-            mfpom4 = aero_mass_fracs.pcarbon.POM/mftot4,
-            mfbc4  = aero_mass_fracs.pcarbon.BC/mftot4,
+            mfpom4 = getattr(aero_mass_fracs.pcarbon, "POM", 0.0)/mftot4,
+            mfbc4  = getattr(aero_mass_fracs.pcarbon, "BC", 0.0)/mftot4,
 
             qso2 = gas_mixing_ratios.SO2,
             qh2so4 = gas_mixing_ratios.H2SO4,
