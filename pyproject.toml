@@ -42,6 +42,9 @@ notebooks = [
     "notebook>=7.6.3",
     "xarray>=2026.9.0",
 ]
+colab = [
+    "ipywidgets>=8.1.9,<9"
+]
 
 # restrict package discovery to ambrs itself, excluding test/tutorial/runs
 [tool.setuptools.packages.find]
