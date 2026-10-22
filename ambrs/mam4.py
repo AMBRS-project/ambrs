@@ -416,6 +416,12 @@ def retrieve_model_state(
         species_modifications: dict={},
         ensemble_output_dir: str='mam4_runs', 
         N_bins:int = 2000) -> Output: # data structure that allows species modifications in post-processing (e.g., treat some organics as light-absorbing)
+    """Read a public timestep and forward explicit postprocessing overrides.
+
+    Timestep 1 is the initial state; timestep n >= 2 is NetCDF record n - 2.
+    part2pop uses the same public convention. Species overrides affect the
+    reconstructed population, not the native model's recorded evolution.
+    """
     # Validate before touching scenario data or files. operator.index accepts
     # NumPy integer indices without silently truncating floats or strings.
     if isinstance(timestep, (bool, np.bool_)):
@@ -466,6 +472,7 @@ def retrieve_model_state(
             'GSD': GSDs,
             'aero_spec_names': aero_spec_names,
             'aero_spec_fracs': aero_spec_fracs,
+            'species_modifications': species_modifications,
             }
         particle_population = build_population(binned_lognormal_cfg)
         
@@ -498,7 +505,8 @@ def retrieve_model_state(
         mam4_population_cfg = {
             'type':'mam4',
             'mam4_dir': ensemble_output_dir + '/' + scenario_name + '/',
-            'timestep':netcdf_index,
+            # part2pop applies the public-to-record conversion itself.
+            'timestep':timestep,
             'GSD':GSDs, #fixme: put in the correct GSD values!
             'N_sigmas': 10,
             # 'D_min':1e-8, #fixme: option for +/- sigmas
@@ -506,6 +514,7 @@ def retrieve_model_state(
             # 'D_min':1e-10, #fixme: option for +/- sigmas
             # 'D_max':1e-4,
             'N_bins':N_bins,
+            'species_modifications':species_modifications,
             'T':scenario.temperature,
             'p':scenario.pressure}
         

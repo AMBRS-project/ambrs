@@ -16,7 +16,7 @@ def test_post_initial_timestep_two_reads_netcdf_zero():
          patch.object(mam4, "build_gas_mixture", return_value=object()) as gas:
         output = mam4.retrieve_model_state("case", state, timestep=2)
     assert output.timestep == 2
-    assert particle.call_args.args[0]["timestep"] == 0
+    assert particle.call_args.args[0]["timestep"] == 2
     assert gas.call_args.args[0]["H2SO4"] == 42.0
 
 

@@ -17,5 +17,5 @@ def test_retrieved_mam4_output_keeps_requested_timestep():
          patch.object(mam4, "build_gas_mixture", return_value=object()) as gases:
         result = mam4.retrieve_model_state("case", scenario, timestep=4)
     assert result.timestep == 4
-    assert population.call_args.args[0]["timestep"] == 2
+    assert population.call_args.args[0]["timestep"] == 4
     assert gases.call_args.args[0]["H2SO4"] == 3.0

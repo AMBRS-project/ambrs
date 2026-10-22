@@ -59,7 +59,7 @@ def test_netcdf_gases_use_the_requested_record(tmp_path, timestep, index):
         [(index + 1) * 1e-9 * 28.97 / 98.079, (index + 4) * 1e-9 * 28.97 / 250.0],
     )
     assert result.timestep == timestep
-    assert population.call_args.args[0]["timestep"] == index
+    assert population.call_args.args[0]["timestep"] == timestep
 
 
 def test_out_of_range_record_is_rejected_before_population_reconstruction(tmp_path):
