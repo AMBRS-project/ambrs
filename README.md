@@ -14,6 +14,26 @@ hook up your own box model for comparison with the curated set.
 The framework is still in its infancy, so please reach out to someone on the
 project if you're interested in participating.
 
+## Gas concentration units
+
+In `Scenario`, initial `gas_concs` values are dry-air mole ratios
+(mol gas / mol dry air), ordered as `gases`. PartMC `gas_background`
+events instead require gas-species values in **ppb**: the PartMC input
+writer copies them into `gas_back.dat` without unit conversion.
+Each background entry is `(time_seconds, {"rate": value, "SO2": ppb_value, ...})`.
+The supplied background rate is written unchanged. Check the model-specific
+rate convention and convert upstream concentrations to ppb before calling
+`create_input()`. AMBRS does not currently validate these units.
+
+## Python package release checks
+
+The GitHub Actions test workflow builds wheel and source distributions and
+validates them with `twine check`. It installs each artifact in a clean virtual
+environment to catch packaging errors hidden by editable installations.
+Before a release, run `python -m build` and `python -m twine check dist/*`,
+then verify CI has successfully tested the installed wheel and source package.
+The metadata inclusion rules live in `MANIFEST.in` (PR #135).
+
 ## Supported Aerosol Box Models
 
 All of the box models supported by AMBRS are forked under the [AMBRS-Project](https://github.com/AMBRS-project) GitHub organization. The box models we currently support are
