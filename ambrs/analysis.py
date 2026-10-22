@@ -48,10 +48,14 @@ class Output:
 def nmae(output_list1: List[Output], output_list2: List[Output], varname: str, var_cfg: Optional[Dict] = None) -> float:
     """Normalized mean absolute error between two lists of Output objects.
 
-    All outputs are collapsed (ravel) across their returned arrays for the
-    specified variable.
+    Outputs are compared positionally: corresponding entries must represent
+    the same scenario, timestep, physical units, and evaluation grid. This
+    function checks list length and array shape, but cannot verify identities
+    or physical comparability. Values are flattened before aggregation.
     """
     var_cfg = var_cfg or {}
+    if len(output_list1) != len(output_list2):
+        raise ValueError("NMAE output lists must have the same length")
     x1 = []
     x2 = []
     for o1, o2 in zip(output_list1, output_list2):
@@ -59,12 +63,60 @@ def nmae(output_list1: List[Output], output_list2: List[Output], varname: str, v
         d2 = o2.compute_variable(varname, var_cfg)
         v1 = d1.get(varname, d1) if hasattr(d1, "get") else d1
         v2 = d2.get(varname, d2) if hasattr(d2, "get") else d2
+        if np.shape(v1) != np.shape(v2):
+            raise ValueError("NMAE variables must have matching shapes for each output pair")
         x1.append(np.ravel(v1))
         x2.append(np.ravel(v2))
     if not x1:
         return np.nan
     a1 = np.concatenate(x1)
     a2 = np.concatenate(x2)
+    if (np.issubdtype(a1.dtype, np.integer) and
+            np.issubdtype(a2.dtype, np.integer)):
+        # Python integers preserve small differences beyond float64 precision
+        # and avoid signed/unsigned overflow in subtraction and absolute value.
+        reference, candidate = a1.astype(object), a2.astype(object)
+        denom = np.sum(np.abs(reference))
+        if denom == 0:
+            return np.nan
+        return float(np.sum(np.abs(candidate - reference)) / denom)
+    if np.all(np.isfinite(a1)) and np.all(np.isfinite(a2)):
+        # Preserve finite differences before scaling; scaling both operands
+        # first can erase a small difference beside a much larger element.
+        if not np.any(a1):
+            return np.nan
+        dtype = np.result_type(a1.dtype, a2.dtype, np.float64)
+        a1, a2 = a1.astype(dtype), a2.astype(dtype)
+        # Component maxima also avoid overflow in complex magnitudes.
+        reference_scale = max(np.max(np.abs(a1.real), initial=0.0),
+                              np.max(np.abs(a1.imag), initial=0.0))
+        with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+            difference = np.abs(a2 - a1)
+            overflow = ~np.isfinite(difference)
+            if np.any(overflow):
+                difference_scale = max(
+                    reference_scale,
+                    np.max(np.abs(a2.real), initial=0.0),
+                    np.max(np.abs(a2.imag), initial=0.0),
+                )
+                scaled_difference = difference / difference_scale
+                # Only overflowing differences need subtraction after scaling.
+                scaled_difference[overflow] = np.abs(
+                    a2[overflow] / difference_scale - a1[overflow] / difference_scale
+                )
+            else:
+                difference_scale = np.max(difference, initial=0.0)
+                if difference_scale == 0:
+                    return 0.0
+                scaled_difference = difference / difference_scale
+            denom = np.sum(np.abs(a1 / reference_scale))
+        # Keep the scales separate until the final operation. Forming their
+        # ratio first can underflow even when summation makes the result finite.
+        diff_mantissa, diff_exponent = np.frexp(difference_scale)
+        ref_mantissa, ref_exponent = np.frexp(reference_scale)
+        mantissa = np.sum(scaled_difference) / denom * (diff_mantissa / ref_mantissa)
+        with np.errstate(over="ignore", under="ignore"):
+            return float(np.ldexp(mantissa, diff_exponent - ref_exponent))
     denom = np.sum(np.abs(a1))
     if denom == 0:
         return np.nan
