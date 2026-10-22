@@ -22,6 +22,36 @@ import numpy as np
 import os.path
 import scipy.stats
 
+
+def _validate_modal_mass_fractions(fractions):
+    """Reject compositions that the native mode cannot represent faithfully.
+
+    Validate resolved field names, so aliases are checked by their native
+    names. Unsupported declarations are rejected even at zero fraction;
+    the adapter never silently drops or redistributes a supplied species.
+    """
+    allowed_species = (
+        {"SO4", "POM", "SOA", "BC", "DST", "NCL"},
+        {"SO4", "SOA", "NCL"},
+        {"SO4", "POM", "SOA", "BC", "DST", "NCL"},
+        {"POM", "BC"},
+    )
+    modes = (fractions.accum, fractions.aitken, fractions.coarse, fractions.pcarbon)
+    for index, (mode, allowed) in enumerate(zip(modes, allowed_species), start=1):
+        values = vars(mode)
+        unsupported = values.keys() - allowed
+        if unsupported:
+            raise ValueError(
+                f"MAM4 mode {index} cannot represent species {sorted(unsupported)}"
+            )
+        for name, value in values.items():
+            if np.ndim(value) != 0 or not np.isfinite(value) or value < 0:
+                raise ValueError(
+                    f"MAM4 mode {index} species {name!r} must have a "
+                    "nonnegative, finite scalar mass fraction"
+                )
+
+
 @dataclass
 class Input:
     """ambrs.mam4.Input -- an input dataclass for the MAM4 box model"""
@@ -208,8 +238,17 @@ Parameters:
         if len(scenario.size.modes) != 4:
             raise TypeError(f'{len(scenario.size.modes)}-mode aerosol particle size state cannot be used to create MAM4 input!')
         
+        # Check the source columns before constructing fields: otherwise
+        # unmatched mass-fraction entries would never reach validation.
+        for index, mode in enumerate(scenario.size.modes, start=1):
+            if len(mode.mass_fractions) != len(mode.species):
+                raise ValueError(
+                    f"MAM4 mode {index} mass_fractions count must match species"
+                )
+
         # translate the scenario's aerosol mass fractions to MAM4-ese
         aero_mass_fracs = AerosolMassFractions(scenario)
+        _validate_modal_mass_fractions(aero_mass_fracs)
         
         # translate the scenario's gas mixing ratios to MAM4-ese
         gas_mixing_ratios = GasMixingRatios(scenario)
