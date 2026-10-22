@@ -41,7 +41,9 @@ jobs:
           python-version: "3.12"
 
       - name: Installing ambrs dependencies (${{ matrix.os }})
-        run: python3 -m pip install -e .
+        # Source-distribution tests invoke this backend in the test process.
+        # An isolated editable build does not install it into that environment.
+        run: python3 -m pip install -e . 'setuptools>=61.0'
 
       - name: Running tests (${{ matrix.os }})
         run: |
@@ -118,7 +120,10 @@ jobs:
           print(f"Testing installed wheel from {package_path}")
           PY
 
-          "${RUNNER_TEMP}/wheel-venv/bin/python" -m pytest wheel-tests
+          # Source-distribution tests need a complete checkout and run in the
+          # test job above. Keep this suite focused on the installed wheel.
+          "${RUNNER_TEMP}/wheel-venv/bin/python" -m pytest wheel-tests \
+            --ignore=wheel-tests/test_source_distribution.py
           "${RUNNER_TEMP}/wheel-venv/bin/python" -m pip check
 
       # This also exercises MANIFEST.in and catches files missing from the sdist.
