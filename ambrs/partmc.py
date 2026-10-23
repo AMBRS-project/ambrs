@@ -156,8 +156,8 @@ class AerosolModel(BaseAerosolModel):
                  run_type = 'particle',
                  n_part = None,
                  n_repeat = 0,
-                 rand_init = 42,
-                 camp_config = None):
+                 camp_config = None,
+                 rand_init = 42):
         BaseAerosolModel.__init__(self, 'partmc', processes)
         if run_type not in ['particle']:
             raise ValueError(f'Unsupported run_type: {run_type}')
