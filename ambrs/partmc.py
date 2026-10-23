@@ -156,7 +156,8 @@ class AerosolModel(BaseAerosolModel):
                  run_type = 'particle',
                  n_part = None,
                  n_repeat = 0,
-                 camp_config = None):
+                 camp_config = None,
+                 rand_init = 42):
         BaseAerosolModel.__init__(self, 'partmc', processes)
         if run_type not in ['particle']:
             raise ValueError(f'Unsupported run_type: {run_type}')
@@ -167,6 +168,7 @@ class AerosolModel(BaseAerosolModel):
         self.run_type = run_type
         self.n_part = n_part
         self.n_repeat = n_repeat
+        self.rand_init = rand_init
         self.camp_config = camp_config
 
     def create_input(self,
@@ -229,7 +231,7 @@ class AerosolModel(BaseAerosolModel):
             do_optical = self.processes.optics,
             do_nucleation = self.processes.nucleation,
 
-            rand_init = 42,
+            rand_init = self.rand_init,
             allow_doubling = True,
             allow_halving = True,
             record_removals = True,

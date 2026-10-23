@@ -3,6 +3,7 @@
 ![Tests](https://github.com/AMBRS-project/ambrs/actions/workflows/tests.yml/badge.svg)
 [![Coverage](https://codecov.io/gh/AMBRS-project/ambrs/graph/badge.svg?token=HF1V8JOZFJ)](https://codecov.io/gh/AMBRS-project/ambrs)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/AMBRS-project/ambrs/main)
+[![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/AMBRS-project/ambrs/blob/main/tutorial/notebooks/02_plot_results/02_multiple_scenario_partmc_mam4.ipynb)
 
 The AMBRS Project aims to advance the state of science in aerosol model
 development by providing a simple framework for systematically comparing the

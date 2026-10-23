@@ -18,17 +18,17 @@ dependencies = [
     "kiwisolver>=1.5.1",
     "matplotlib>=3.11.2",
     "netcdf4>=1.7.4",
-    "numpy>=2.5.3",
+    "numpy==2.5.3",
     "packaging>=26.3",
     "pandas>=3.0.6",
-    "part2pop>=1.1.0",
+    "part2pop@git+https://github.com/pnnl/part2pop.git@f90df77994025844b376f64e01c45f36e7b9410e",
     "pillow>=12.3.0",
     "pydoe==0.3.8",
     "pyparsing>=3.3.3",
     "pytest>=9.1.1",
     "python-dateutil>=2.9.0.post0",
     "pytz>=2026.5",
-    "scipy>=1.18.1",
+    "scipy==1.18.1",
     "seaborn>=0.13.2",
     "six>=1.17.0",
     "tzdata>=2026.5",
@@ -37,8 +37,13 @@ dependencies = [
 [project.optional-dependencies]
 notebooks = [
     "ipykernel>=7.4.0",
+    "ipywidgets>=8.1.9",
     "nbconvert>=7.17.1",
     "notebook>=7.6.3",
+    "xarray>=2026.9.0",
+]
+colab = [
+    "ipywidgets>=8.1.9,<9"
 ]
 
 # restrict package discovery to ambrs itself, excluding test/tutorial/runs

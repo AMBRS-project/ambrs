@@ -82,9 +82,9 @@ jobs:
       - name: Build package and register kernel
         run: |
           uv pip install -e .[notebooks]
-          uv run python -m ipykernel install --user --name=ambrs-venv
+          uv run python -m ipykernel install --user --name=ambrs
 
       - name: Run notebooks
         env:
           AMBRS_MODEL_DIR: ${{ github.workspace }}/model-install/bin
-        run: for f in tutorial/notebooks/02_run_prepare_plot/*.ipynb; do uv run jupyter nbconvert --to notebook --execute --inplace "$f"; done
+        run: for f in tutorial/notebooks/02_plot_results/*.ipynb; do uv run jupyter nbconvert --to notebook --execute --inplace "$f"; done
