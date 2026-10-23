@@ -57,7 +57,7 @@ class TestVizHelpers(unittest.TestCase):
             wvl_grid=[0.4e-6, 0.5e-6], rh_grid=[0.0, 0.9]
         )
 
-        self.assertEqual(dndln_cfg["D"].shape, (4,))
+        self.assertEqual(dndln_cfg["diam_grid"].shape, (4,))
         self.assertTrue(dndln_cfg["normalize"])
         self.assertEqual(dndln_cfg["method"], "kde")
         np.testing.assert_allclose(ccn_cfg["s_grid"], [0.1, 1.0])
@@ -69,7 +69,7 @@ class TestVizHelpers(unittest.TestCase):
             D_range=(1.0e-8, 1.0e-7), N_bins=3, normalize=False, method="hist"
         )
 
-        np.testing.assert_allclose(cfg["D"], np.logspace(-8, -7, 3))
+        np.testing.assert_allclose(cfg["diam_grid"], np.logspace(-8, -7, 3))
         self.assertFalse(cfg["normalize"])
         self.assertEqual(cfg["method"], "hist")
 
