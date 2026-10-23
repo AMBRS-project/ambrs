@@ -150,6 +150,17 @@ class Input:
     # CAMP configuration
     camp_config: Optional[str] = None
 
+def _validate_mosaic_aerosol_data(
+    do_mosaic: bool, aerosol_data: tuple[AeroData, ...]
+) -> None:
+    """Require a particle-water species slot for MOSAIC, even if initially dry."""
+    if do_mosaic and not any(aero.species == "H2O" for aero in aerosol_data):
+        raise ValueError(
+            "MOSAIC requires H2O as an aerosol species. Add H2O to the aerosol "
+            "species definitions; its initial mass fraction may be zero."
+        )
+
+
 class AerosolModel(BaseAerosolModel):
     def __init__(self,
                  processes: AerosolProcesses,
@@ -183,8 +194,9 @@ class AerosolModel(BaseAerosolModel):
         if not isinstance(scenario.size, AerosolModalSizeState):
             raise TypeError('Non-modal aerosol particle size state cannot be used to create PartMC input!')
         aero_data = self._build_aero_data(scenario.aerosols)
-        aero_init = self._modal_state_to_aeromodes(scenario.size)
         do_mosaic = self.processes.condensation and not self.processes.do_camp_chem
+        _validate_mosaic_aerosol_data(do_mosaic, aero_data)
+        aero_init = self._modal_state_to_aeromodes(scenario.size)
         do_camp_chem = self.processes.condensation and self.processes.do_camp_chem
 
         if t_output == None:
@@ -308,6 +320,7 @@ class AerosolModel(BaseAerosolModel):
                           prefix: str):
         if not os.path.exists(dir):
             raise OSError(f'Directory not found: {dir}')
+        _validate_mosaic_aerosol_data(input.do_mosaic, input.aerosol_data)
         output_dir = os.path.join(dir, 'out')
         if not os.path.exists(output_dir):
             os.mkdir(output_dir)
