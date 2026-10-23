@@ -82,7 +82,7 @@ jobs:
       - name: Build package and register kernel
         run: |
           uv pip install -e .[notebooks]
-          uv run python -m ipykernel install --user --name=ambrs-venv
+          uv run python -m ipykernel install --user --name=ambrs
 
       - name: Run notebooks
         env:
