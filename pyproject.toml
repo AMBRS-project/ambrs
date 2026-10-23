@@ -21,7 +21,7 @@ dependencies = [
     "numpy==2.5.3",
     "packaging>=26.3",
     "pandas>=3.0.6",
-    "part2pop@git+https://github.com/cohere-llc/part2pop.git@680a338989b1fdbe281fcbcacfb9283686b9f126",
+    "part2pop@git+https://github.com/pnnl/part2pop.git@f90df77994025844b376f64e01c45f36e7b9410e",
     "pillow>=12.3.0",
     "pydoe==0.3.8",
     "pyparsing>=3.3.3",
