@@ -267,6 +267,25 @@ class AerosolModel(BaseAerosolModel):
         use_camp_chem = self.processes.do_camp_chem
         camp_species = {'SO4', 'H2O', 'BC'}
         for mode in modal_state.modes:
+            if len(mode.mass_fractions) != len(mode.species):
+                raise ValueError(
+                    f"PartMC mode {mode.name!r} must have one mass fraction per species"
+                )
+            # Validate the supplied state before CAMP filtering or name mapping
+            # can hide an invalid component. Sampling signed weights remains
+            # a separate policy; native initial compositions must be physical.
+            for species, value in zip(mode.species, mode.mass_fractions):
+                valid = False
+                if np.ndim(value) == 0 and not np.iscomplexobj(value):
+                    try:
+                        valid = bool(np.isfinite(value)) and value >= 0
+                    except (TypeError, ValueError):
+                        pass
+                if not valid:
+                    raise ValueError(
+                        f"PartMC mode {mode.name!r} species {species.name!r} must have "
+                        "a nonnegative, finite real scalar mass fraction"
+                    )
             mass_frac = {}
             for idx, species in enumerate(mode.species):
                 if use_camp_chem and species.name not in camp_species:
