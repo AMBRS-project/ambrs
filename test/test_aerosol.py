@@ -121,5 +121,23 @@ class TestAerosolModalSizePopulation(unittest.TestCase):
         for i in range(self.n):
             self.assertEqual(self.ref_state, self.size_population.member(i))
 
+class TestDelta(unittest.TestCase):
+
+    def test_ppf_scalar(self):
+        delta = aerosol.Delta(3.5)
+        self.assertEqual(3.5, delta.ppf(0.5))
+
+    def test_ppf_preserves_array_shape(self):
+        delta = aerosol.Delta(3.5)
+        q = np.array([[0.1, 0.2], [0.8, 0.9]])
+
+        result = delta.ppf(q)
+
+        self.assertEqual(q.shape, result.shape)
+        np.testing.assert_array_equal(
+            result,
+            np.full(q.shape, 3.5),
+        )
+
 if __name__ == '__main__':
     unittest.main()
