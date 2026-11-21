@@ -63,9 +63,10 @@ def _add_row_label(ax, label: str, color: str = "black",  fontsize: int = 12):
 
 # fixme: add other optional arguments?
 def make_dNdlnD_cfg(D_range=(1e-9, 1e-6), N_bins=50, normalize=True, method="kde"):
+    """Return part2pop configuration with N_bins diameter centers in meters."""
     D_min, D_max = D_range
     D_grid = np.logspace(np.log10(D_min), np.log10(D_max), int(N_bins))
-    return {"D": D_grid, "normalize": normalize, "method": method}
+    return {"diam_grid": D_grid, "normalize": normalize, "method": method}
 
 # fixme: add other optional arguments?
 def make_frac_ccn_cfg(s_grid=np.logspace(-2, 1.0, 50)):
@@ -112,6 +113,15 @@ def render_partmc_and_mam4_variable_grid(
     Render a grid where rows = scenarios and columns = user-defined 'columns'
     (e.g., timesteps). Draws PartMC vs MAM4 overlays per cell.
 
+    With scenario_names=None, directory names are one-based, zero-padded to
+    the width of the ensemble size. Explicit scenario_names must encode
+    the intended one-based member indices of the supplied ensemble: each name
+    is converted to an integer and member(int(name) - 1) is selected. Padding
+    is allowed, but arbitrary names or numeric offsets are not remapped. For
+    example, names "10" and "11" require members 9 and 10 of this ensemble;
+    they cannot address members 0 and 1 of a two-member chunk merely because
+    its runner used scenario_start=10. No name-to-member mapping is provided.
+
     Returns
     -------
     fig, axes : (matplotlib.figure.Figure, np.ndarray[(n_rows, n_cols)])
@@ -120,14 +130,15 @@ def render_partmc_and_mam4_variable_grid(
     if scenario_names is None:
         # FIXME: move this to utils module to avoid duplication
         num_scenarios = ensemble.__len__()
+        if num_scenarios <= 0:
+            raise ValueError("Cannot render an empty ensemble")
         max_num_digits = math.floor(math.log10(num_scenarios)) + 1
         # zero-pad the 1-based scenario index
         scenario_names = []
         for i in range(num_scenarios):
             num_digits = math.floor(math.log10(i+1)) + 1
             formatted_index = '0' * (max_num_digits - num_digits) + f'{i+1}'
-            scenario_name = str(i + 1).format(index = formatted_index)
-            scenario_names.append(scenario_name)
+            scenario_names.append(formatted_index)
     
     fig = gs.figure
     n_rows, n_cols = len(scenario_names), len(timesteps)
