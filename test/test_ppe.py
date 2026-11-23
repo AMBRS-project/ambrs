@@ -305,5 +305,54 @@ class TestSampling(unittest.TestCase):
             log_ni = log10(3e7) + i * step
             self.assertTrue(abs(log_ni - log10(member.size.modes[1].number)) < 1e-12)
 
+def test_lhs_with_constant_parameters():
+    """LHS supports parameters represented internally by Delta."""
+    n = 10
+
+    specification = ppe.EnsembleSpecification(
+        name="constant_parameters",
+        aerosols=(so4, soa),
+        gases=(so2, h2so4),
+        size=aerosol.AerosolModalSizeDistribution(
+            modes=(
+                aerosol.AerosolModeDistribution(
+                    name="constant",
+                    species=(so4, soa),
+                    number=5e8,
+                    geom_mean_diam=1e-7,
+                    log10_geom_std_dev=log10(1.6),
+                    mass_fractions=(0.4, 0.6),
+                ),
+            ),
+        ),
+        gas_concs=(1e4, 1e5),
+        flux=0.0,
+        relative_humidity=0.5,
+        temperature=298.0,
+        pressure=p0,
+        height=h0,
+    )
+
+    ensemble = ppe.lhs(specification, n, seed=42)
+
+    assert n == len(ensemble)
+
+    mode = ensemble.size.modes[0]
+    np.testing.assert_array_equal(mode.number, np.full(n, 5e8))
+    np.testing.assert_array_equal(mode.geom_mean_diam, np.full(n, 1e-7))
+    np.testing.assert_array_equal(
+        mode.log10_geom_std_dev,
+        np.full(n, log10(1.6)),
+    )
+
+    for member in ensemble:
+        assert member.size.modes[0].number == 5e8
+        assert member.size.modes[0].geom_mean_diam == 1e-7
+        assert np.isclose(
+            member.size.modes[0].log10_geom_std_dev, log10(1.6)
+        )
+        assert np.isclose(member.size.modes[0].mass_fractions[0], 0.4)
+        assert np.isclose(member.size.modes[0].mass_fractions[1], 0.6)
+
 if __name__ == '__main__':
     unittest.main()
