@@ -22,7 +22,7 @@ jobs:
     # Steps for running tests and analysis.
     steps:
       - name: Checking out repository (${{ matrix.os }})
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           submodules: recursive
