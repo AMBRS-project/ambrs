@@ -244,6 +244,7 @@ def render_partmc_and_mam4_variable_grid(
         xvarlab = 'wavelength [nm]'
     else:
         yvarlab = varname.replace("_", " ")
+        xvarlab = 'x-axis'  # unknown variable: no default x-axis label
     
     label_kwargs = {}
     if fontsize is not None:
