@@ -115,29 +115,32 @@ a specific EnsembleSpecification"""
             yield self.member(i)
 
     def member(self, i: int) -> Scenario:
-        """ensemble.member(i) -> extracts Scenario from ith ensemble member"""
-        for key in self.__dict__:
-            if key == 'gas_concs':
-                object.__setattr__(
-                    self,
-                    key,
-                    tuple([conc*np.ones(self.__len__()) for conc in getattr(self,key)])
+        """ensemble.member(i) -> extracts Scenario without mutating the ensemble"""
+        n = self.__len__()
+        def _member_value(value, field_name):
+            array = np.asarray(value)
+            if array.ndim == 0:
+                return array.item()
+            if array.shape != (n,):
+                raise ValueError(
+                    f"{field_name} must be scalar or have shape ({n},), "
+                    f"got {array.shape}"
                 )
-            elif key in ['flux','relative_humidity','temperature','pressure']:
-                object.__setattr__(
-                    self,
-                    key,
-                    getattr(self,key) * np.ones(self.__len__())
-                )
+            return array[i]
         return Scenario(
             aerosols = self.aerosols,
             gases = self.gases,
             size = self.size.member(i),
-            gas_concs = tuple([conc[i] for conc in self.gas_concs]),
-            flux = self.flux[i],
-            relative_humidity = self.relative_humidity[i],
-            temperature = self.temperature[i],
-            pressure = self.pressure[i],
+            gas_concs = tuple(
+                _member_value(conc, f"gas_concs[{g}]")
+                for g, conc in enumerate(self.gas_concs)
+            ),
+            flux = _member_value(self.flux, "flux"),
+            relative_humidity = _member_value(
+                self.relative_humidity, "relative_humidity"
+            ),
+            temperature = _member_value(self.temperature, "temperature"),
+            pressure = _member_value(self.pressure, "pressure"),
             height = self.height,
             gas_emissions = self.gas_emissions,
             gas_background = self.gas_background,
