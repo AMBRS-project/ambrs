@@ -11,7 +11,8 @@ import pyDOE
 import scipy.stats
 import itertools # for cartesian products of parameter sweeps
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields, is_dataclass
+from collections.abc import Mapping
 from math import log10, pow
 from typing import Optional
 from .aerosol import \
@@ -149,12 +150,94 @@ a specific EnsembleSpecification"""
 # Ensembles constructed by aggregating scenarios
 #------------------------------------------------
 
+def _shared_values_equal(left, right):
+    """Compare shared forcing by value, including nested NumPy-backed dataclasses.
+
+    Avoid dataclass-generated equality on NumPy arrays, whose truth value may
+    be ambiguous. This comparison is only for fields stored once per ensemble.
+    """
+    if left is right:
+        return True
+    if isinstance(left, np.ndarray) or isinstance(right, np.ndarray):
+        lhs, rhs = np.asarray(left), np.asarray(right)
+        try:
+            return bool(np.array_equal(lhs, rhs, equal_nan=True))
+        except TypeError:
+            return bool(np.array_equal(lhs, rhs))
+    if is_dataclass(left) and is_dataclass(right):
+        if type(left) is not type(right):
+            return False
+        return all(_shared_values_equal(getattr(left, field.name),
+                                        getattr(right, field.name)) for field in fields(left))
+    if isinstance(left, Mapping) and isinstance(right, Mapping):
+        return (left.keys() == right.keys() and
+                all(_shared_values_equal(left[key], right[key]) for key in left))
+    if isinstance(left, (list, tuple)) and isinstance(right, (list, tuple)):
+        return (len(left) == len(right) and
+                all(_shared_values_equal(a, b) for a, b in zip(left, right)))
+    try:
+        return bool(left == right)
+    except (TypeError, ValueError):
+        return False
+
+
 def ensemble_from_scenarios(scenarios: list[Scenario]):
     """ensemble_from_scenarios(scenarios) -> ensemble consisting of exactly the
-specified scenarios (which must all have the same particle size representation)"""
+specified scenarios, with identical ordered species definitions and modal
+structure. State values may vary; metadata stored once per ensemble may not."""
     n = len(scenarios)
     if n == 0:
         raise ValueError("No scenarios provided for ensemble!")
+
+    # Concentration and mass-fraction columns are copied positionally. Their
+    # species definitions and mode structure must agree before aggregation.
+    reference = scenarios[0]
+    for index, scenario in enumerate(scenarios, start=1):
+        if not isinstance(scenario.size, AerosolModalSizeState):
+            raise TypeError(f"Scenario {index} has invalid particle size information!")
+        if len(scenario.gas_concs) != len(scenario.gases):
+            raise ValueError(f"Scenario {index} gas_concs count must match gases")
+        if len(scenario.gas_concs) != len(reference.gas_concs):
+            raise ValueError(f"Scenario {index} has a different gas_concs count")
+        for field in ("aerosols", "gases"):
+            if not _shared_values_equal(getattr(scenario, field), getattr(reference, field)):
+                raise ValueError(
+                    f"Scenario {index} has different {field}; "
+                    "Ensemble requires identical species definitions and ordering"
+                )
+        if len(scenario.size.modes) != len(reference.size.modes):
+            raise ValueError(f"Scenario {index} has a different mode count")
+        for mode_index, (mode, reference_mode) in enumerate(
+                zip(scenario.size.modes, reference.size.modes), start=1):
+            if len(mode.mass_fractions) != len(mode.species):
+                raise ValueError(
+                    f"Scenario {index} mode {mode_index} mass_fractions count must match species"
+                )
+            if len(mode.mass_fractions) != len(reference_mode.mass_fractions):
+                raise ValueError(
+                    f"Scenario {index} mode {mode_index} has a different mass_fractions count"
+                )
+            if mode.name != reference_mode.name:
+                raise ValueError(f"Scenario {index} mode {mode_index} has a different name")
+            if not _shared_values_equal(mode.species, reference_mode.species):
+                raise ValueError(
+                    f"Scenario {index} mode {mode_index} has different species; "
+                    "Ensemble requires identical species definitions and ordering"
+                )
+
+    # These fields are represented once per Ensemble, not per member.
+    # Reject differing values rather than silently copying member 0's forcing.
+    shared_fields = ("height", "gas_emissions", "gas_background",
+                     "aerosol_emissions", "aerosol_background")
+    for field in shared_fields:
+        reference = getattr(scenarios[0], field)
+        for index, scenario in enumerate(scenarios[1:], start=1):
+            value = getattr(scenario, field)
+            if not _shared_values_equal(value, reference):
+                raise ValueError(
+                    f"Scenario {index + 1} has different {field}; "
+                    "Ensemble cannot represent per-member forcing or height"
+                )
 
     # assemble size-independent data
     flux = np.array([scenario.flux for scenario in scenarios])
