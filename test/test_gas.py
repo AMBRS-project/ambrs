@@ -54,7 +54,7 @@ class TestGas(unittest.TestCase):
             2.0e-9 * 28.97 / 98.079,
             3.0e-9 * 28.97 / 250.0,
         ]
-        np.testing.assert_allclose(mixture.mole_ratio, expected)
+        np.testing.assert_allclose(mixture.mole_ratio, expected, rtol=1e-12, atol=0.0)
 
     def test_build_gas_mixture_rejects_unsupported_units(self):
         with self.assertRaisesRegex(ValueError, "Unsupported gas units"):
