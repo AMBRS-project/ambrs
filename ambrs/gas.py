@@ -118,8 +118,8 @@ class GasMixture:
     
     # fixme: maybe remove the following
     def _add_gas(self, GasSpec, mole_ratio):
-        idx = GasSpecies.find(self.species, GasSpec.name)
-        if idx == -1:
+        idx, = np.where([spec.name == GasSpec.name for spec in self.species])
+        if idx.size == 0:
             self.species = tuple(self.species) + (GasSpec,)
             self.mole_ratio = np.append(self.mole_ratio, 0.0)
             idx = len(self.species) - 1
