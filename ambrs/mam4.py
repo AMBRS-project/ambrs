@@ -5,6 +5,7 @@ from .aerosol import AerosolProcesses, AerosolModalSizePopulation, \
 from .aerosol_model import BaseAerosolModel
 from .analysis import Output
 from .gas import GasSpecies, build_gas_mixture
+from .gas import DRY_AIR_MOLAR_MASS as dry_air_molar_mass
 
 from .scenario import Scenario
 from .ppe import Ensemble
@@ -154,9 +155,6 @@ class AerosolMassFractions:
             **{p.aliases if p.aliases else p.name : scenario.size.modes[3].mass_fraction(p.name) for p in scenario.size.modes[3].species}
         )
         
-# FIXME: put this in constants? 
-dry_air_molar_mass   = 29.   # g/mol, dry air
-
 # this type handles the mapping of AMBRS gas species to MAM4 species
 class GasMixingRatios:
     def __init__(self,

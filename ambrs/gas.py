@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from typing import Optional, Tuple
 import numpy as np
 
+DRY_AIR_MOLAR_MASS = 28.97  # g/mol
+
 @dataclass(frozen=True)
 class GasSpecies:
     """GasSpecies: the definition of a gas species in terms of species-
@@ -153,8 +155,6 @@ def build_gas_mixture(gas_cfg: dict) -> GasMixture:
     )
     
     gases = [so2,h2so4,soag]
-    # todo: move to constants module?
-    molar_mass_dry_air = 28.97
     
     # fixme: hard coded with MAM4 gases for now
     species = [so2,h2so4]
@@ -164,7 +164,7 @@ def build_gas_mixture(gas_cfg: dict) -> GasMixture:
         mole_ratio = np.array([gas_cfg.get(specname, 0.) for specname in gas_spec_names])
 
     elif gas_cfg['units'] == 'kg_per_kg':
-        mole_ratio = np.array([gas_cfg.get(specname, 0.)*molar_mass_dry_air/
+        mole_ratio = np.array([gas_cfg.get(specname, 0.)*DRY_AIR_MOLAR_MASS/
                                gases[GasSpecies.find(gases,specname)].molar_mass
                                for specname in gas_spec_names])                 
     else:
