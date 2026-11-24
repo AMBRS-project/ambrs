@@ -15,6 +15,20 @@ from typing import Optional, TypeVar
 # (this frozen type isn't made available by the scipy.stats package)
 RVFrozenDistribution = TypeVar('RVFrozenDistribution')
 
+
+def _valid_initial_mass_fraction(value) -> bool:
+    """Return whether a native input fraction is a finite, nonnegative real scalar."""
+    try:
+        return (
+            np.ndim(value) == 0
+            and not np.iscomplexobj(value)
+            and bool(np.isfinite(value))
+            and bool(value >= 0)
+        )
+    except (TypeError, ValueError):
+        return False
+
+
 class Delta:
     '''
     Constant "random variable" to fix parameters if perturbation is not desired
