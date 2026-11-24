@@ -211,51 +211,25 @@ specified scenarios (which must all have the same particle size representation)"
 #-------------------------------------------------
 
 def _normalize_mass_fractions(mode: AerosolModePopulation) -> tuple[np.ndarray, ...]:
-    """Guard numerical failures while retaining the existing weight semantics.
-
-    Keep the summation/division order, including finite negative weights and
-    totals. The LHS caller retains its existing conversion of incoming NaNs to
-    zero. Empty compositions and arrays retain their existing behavior.
-    """
+    """Normalize sampled weights, rejecting undefined or non-finite results."""
     if not mode.mass_fractions:
         return ()
 
-    with np.errstate(over="ignore", invalid="ignore"):
-        factor = sum([mass_fraction for mass_fraction in mode.mass_fractions])
-    invalid = (factor == 0) | ~np.isfinite(factor)
-    if np.any(invalid):
-        members = (np.flatnonzero(invalid)[:10] + 1).tolist()
-        raise ValueError(
-            f"Cannot normalize mass fractions for mode {mode.name!r}: "
-            f"zero or non-finite total in ensemble member(s) {members} "
-            "(1-based indices, first 10 shown)."
-        )
+    def reject(invalid, reason):
+        if np.any(invalid):
+            members = (np.flatnonzero(invalid)[:10] + 1).tolist()
+            raise ValueError(
+                f"Cannot normalize mass fractions for mode {mode.name!r}: "
+                f"{reason} in ensemble member(s) {members} "
+                "(1-based indices, first 10 shown)."
+            )
 
     with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
-        fractions = tuple([mf / factor for mf in mode.mass_fractions])
-    invalid = np.logical_or.reduce([~np.isfinite(mf) for mf in fractions])
-    if np.any(invalid):
-        members = (np.flatnonzero(invalid)[:10] + 1).tolist()
-        raise ValueError(
-            f"Cannot normalize mass fractions for mode {mode.name!r}: "
-            f"non-finite result in ensemble member(s) {members} "
-            "(1-based indices, first 10 shown)."
-        )
-    # A finite but severely cancelled denominator can yield huge finite
-    # fractions. Compare it with the largest absolute weight, not with a
-    # fixed absolute threshold (which would reject uniformly tiny weights).
-    # Run this after the overflow check to retain its existing diagnostic.
-    largest_weight = np.maximum.reduce([np.abs(mf) for mf in mode.mass_fractions])
-    relative_tolerance = 32.0 * np.finfo(float).eps
-    with np.errstate(under="ignore"):
-        near_cancellation = np.abs(factor) <= relative_tolerance * largest_weight
-    if np.any(near_cancellation):
-        members = (np.flatnonzero(near_cancellation)[:10] + 1).tolist()
-        raise ValueError(
-            f"Cannot normalize mass fractions for mode {mode.name!r}: "
-            f"severe cancellation in ensemble member(s) {members} "
-            "(1-based indices, first 10 shown)."
-        )
+        factor = sum(mode.mass_fractions)
+        reject((factor == 0) | ~np.isfinite(factor), "zero or non-finite total")
+        fractions = tuple(mf / factor for mf in mode.mass_fractions)
+        reject(np.logical_or.reduce([~np.isfinite(mf) for mf in fractions]),
+               "non-finite result")
     return fractions
 
 
