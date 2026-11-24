@@ -388,6 +388,7 @@ class TestMAM4InputHelpers(unittest.TestCase):
     def test_retrieve_later_state_uses_scenario_pressure(self):
         scenario = self.make_scenario()
         fake_dataset = unittest.mock.MagicMock()
+        fake_dataset.__enter__.return_value = fake_dataset
         fake_dataset.variables = {"h2so4_gas": np.array([1.0e-9])}
 
         with patch.object(mam4, "Dataset", return_value=fake_dataset), \
